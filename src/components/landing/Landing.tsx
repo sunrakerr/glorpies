@@ -24,7 +24,10 @@ const MOODS: Record<FaceState, string> = {
   done: 'sparkles and a hop',
 };
 
-const INSTALL = 'npm i fuglios';
+/** The install command, in each package manager's own words. */
+const INSTALL = { npm: 'npm i fuglios', pnpm: 'pnpm add fuglios', yarn: 'yarn add fuglios', bun: 'bun add fuglios' } as const;
+type Manager = keyof typeof INSTALL;
+const MANAGERS = Object.keys(INSTALL) as Manager[];
 
 /** The library's front page: a playground whose code is always what you see, then the reference. */
 export function Landing() {
@@ -70,15 +73,28 @@ function Hero() {
         ugly little alien faces, painted in watercolour and ink from any string. deterministic, alive, and with moods for agents. react, a web component, image urls and a cli.
       </p>
       <div className="mt-8 flex flex-wrap items-center gap-5">
-        <div className="flex h-11 items-center gap-3 rounded-lg border border-white/[0.07] bg-term pl-4 pr-1.5 text-term-fg shadow-pill">
-          <code className="text-[13.5px]"><span className="mr-2.5 text-term-accent">❯</span>{INSTALL}</code>
-          <CopyButton text={INSTALL} />
-        </div>
+        <Install />
         <a href="#api" className="inline-flex items-center gap-1.5 text-[12.5px] text-ink-2 transition hover:text-ink">
           api reference <ArrowDown className="size-3.5" strokeWidth={1.8} />
         </a>
       </div>
     </section>
+  );
+}
+
+/** A little terminal with the install command, one tab per package manager. */
+function Install() {
+  const [manager, setManager] = useState<Manager>('npm');
+  return (
+    <div className="rounded-lg border border-white/[0.07] bg-term text-term-fg shadow-pill">
+      <div className="border-b border-white/[0.07] px-2 py-1.5">
+        <Tabs options={MANAGERS} value={manager} onChange={setManager} dark />
+      </div>
+      <div className="flex h-11 items-center gap-3 pl-4 pr-1.5">
+        <code className="min-w-[17ch] text-[13.5px]"><span className="mr-2.5 text-term-accent">❯</span>{INSTALL[manager]}</code>
+        <CopyButton text={INSTALL[manager]} />
+      </div>
+    </div>
   );
 }
 
