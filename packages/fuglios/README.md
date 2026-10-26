@@ -107,10 +107,14 @@ const { body, type } = await renderImage('agent-47', { look: 'sticker', size: 25
 
 ## CLI
 
+The CLI paints with `@napi-rs/canvas`, so ask npx for both:
+
 ```bash
-npx fuglios agent-47 --look ink --size 128 --shape circle -o agent.png
-npx fuglios agent-47 --state thinking -f gif
+npx -p fuglios -p @napi-rs/canvas fuglios agent-47 --look ink --size 128 --shape circle -o agent.png
+npx -p fuglios -p @napi-rs/canvas fuglios agent-47 --state thinking -f gif
 ```
+
+Installed in a project (`npm i fuglios @napi-rs/canvas`), it's just `npx fuglios agent-47`.
 
 ## Publishing
 

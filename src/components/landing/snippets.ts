@@ -10,9 +10,18 @@ export const START: Choice = { name: '', look: 'auto', shape: 'circle', state: '
 
 const q = (s: string) => JSON.stringify(s);
 
+/** A name as a JSX prop: a plain string when it can be one, else a string expression (JSX strings have no escapes). */
+const jsxName = (name: string) => (/^[^"\\{}<>&]*$/.test(name) ? `name="${name}"` : `name={${q(name)}}`);
+
+/** A name as an HTML attribute. */
+const htmlName = (name: string) => `name="${name.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')}"`;
+
+/** A word for a shell, quoted unless it's plainly safe. */
+const shellWord = (s: string) => (/^[\w@%+=:,./-]+$/.test(s) ? s : `'${s.replace(/'/g, `'\\''`)}'`);
+
 /** Only what differs from the defaults is written out. */
 function props(c: Choice, jsx: boolean) {
-  const out = [`name=${q(c.name)}`, jsx ? `size={${c.size}}` : `size="${c.size}"`];
+  const out = [jsx ? jsxName(c.name) : htmlName(c.name), jsx ? `size={${c.size}}` : `size="${c.size}"`];
   if (c.look !== 'auto') out.push(`look=${q(c.look)}`);
   if (c.shape !== 'circle') out.push(`shape=${q(c.shape)}`);
   if (c.state !== 'idle') out.push(`state=${q(c.state)}`);
@@ -29,7 +38,14 @@ function query(c: Choice, format?: string) {
   return `${SITE_URL}/api/face?${p}`;
 }
 
-const cliName = (c: Choice) => c.name.replace(/\s+/g, '-') || 'face';
+/**
+ * The CLI paints with @napi-rs/canvas, so npx fetches both. Flags come first
+ * and the name last, after `--` when it looks like a flag itself.
+ */
+function cli(c: Choice) {
+  const flags = [c.look !== 'auto' && `--look ${c.look}`, '--size 256', `--shape ${c.shape}`, c.state !== 'idle' && `--state ${c.state}`, '-o face.png'].filter(Boolean);
+  return `npx -p fuglios -p @napi-rs/canvas fuglios ${flags.join(' ')} ${c.name.startsWith('-') ? '-- ' : ''}${shellWord(c.name || 'face')}`;
+}
 
 export const SNIPPETS = {
   react: (c: Choice) => `import { Fuglio } from "fuglios/react";
@@ -49,7 +65,7 @@ export const { GET } = faceRoute();
 // Bun, Deno, Hono, anything that speaks fetch
 import { createFaceHandler } from "fuglios/server";
 Bun.serve({ fetch: createFaceHandler() });`,
-  cli: (c: Choice) => `npx fuglios ${cliName(c)}${c.look !== 'auto' ? ` --look ${c.look}` : ''} --size 256 --shape ${c.shape}${c.state !== 'idle' ? ` --state ${c.state}` : ''} -o face.png`,
+  cli,
 } as const;
 
 export type SnippetKind = keyof typeof SNIPPETS;

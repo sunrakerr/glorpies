@@ -9,7 +9,7 @@ import { runAction, type ActionKind } from '../actions';
 import { CodePanel, CopyButton } from '../Code';
 import { LookThumb } from '../LookPicker';
 import { Sheet } from '../Sheet';
-import { SiteHeader } from '../SiteHeader';
+import { Invader, SiteHeader } from '../SiteHeader';
 import { Pick, Tabs } from '../Tabs';
 import { IconButton, ToastView, useToast } from '../ui';
 import { PixelField } from './PixelField';
@@ -60,7 +60,7 @@ export function Landing() {
             <Reference onLook={(look) => set({ look })} />
           </Section>
         </main>
-        <StatusBar />
+        <Footer />
       </div>
     </div>
   );
@@ -313,17 +313,18 @@ function Reference({ onLook }: { onLook: (l: LookId) => void }) {
   );
 }
 
-/** The footer as a terminal status line. */
-function StatusBar() {
+/** The mark, the licence and the other pages, under a dashed rule like the sections'. */
+function Footer() {
   return (
-    <footer className="mb-8 flex h-8 items-stretch overflow-hidden rounded-md border border-ink/12 text-[11px] text-ink-2">
-      <span className="flex items-center bg-accent px-2.5 font-display text-paper">alive</span>
-      <span className="flex items-center border-r border-ink/12 px-3 text-ink">fuglios</span>
-      <span className="hidden items-center px-3 sm:flex">mit · painted in code · every face stays on your page</span>
-      <span className="ml-auto flex items-center gap-4 px-3">
+    <footer className="mb-10 flex items-center justify-between gap-4 border-t border-dashed border-ink/20 pt-5 text-[11.5px] text-ink-2">
+      <span className="flex items-center gap-2">
+        <Invader className="h-[10px] text-accent" />
+        <span className="text-ink">fuglios</span> · mit licence
+      </span>
+      <nav className="flex items-center gap-4">
         <Link href="/gallery" className="transition hover:text-ink">./gallery</Link>
         <Link href="/how" className="transition hover:text-ink">./how</Link>
-      </span>
+      </nav>
     </footer>
   );
 }

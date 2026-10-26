@@ -17,11 +17,14 @@ const BATCH = 12;
 const ALIVE_KEY = 'faces:alive';
 const LOOK_KEY = 'faces:look';
 
-/** The face a history entry has open, if it's still on the wall (a reload paints a new wall, so its old entries open nothing). */
-function viewerIn(state: unknown, count: number): number | null {
-  const i = (state as { viewer?: unknown } | null)?.viewer;
-  return typeof i === 'number' && Number.isInteger(i) && i >= 0 && i < count ? i : null;
+/** The face a history entry has open, if the entry belongs to this wall: a reload or a shuffle paints a new one, and old entries open nothing. */
+function viewerIn(state: unknown, wall: string, count: number): number | null {
+  const s = state as { viewer?: unknown; wall?: unknown } | null;
+  const i = s?.viewer;
+  return s?.wall === wall && typeof i === 'number' && Number.isInteger(i) && i >= 0 && i < count ? i : null;
 }
+
+const newWall = () => Math.random().toString(36).slice(2);
 
 /** A name not already on the wall, so every face on it is its own (until a wall holds most of the names there are). */
 function freshName(taken: ReadonlySet<string>) {
@@ -52,6 +55,7 @@ export function Studio() {
 
   // names are random, so they're chosen on the client to keep server and client markup identical
   useEffect(() => {
+    wall.current = newWall();
     setNames(freshBatch());
     const saved = localStorage.getItem(ALIVE_KEY);
     setAlive(saved ? saved === '1' : !matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -64,25 +68,24 @@ export function Studio() {
   }, [alive]);
 
   // an open face is a step in history, holding which face: back closes the viewer, forward opens it again
+  const wall = useRef('');
   const count = useRef(0);
   useEffect(() => {
     count.current = names.length;
   }, [names.length]);
   useEffect(() => {
-    // an entry left open by the last visit points at faces that are gone
-    if (viewerIn(history.state, Infinity) !== null) history.replaceState({ ...history.state, viewer: null }, '');
-    const pop = () => setOpen(viewerIn(history.state, count.current));
+    const pop = () => setOpen(viewerIn(history.state, wall.current, count.current));
     addEventListener('popstate', pop);
     return () => removeEventListener('popstate', pop);
   }, []);
 
   const openFace = (i: number) => {
-    const state = { ...history.state, viewer: i };
-    if (viewerIn(history.state, names.length) === null) history.pushState(state, '');
+    const state = { ...history.state, viewer: i, wall: wall.current };
+    if (viewerIn(history.state, wall.current, names.length) === null) history.pushState(state, '');
     else history.replaceState(state, '');
     setOpen(i);
   };
-  const closeFace = () => (viewerIn(history.state, names.length) !== null ? history.back() : setOpen(null));
+  const closeFace = () => (viewerIn(history.state, wall.current, names.length) !== null ? history.back() : setOpen(null));
 
   const toggleAlive = () => {
     setAlive((v) => {
@@ -131,6 +134,7 @@ export function Studio() {
   }, []);
 
   const shuffleAll = () => {
+    wall.current = newWall();
     setNames((s) => {
       for (const name of s) forget(seedOf(name));
       return freshBatch(s);

@@ -24,17 +24,18 @@ export type AnimationOptions = StillOptions & {
  */
 export const FRAME_BUDGET = 256 * 256 * 120;
 
-/** The size, length and frame rate of a loop, checked, with the frame rate lowered to fit the budget. */
+/** The size, length and frame count of a loop, checked before anything is painted, with frames dropped to fit the budget. */
 function timing(o: AnimationOptions) {
   const size = sizeOf(o.size);
   const loop = o.loop ?? 3;
   if (!(loop > 0 && loop <= 10)) throw new RangeError(`loop must be from 0 to 10 seconds, not ${o.loop}`);
-  const wanted = o.fps ?? 15;
-  if (!(wanted >= 1 && wanted <= 30)) throw new RangeError(`fps must be from 1 to 30, not ${o.fps}`);
+  const fps = o.fps ?? 15;
+  if (!(fps >= 1 && fps <= 30)) throw new RangeError(`fps must be from 1 to 30, not ${o.fps}`);
+  const most = Math.floor(FRAME_BUDGET / (size * size));
+  if (most < 1) throw new RangeError(`a ${size}px frame is too big to animate; try ${Math.floor(Math.sqrt(FRAME_BUDGET))}px or less`);
   // a long or large loop keeps its length and moves in fewer steps
-  const fps = Math.min(Math.round(wanted), Math.floor(FRAME_BUDGET / (size * size * loop)));
-  if (fps < 1) throw new RangeError(`a ${size}px loop of ${loop}s is too big to animate; try a smaller size or a shorter loop`);
-  return { size, loop, fps };
+  const count = Math.min(most, Math.max(1, Math.round(loop * fps)));
+  return { size, loop, count };
 }
 
 /**
@@ -44,8 +45,8 @@ function timing(o: AnimationOptions) {
  * into still background and moving face with all six eye poses, driven by a
  * scripted pose with no randomness, so the same name always loops the same way.
  */
-export function animationFrames(name: FaceName, o: AnimationOptions = {}): { frames: Uint8ClampedArray[]; size: number; fps: number } {
-  const { size, loop, fps } = timing(o);
+export function animationFrames(name: FaceName, o: AnimationOptions = {}): { frames: Uint8ClampedArray[]; size: number; fps: number; loop: number } {
+  const { size, loop, count } = timing(o);
   const state: FaceState = o.state ?? 'idle';
   const look = resolveLook(o.look, size);
   const face = faceOf(name, state);
@@ -71,15 +72,15 @@ export function animationFrames(name: FaceName, o: AnimationOptions = {}): { fra
   const marks = state === 'idle' ? null : marksFor(look, face, size);
   const canvas = makeCanvas(size);
   const g = canvas.getContext('2d', { willReadFrequently: true })!;
-  const count = Math.max(1, Math.round(loop * fps));
   const frames: Uint8ClampedArray[] = [];
   for (let i = 0; i < count; i++) {
-    const pose = scriptedPose(face, state, i / fps, loop);
+    const t = (i * loop) / count;
+    const pose = scriptedPose(face, state, t, loop);
     g.setTransform(1, 0, 0, 1, 0, 0);
     g.clearRect(0, 0, size, size);
     if ('still' in raster) drawStill(g, face, raster, pose, size);
     else drawFrame(g, face, raster, pose, size);
-    if (marks) drawMarks(g, face, state, marks, i / fps);
+    if (marks) drawMarks(g, face, state, marks, t);
     if (o.shape && o.shape !== 'square') {
       g.setTransform(1, 0, 0, 1, 0, 0);
       g.globalCompositeOperation = 'destination-in';
@@ -89,7 +90,8 @@ export function animationFrames(name: FaceName, o: AnimationOptions = {}): { fra
     }
     frames.push(g.getImageData(0, 0, size, size).data);
   }
-  return { frames, size, fps };
+  // frames are evenly spaced across the loop, so this is the rate they actually play at
+  return { frames, size, fps: count / loop, loop };
 }
 
 /**
@@ -98,7 +100,7 @@ export function animationFrames(name: FaceName, o: AnimationOptions = {}): { fra
  * outside the shape is transparent.
  */
 export function faceGIF(name: FaceName, o: AnimationOptions = {}): Uint8Array {
-  const { frames, size, fps } = animationFrames(name, o);
+  const { frames, size, loop } = animationFrames(name, o);
   const shaped = !!o.shape && o.shape !== 'square';
   const sample = new Uint8ClampedArray(frames.length > 4 ? size * size * 4 * 4 : frames[0]!.length);
   if (frames.length > 4) for (let k = 0; k < 4; k++) sample.set(frames[Math.floor((k * frames.length) / 4)]!, k * size * size * 4);
@@ -108,8 +110,10 @@ export function faceGIF(name: FaceName, o: AnimationOptions = {}): Uint8Array {
   if (shaped) palette.push([0, 0, 0]);
 
   const gif = GIFEncoder();
-  const delay = Math.round(1000 / fps);
-  for (const f of frames) {
+  // a GIF counts time in hundredths of a second: each frame ends at its own rounded mark, so the loop lasts what was asked
+  const end = (i: number) => Math.round((i * loop * 100) / frames.length);
+  for (const [i, f] of frames.entries()) {
+    const delay = (end(i + 1) - end(i)) * 10;
     const index = applyPalette(f, palette.slice(0, clear));
     if (shaped) for (let i = 0; i < index.length; i++) if (f[i * 4 + 3]! < 128) index[i] = clear;
     gif.writeFrame(index, size, size, { palette, delay, repeat: 0, ...(shaped ? { transparent: true, transparentIndex: clear, dispose: 2 } : {}) });

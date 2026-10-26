@@ -94,10 +94,20 @@ test('a watercolour svg keeps its state marks', async () => {
 });
 
 test('a loop stays inside its budget, and nonsense is refused', async () => {
-  const { frames, size, fps } = animationFrames('agent-47', { look: 'ink', size: 400, loop: 10, fps: 30 });
+  const { frames, size, loop } = animationFrames('agent-47', { look: 'ink', size: 400, loop: 10, fps: 30 });
   assert.ok(frames.length * size * size <= FRAME_BUDGET, 'frames are dropped to fit');
-  assert.equal(frames.length, fps * 10, 'the loop keeps its length');
-  for (const o of [{ loop: Infinity }, { loop: 0 }, { fps: Number.NaN }, { size: 1e9 }]) assert.throws(() => animationFrames('agent-47', o), RangeError);
+  assert.equal(loop, 10, 'the loop keeps its length');
+  for (const o of [{ loop: Infinity }, { loop: 0 }, { fps: Number.NaN }, { size: 1e9 }, { size: 8192, loop: 0.001 }]) assert.throws(() => animationFrames('agent-47', o), RangeError);
+});
+
+test('a gif lasts as long as its loop', () => {
+  // each frame's delay sits in a graphics control extension: 21 f9 04 <flags> <delay lo> <delay hi>
+  const centiseconds = (gif) => {
+    let total = 0;
+    for (let i = 0; i < gif.length - 5; i++) if (gif[i] === 0x21 && gif[i + 1] === 0xf9 && gif[i + 2] === 4) total += gif[i + 4] | (gif[i + 5] << 8);
+    return total;
+  };
+  for (const fps of [15, 30]) assert.equal(centiseconds(faceGIF('agent-47', { look: 'ink', size: 48, loop: 3, fps })), 300, `${fps} fps`);
 });
 
 test('the image handler refuses what it should and hardens svg', async () => {

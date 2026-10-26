@@ -7,7 +7,7 @@ import { isShape, SHAPES } from './still';
 
 const HELP = `fuglios: paint a face from any name
 
-  npx fuglios <name> [options]
+  npx -p fuglios -p @napi-rs/canvas fuglios [options] <name>
 
   -l, --look    ${'auto'}, or one of: ${LOOKS.map((l) => l.id).join(', ')}
   -s, --size    pixels (default 256)
@@ -74,5 +74,6 @@ async function main() {
 
 main().catch((e) => {
   console.error(e instanceof Error ? e.message : e);
+  if (e instanceof Error && e.message.includes('@napi-rs/canvas')) console.error('with npx: npx -p fuglios -p @napi-rs/canvas fuglios <name>');
   process.exit(1);
 });

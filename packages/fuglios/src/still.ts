@@ -81,14 +81,14 @@ export function faceSVG(name: FaceName, o: StillOptions = {}): string {
 function drawStateMarks(c: HTMLCanvasElement, face: Face, look: LookId, state: FaceState | undefined) {
   const marks = state && state !== 'idle' ? marksFor(look, face, c.width) : null;
   if (marks) drawMarks(c.getContext('2d')!, face, state!, marks, 0, true);
-  return marks !== null;
 }
 
 /** The watercolour as vector paths, with the state's marks laid over it as a picture: they're drawn for canvas, not as paths. */
 function watercolourSVG(face: Face, size: number, state: FaceState | undefined): string {
   const svg = faceToSVG(face, getEngine(), size);
+  if (!state || state === 'idle') return svg;
   const marks = makeCanvas(size);
-  if (!drawStateMarks(marks, face, 'watercolour', state)) return svg;
+  drawStateMarks(marks, face, 'watercolour', state);
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${svg}<image width="${size}" height="${size}" href="${marks.toDataURL('image/png')}"/></svg>`;
 }
 
