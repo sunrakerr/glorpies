@@ -125,7 +125,7 @@ export function Studio() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const act = (kind: ActionKind, name: string) => runAction(kind, name, lookFor(name), pngSize, show);
+  const act = (kind: ActionKind, name: string) => runAction(kind, { name, look: lookFor(name) }, pngSize, show);
 
   return (
     <div className="relative z-10 min-h-dvh">

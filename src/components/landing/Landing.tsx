@@ -1,15 +1,17 @@
 'use client';
 
-import { ArrowDown, Dices } from 'lucide-react';
+import { ArrowDown, Copy, Dices, FileCode, ImageDown } from 'lucide-react';
 import Link from 'next/link';
 import { useDeferredValue, useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { FULL_LOOKS, lookOf, randomName, resolveLook, seedOf, SHAPES, SMALL_LOOKS, STATES, type FaceState, type LookChoice, type LookId } from 'fuglios';
 import { Fuglio } from 'fuglios/react';
+import { runAction, type ActionKind } from '../actions';
 import { CodePanel, CopyButton } from '../Code';
 import { LookThumb } from '../LookPicker';
 import { Sheet } from '../Sheet';
 import { SiteHeader } from '../SiteHeader';
 import { Pick, Tabs } from '../Tabs';
+import { IconButton, ToastView, useToast } from '../ui';
 import { PixelField } from './PixelField';
 import { ENTRIES, PROPS, SNIPPET_FILES, SNIPPET_KINDS, SNIPPETS, START, type Choice, type SnippetKind } from './snippets';
 
@@ -32,6 +34,8 @@ const MANAGERS = Object.keys(INSTALL) as Manager[];
 /** The library's front page: a playground whose code is always what you see, then the reference. */
 export function Landing() {
   const [c, setC] = useState<Choice>(START);
+  const [manager, setManager] = useState<Manager>('npm');
+  const install = <Install manager={manager} onManager={setManager} />;
   // typing repaints a face per keystroke otherwise; the deferred name lets the input stay ahead
   const name = String(useDeferredValue(c.name)) || ' ';
   const set = (patch: Partial<Choice>) => setC((v) => ({ ...v, ...patch }));
@@ -44,14 +48,17 @@ export function Landing() {
       <div className="relative mx-auto max-w-[960px] px-6">
         <SiteHeader className="pt-8" />
         <main>
-          <Hero />
-          <Section n="01" title="playground" note="type a name, any name">
+          <Hero install={install} />
+          <Section title="playground">
             <Playground c={c} name={name} set={set} />
           </Section>
-          <Section n="02" title="code" note="for the face above" className="mt-16">
+          <Section title="install" className="mt-16">
+            {install}
+          </Section>
+          <Section title="code" className="mt-16">
             <Usage c={{ ...c, name }} />
           </Section>
-          <Section n="03" id="api" title="api" note="react props, element attributes, url query and cli flags alike" className="py-20">
+          <Section id="api" title="api" className="py-20">
             <Reference onLook={(look) => set({ look })} />
           </Section>
         </main>
@@ -61,19 +68,19 @@ export function Landing() {
   );
 }
 
-function Hero() {
+function Hero({ install }: { install: ReactNode }) {
   return (
     <section className="pb-16 pt-16">
       <h1 className="ink-in font-display text-[clamp(2.5rem,8vw,3.6rem)] leading-[0.98]">
-        {['every', 'name', null, 'has', 'a', 'fuglio.'].map((w, i) =>
-          w ? <span key={i} style={{ '--i': i } as CSSProperties}>{w}{w === 'fuglio.' ? <span aria-hidden className="cursor" /> : '\u00a0'}</span> : <br key={i} />,
+        {['an', 'ugly', 'alien', null, 'for', 'every', 'name.'].map((w, i, all) =>
+          w ? <span key={i} style={{ '--i': i } as CSSProperties}>{w}{i === all.length - 1 ? <span aria-hidden className="cursor" /> : '\u00a0'}</span> : <br key={i} />,
         )}
       </h1>
       <p className="mt-5 max-w-[34rem] text-[15px] leading-relaxed text-ink-2">
-        ugly little alien faces, painted in watercolour and ink from any string. deterministic, alive, and with moods for agents. react, a web component, image urls and a cli.
+        give it a username, an email or a bot id and get back a face painted in watercolour and ink. the same name always gets the same face. it blinks, it breathes, and it shows what your agent is up to.
       </p>
       <div className="mt-8 flex flex-wrap items-center gap-5">
-        <Install />
+        {install}
         <a href="#api" className="inline-flex items-center gap-1.5 text-[12.5px] text-ink-2 transition hover:text-ink">
           api reference <ArrowDown className="size-3.5" strokeWidth={1.8} />
         </a>
@@ -83,30 +90,34 @@ function Hero() {
 }
 
 /** A little terminal with the install command, one tab per package manager. */
-function Install() {
-  const [manager, setManager] = useState<Manager>('npm');
+function Install({ manager, onManager }: { manager: Manager; onManager: (m: Manager) => void }) {
   return (
-    <div className="rounded-lg border border-white/[0.07] bg-term text-term-fg shadow-pill">
-      <div className="border-b border-white/[0.07] px-2 py-1.5">
-        <Tabs options={MANAGERS} value={manager} onChange={setManager} dark />
+    <div className="w-fit rounded-lg border border-term-fg/10 bg-term text-term-fg shadow-pill">
+      <div className="border-b border-term-fg/10 px-2 py-1.5">
+        <Tabs options={MANAGERS} value={manager} onChange={onManager} dark />
       </div>
       <div className="flex h-11 items-center gap-3 pl-4 pr-1.5">
-        <code className="min-w-[17ch] text-[13.5px]"><span className="mr-2.5 text-term-accent">❯</span>{INSTALL[manager]}</code>
+        <span className="text-[13.5px] text-term-accent">❯</span>
+        {/* every command is laid out, the others hidden, so the box is as wide as the longest and never jumps */}
+        <code className="grid text-[13.5px]">
+          {MANAGERS.map((m) => (
+            <span key={m} aria-hidden={m !== manager} className={`[grid-area:1/1] ${m === manager ? '' : 'invisible'}`}>{INSTALL[m]}</span>
+          ))}
+        </code>
         <CopyButton text={INSTALL[manager]} />
       </div>
     </div>
   );
 }
 
-/** A numbered section with a dashed rule, like a heading in a man page. */
-function Section({ n, title, note, id, className = '', children }: { n: string; title: string; note?: string; id?: string; className?: string; children: ReactNode }) {
+/** A section with a star and a dashed rule. */
+function Section({ title, id, className = '', children }: { title: string; id?: string; className?: string; children: ReactNode }) {
   return (
     <section id={id} aria-labelledby={`${title}-title`} className={`scroll-mt-8 ${className}`}>
-      <div className="mb-8 flex items-center gap-3 text-[11.5px]">
-        <span className="text-accent">{n}</span>
+      <div className="mb-8 flex items-center gap-3">
+        <span aria-hidden className="text-[13px] leading-none text-accent">✦</span>
         <h2 id={`${title}-title`} className="scroll-mt-8 font-display text-[15px] leading-none">{title}</h2>
         <span aria-hidden className="h-px flex-1 bg-[repeating-linear-gradient(90deg,currentColor_0_4px,transparent_4px_8px)] text-ink/20" />
-        {note && <span className="hidden text-ink-2/80 sm:inline">// {note}</span>}
       </div>
       {children}
     </section>
@@ -116,6 +127,10 @@ function Section({ n, title, note, id, className = '', children }: { n: string; 
 function Playground({ c, name, set }: { c: Choice; name: string; set: (p: Partial<Choice>) => void }) {
   const seed = seedOf(name);
   const portraitLook: LookId = c.look === 'auto' ? 'watercolour' : c.look;
+  const { toast, show } = useToast();
+  // exports are the portrait as shown: its look, crop and mood
+  const act = (kind: ActionKind) => runAction(kind, { name, look: portraitLook, shape: c.shape, state: c.state }, 1024, show);
+  const blank = !name.trim();
   return (
     <div className="grid gap-x-12 gap-y-10 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <div>
@@ -132,10 +147,15 @@ function Playground({ c, name, set }: { c: Choice; name: string; set: (p: Partia
               </div>
             </div>
           </Sheet>
-          <figcaption className="mt-6 flex items-baseline justify-between gap-3 text-[11.5px] text-ink-2">
+          <figcaption className="mt-5 flex items-center justify-between gap-3 text-[11.5px] text-ink-2">
             <span>specimen <span className="text-ink">№{seed}</span> · {lookOf(portraitLook).name.toLowerCase()}</span>
-            <span>tap to poke</span>
+            <span className="-mr-2 flex items-center">
+              <IconButton label="Copy image" disabled={blank} onClick={() => act('copy')}><Copy className="size-[16px]" strokeWidth={1.8} /></IconButton>
+              <IconButton label="Download PNG" disabled={blank} onClick={() => act('png')}><ImageDown className="size-[16px]" strokeWidth={1.8} /></IconButton>
+              <IconButton label="Download SVG" disabled={blank} onClick={() => act('svg')}><FileCode className="size-[16px]" strokeWidth={1.8} /></IconButton>
+            </span>
           </figcaption>
+          <ToastView toast={toast} />
         </figure>
 
         <div role="radiogroup" aria-label="Size" className="mt-8 flex items-end gap-5">
@@ -167,7 +187,7 @@ function Playground({ c, name, set }: { c: Choice; name: string; set: (p: Partia
             </button>
           </label>
         </Field>
-        <Field flag="look" hint={c.look === 'auto' ? `auto → ${resolveLook(c.look, c.size)} at ${c.size}px` : `"${c.look}"`}>
+        <Field flag="look" hint={c.look === 'auto' ? `auto picks ${resolveLook(c.look, c.size)} at ${c.size}px` : `"${c.look}"`}>
           <LookGrid seed={seed} value={c.look} onChange={(look) => set({ look })} />
         </Field>
         <Field flag="shape">
@@ -252,7 +272,7 @@ function Reference({ onLook }: { onLook: (l: LookId) => void }) {
         <table className="w-full min-w-[640px] border-collapse text-left text-[12.5px]">
           <thead>
             <tr className="border-b border-ink/15 text-[11px] text-ink-2">
-              {['prop', 'takes', 'default', 'what it does'].map((h) => <th key={h} className="py-2 pr-4 font-normal"># {h}</th>)}
+              {['prop', 'takes', 'default', 'what it does'].map((h) => <th key={h} className="py-2 pr-4 font-normal">{h}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -268,7 +288,7 @@ function Reference({ onLook }: { onLook: (l: LookId) => void }) {
         </table>
       </div>
 
-      <h3 className="mt-14 text-[12px] text-ink-2"># look ids</h3>
+      <h3 className="mt-14 text-[12px] text-ink-2">look ids</h3>
       <div className="mt-3 space-y-4 text-[12px]">
         {[{ label: 'paintings', looks: FULL_LOOKS }, { label: 'avatars', looks: SMALL_LOOKS }].map((g) => (
           <div key={g.label} className="flex flex-wrap items-center gap-1.5">
@@ -282,7 +302,7 @@ function Reference({ onLook }: { onLook: (l: LookId) => void }) {
         ))}
       </div>
 
-      <h3 className="mt-14 text-[12px] text-ink-2"># imports</h3>
+      <h3 className="mt-14 text-[12px] text-ink-2">imports</h3>
       <ul className="mt-3 divide-y divide-ink/8 border-y border-ink/8 text-[12.5px]">
         {ENTRIES.map((e) => (
           <li key={e.path} className="grid list-none gap-1 py-3 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-4">

@@ -2,7 +2,6 @@ import { loadEngine, type Engine } from './engine';
 import { buildFace } from './face/build';
 import { EYE_POSES, eyePatch, pixelsOf, posed } from './alive';
 import { rasterizeFace, renderStill, type Painting, type StillRaster } from './face/render';
-import { faceToSVG } from './face/svg';
 import type { Face } from './face/types';
 import { splitLayers } from './layers';
 import { expressed } from './expression';
@@ -166,26 +165,6 @@ export function paintRaster(seed: number, px: number, priority: number, look: Lo
 function stillFor(seed: number, look: LookId, px: number, E: Engine): HTMLCanvasElement {
   const face = faceFor(seed, E);
   return look === DEFAULT_LOOK ? renderStill(face, E, px) : renderLook(look, face, E, px);
-}
-
-function encode(canvas: HTMLCanvasElement): Promise<Blob> {
-  return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('PNG encoding failed'))), 'image/png'));
-}
-
-export async function pngBlob(seed: number, px: number, look: LookId = DEFAULT_LOOK): Promise<Blob> {
-  return encode(await schedule(PRIORITY.export, (E) => stillFor(seed, look, px, E)).promise);
-}
-
-/**
- * Watercolour exports as real vector paths. The other styles are built from
- * pixels, dots, tiles and glyphs, so their SVG wraps the PNG.
- */
-export function svgMarkup(seed: number, look: LookId = DEFAULT_LOOK, px = 1024): Promise<string> {
-  return schedule(PRIORITY.export, (E) => {
-    if (look === DEFAULT_LOOK) return faceToSVG(faceFor(seed, E), E, px);
-    const href = stillFor(seed, look, px, E).toDataURL('image/png');
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${px}" height="${px}" viewBox="0 0 ${px} ${px}"><image width="${px}" height="${px}" href="${href}"/></svg>`;
-  }).promise;
 }
 
 export function cachedThumb(seed: number, look: LookId, px: number): HTMLCanvasElement | null {

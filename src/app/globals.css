@@ -8,10 +8,10 @@
   --color-ink: #2b231d;
   --color-ink-2: #75685c;
   --color-accent: #2f7d24;
-  /* code and the install line sit in a terminal, dark in both themes */
-  --color-term: #13121a;
-  --color-term-fg: #dcd7e8;
-  --color-term-accent: #b4ff5a;
+  /* code and the install line: a lighter sheet of paper by day, deep space by night */
+  --color-term: #fbf8f1;
+  --color-term-fg: #2b231d;
+  --color-term-accent: #2f7d24;
 
   --font-display: var(--font-pixel), ui-monospace, Menlo, monospace;
   --font-mono: var(--font-geist-mono), ui-monospace, Menlo, monospace;
@@ -36,7 +36,9 @@
   --color-ink: #ece7f4;
   --color-ink-2: #9a94ad;
   --color-accent: #b4ff5a;
-  --color-term: #16151f;
+  --color-term: #110f1a;
+  --color-term-fg: #e6e1f0;
+  --color-term-accent: #b4ff5a;
   --shade: 0 0 0;
 }
 
@@ -118,16 +120,32 @@ body::before {
   50% { opacity: 0; }
 }
 
-/* syntax colours, for code in the terminal */
-.tk-comment { color: #6f6a80; font-style: italic; }
-.tk-string { color: #b4ff5a; }
-.tk-keyword { color: #ff7ac8; }
-.tk-tag { color: #6fd8ff; }
-.tk-attr { color: #ffd23f; }
-.tk-number { color: #ff9a5c; }
-.tk-flag { color: #c79bff; }
-.tk-command { color: #6fd8ff; }
-.tk-punct { color: #8c87a0; }
+/* syntax colours, from the fuglios' own paints: alien green strings, violet keywords, magenta tags */
+:root {
+  --tk-comment: #9a8c7d;
+  --tk-string: #2f7d24;
+  --tk-keyword: #8a3fb5;
+  --tk-tag: #c2367a;
+  --tk-attr: #a3650f;
+  --tk-number: #17808c;
+  --tk-punct: #9a8c7d;
+}
+[data-theme='dark'] {
+  --tk-comment: #6d6685;
+  --tk-string: #b4ff5a;
+  --tk-keyword: #c59bff;
+  --tk-tag: #ff7ac6;
+  --tk-attr: #ffcf6e;
+  --tk-number: #6fe3ef;
+  --tk-punct: #7f7896;
+}
+.tk-comment { color: var(--tk-comment); font-style: italic; }
+.tk-string { color: var(--tk-string); }
+.tk-keyword, .tk-flag { color: var(--tk-keyword); }
+.tk-tag, .tk-command { color: var(--tk-tag); }
+.tk-attr { color: var(--tk-attr); }
+.tk-number { color: var(--tk-number); }
+.tk-punct { color: var(--tk-punct); }
 
 /* sketches pinned to the wall: tilted sheets, lifted lower corners, washi tape */
 :root {

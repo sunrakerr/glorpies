@@ -3,6 +3,7 @@
 import { Check, Copy } from 'lucide-react';
 import { useMemo, useState, type ReactNode } from 'react';
 import { highlight, type Lang } from '@/lib/highlight';
+import { Invader } from './SiteHeader';
 
 /** Copies `text`, and says so for a moment. With `label`, it reads "copy" / "copied" next to the icon. */
 export function CopyButton({ text, label = false, className = '' }: { text: string; label?: boolean; className?: string }) {
@@ -33,18 +34,14 @@ export function CopyButton({ text, label = false, className = '' }: { text: stri
 /**
  * Code in a terminal window: a title bar (a file name, or tabs passed in as
  * `title`), line numbers and syntax colours, with a copy button. `compact`
- * drops the window dots and the copy label, for narrow panels.
+ * drops the mark and the copy label, for narrow panels.
  */
 export function CodePanel({ code, lang, title, compact = false, className = '' }: { code: string; lang: Lang; title?: ReactNode; compact?: boolean; className?: string }) {
   const lines = useMemo(() => highlight(code, lang), [code, lang]);
   return (
-    <div className={`overflow-hidden rounded-lg border border-white/[0.07] bg-term text-term-fg shadow-sheet ${className}`}>
-      <div className={`flex h-10 items-center gap-3 border-b border-white/[0.07] pr-2 ${compact ? 'pl-2.5' : 'pl-4'}`}>
-        <span aria-hidden className={`gap-1.5 ${compact ? 'hidden' : 'flex'}`}>
-          <i className="size-2.5 rounded-full bg-[#ff5f7a]/80" />
-          <i className="size-2.5 rounded-full bg-[#ffd23f]/80" />
-          <i className="size-2.5 rounded-full bg-[#b4ff5a]/80" />
-        </span>
+    <div className={`overflow-hidden rounded-lg border border-term-fg/10 bg-term text-term-fg shadow-sheet ${className}`}>
+      <div className={`flex h-10 items-center gap-3 border-b border-term-fg/10 pr-2 ${compact ? 'pl-2.5' : 'pl-4'}`}>
+        {!compact && <Invader className="h-2.5 shrink-0 text-term-accent" />}
         <div className="min-w-0 flex-1 text-[11.5px] text-term-fg/55">{title}</div>
         <CopyButton text={code} label={!compact} />
       </div>
