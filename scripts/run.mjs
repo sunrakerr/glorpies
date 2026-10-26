@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process';
 import { mkdirSync, readdirSync, rmSync, writeFileSync, statSync, readFileSync } from 'node:fs';
 
 const CHROME = process.env.CHROME ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-const URL_ = 'http://localhost:3417/';
+const URL_ = 'http://localhost:3417/gallery';
 const DL = '/tmp/faces-e2e/downloads';
 rmSync(DL, { recursive: true, force: true });
 mkdirSync(DL, { recursive: true });

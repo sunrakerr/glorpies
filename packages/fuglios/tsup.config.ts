@@ -1,0 +1,25 @@
+import { defineConfig } from 'tsup';
+
+export default defineConfig([
+  {
+    // built together so every entry shares one copy of the engine (one animation loop, one face cache)
+    entry: { index: 'src/index.ts', element: 'src/element.ts', react: 'src/react.tsx', server: 'src/server.ts' },
+    format: ['esm'],
+    target: 'es2022',
+    dts: true,
+    clean: true,
+    external: ['react', '@napi-rs/canvas'],
+    // the 5KB gif encoder is bundled in, so the package has no runtime dependencies at all
+    noExternal: ['gifenc'],
+  },
+  {
+    // one self-contained file for <script type="module" src="…/fuglios.js">, no bundler needed
+    entry: { fuglios: 'src/element.ts' },
+    format: ['esm'],
+    target: 'es2022',
+    minify: true,
+    outDir: 'dist/cdn',
+    noExternal: [/.*/],
+  },
+  { entry: { cli: 'src/cli.ts' }, format: ['esm'], target: 'node20', external: ['@napi-rs/canvas'], noExternal: ['gifenc'], banner: { js: '#!/usr/bin/env node' } },
+]);

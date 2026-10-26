@@ -1,0 +1,93 @@
+{
+  "name": "fuglios",
+  "version": "0.1.0",
+  "description": "Ugly little alien faces from any string: painted in watercolour and ink, 29 looks, alive. Deterministic, zero dependencies, works anywhere.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "avatar",
+    "avatars",
+    "alien",
+    "generative",
+    "deterministic",
+    "identicon",
+    "face",
+    "watercolour",
+    "web-component",
+    "react",
+    "bot",
+    "agent",
+    "og-image"
+  ],
+  "sideEffects": [
+    "./src/element.ts",
+    "./dist/element.js"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./element": "./src/element.ts",
+    "./react": "./src/react.tsx",
+    "./server": "./src/server.ts",
+    "./internal/*": "./src/*.ts"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      },
+      "./element": {
+        "types": "./dist/element.d.ts",
+        "import": "./dist/element.js"
+      },
+      "./react": {
+        "types": "./dist/react.d.ts",
+        "import": "./dist/react.js"
+      },
+      "./server": {
+        "types": "./dist/server.d.ts",
+        "import": "./dist/server.js"
+      }
+    },
+    "bin": {
+      "fuglios": "./dist/cli.js"
+    }
+  },
+  "unpkg": "./dist/cdn/fuglios.js",
+  "jsdelivr": "./dist/cdn/fuglios.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test test/*.test.mjs",
+    "prepublishOnly": "pnpm build && pnpm test"
+  },
+  "peerDependencies": {
+    "@napi-rs/canvas": ">=0.1.60",
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "@napi-rs/canvas": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@napi-rs/canvas": "^1.0.13",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "gifenc": "^1.0.3",
+    "react": "^19.3.1",
+    "tsup": "^9.0.0",
+    "typescript": "^5.9.3"
+  }
+}

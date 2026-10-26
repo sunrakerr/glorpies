@@ -1,0 +1,108 @@
+import { isLook, type LookChoice } from './looks';
+import { mount, type FaceHandle } from './mount';
+import { isState } from './states';
+import { faceColors, isShape } from './still';
+
+/**
+ * <fuglio-face name="agent-47" size="48"></fuglio-face>
+ *
+ * Works in plain HTML and in any framework. Attributes:
+ *   name      any string (required); the same name is always the same face
+ *   look      a look id, or "auto" (default): watercolour when large, the ink badge below 72px
+ *   size      pixels, or any CSS length (default 48)
+ *   shape     circle (default), squircle, rounded, square
+ *   state     idle, thinking, working, waiting, blocked, done
+ *   alive     "false" holds the face still (it also holds still for reduced motion)
+ *   pokeable  tapping makes it wobble
+ *   label     accessible name (default "Avatar")
+ */
+const CSS = `
+:host{display:inline-block;position:relative;inline-size:var(--size);block-size:var(--size);overflow:hidden;vertical-align:middle;border-radius:50%;background:var(--wash);contain:layout paint}
+:host([shape=square]){border-radius:0}
+:host([shape=rounded]){border-radius:16%}
+:host([shape=squircle]){border-radius:30%}
+@supports (corner-shape:squircle){:host([shape=squircle]){border-radius:50%;corner-shape:squircle}}
+canvas{position:absolute;inset:0;inline-size:100%;block-size:100%;display:block;opacity:0;transition:opacity .45s ease}
+:host([data-ready]) canvas{opacity:1}
+:host(:not([data-ready]))::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);background-size:220% 100%;animation:sheen 1.4s ease-in-out infinite}
+@keyframes sheen{from{background-position:120% 0}to{background-position:-120% 0}}
+@media (prefers-reduced-motion:reduce){:host(:not([data-ready]))::after{animation:none}canvas{transition:none}}
+`;
+
+const ATTRS = ['name', 'look', 'size', 'shape', 'state', 'alive', 'pokeable', 'label'] as const;
+
+const Base: typeof HTMLElement = typeof HTMLElement === 'undefined' ? (class {} as typeof HTMLElement) : HTMLElement;
+
+export class FuglioElement extends Base {
+  static observedAttributes = ATTRS;
+  private canvas: HTMLCanvasElement | null = null;
+  private handle: FaceHandle | null = null;
+
+  connectedCallback() {
+    if (!this.shadowRoot) {
+      const root = this.attachShadow({ mode: 'open' });
+      const style = document.createElement('style');
+      style.textContent = CSS;
+      this.canvas = document.createElement('canvas');
+      this.canvas.setAttribute('part', 'canvas');
+      root.append(style, this.canvas);
+    }
+    if (!this.hasAttribute('role')) this.setAttribute('role', 'img');
+    this.sync();
+    this.handle ??= mount(this.canvas!, { ...this.options(), onPaint: () => this.toggleAttribute('data-ready', true) });
+  }
+
+  disconnectedCallback() {
+    this.handle?.destroy();
+    this.handle = null;
+    this.removeAttribute('data-ready');
+  }
+
+  attributeChangedCallback(attr: string, was: string | null, now: string | null) {
+    if (was === now || !this.handle) return;
+    this.sync();
+    if (attr === 'name' || attr === 'look') this.removeAttribute('data-ready');
+    this.handle.update(this.options());
+  }
+
+  /** Mirrors attributes into what CSS and assistive tech read: size, the placeholder wash, the label. */
+  private sync() {
+    const size = this.getAttribute('size') ?? '48';
+    this.style.setProperty('--size', /^\d+(\.\d+)?$/.test(size) ? `${size}px` : size);
+    this.style.setProperty('--wash', faceColors(this.name).bg);
+    this.setAttribute('aria-label', this.getAttribute('label') ?? 'Avatar');
+    const shape = this.getAttribute('shape');
+    if (shape && !isShape(shape)) console.warn(`<fuglio-face> unknown shape "${shape}"`);
+  }
+
+  private get name() {
+    return this.getAttribute('name') ?? '';
+  }
+
+  private options() {
+    const look = this.getAttribute('look');
+    const state = this.getAttribute('state');
+    const alive = this.getAttribute('alive');
+    return {
+      name: this.name,
+      look: (look && (look === 'auto' || isLook(look)) ? look : 'auto') as LookChoice,
+      state: isState(state) ? state : 'idle',
+      alive: alive === null ? undefined : alive !== 'false',
+      pokeable: this.hasAttribute('pokeable'),
+    };
+  }
+}
+
+/** Registers the element (as <fuglio-face> unless you name it). Safe to call more than once, and on a server. */
+export function defineFuglio(tag = 'fuglio-face') {
+  if (typeof customElements === 'undefined' || customElements.get(tag)) return;
+  customElements.define(tag, class extends FuglioElement {});
+}
+
+defineFuglio();
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'fuglio-face': FuglioElement;
+  }
+}

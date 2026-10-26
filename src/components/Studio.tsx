@@ -1,38 +1,58 @@
 'use client';
 
-import { PenLine, Plus, Shuffle } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { Plus, Shuffle } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { getStage } from '@/lib/stage';
-import { forget, newSeed } from '@/lib/studio';
+import { DEFAULT_LOOK, isLook, type LookId } from 'fuglios/internal/looks';
+import { getStage } from 'fuglios/internal/stage';
+import { forget, newSeed } from 'fuglios/internal/studio';
 import { runAction, type ActionKind } from './actions';
 import { FaceCard } from './FaceCard';
+import { StylePicker } from './LookPicker';
+import { SiteHeader } from './SiteHeader';
 import { IconButton, Pill, ToastView, useToast } from './ui';
 import { Viewer } from './Viewer';
 
 const BATCH = 12;
 const ALIVE_KEY = 'faces:alive';
+const LOOK_KEY = 'faces:look';
 
 const freshBatch = () => Array.from({ length: BATCH }, newSeed);
 
 export function Studio() {
   const [seeds, setSeeds] = useState<number[]>([]);
   const [alive, setAlive] = useState(true);
+  const [look, setLook] = useState<LookId>(DEFAULT_LOOK);
+  /** Faces restyled on their own in the viewer; the rest follow the gallery. */
+  const [overrides, setOverrides] = useState<ReadonlyMap<number, LookId>>(() => new Map());
   const [open, setOpen] = useState<number | null>(null);
   const [pngSize, setPngSize] = useState(1024);
   const { toast, show } = useToast();
-  const router = useRouter();
 
   // seeds are random, so they're chosen on the client to keep server and client markup identical
   useEffect(() => {
     setSeeds(freshBatch());
     const saved = localStorage.getItem(ALIVE_KEY);
     setAlive(saved ? saved === '1' : !matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const savedLook = localStorage.getItem(LOOK_KEY);
+    if (isLook(savedLook)) setLook(savedLook);
   }, []);
 
   useEffect(() => {
     getStage().setAlive(alive);
   }, [alive]);
+
+  // an open face is a step in history, so the back button closes the viewer rather than leaving the gallery
+  useEffect(() => {
+    const pop = () => { if (!history.state?.viewer) setOpen(null); };
+    addEventListener('popstate', pop);
+    return () => removeEventListener('popstate', pop);
+  }, []);
+
+  const openFace = (i: number) => {
+    if (!history.state?.viewer) history.pushState({ ...history.state, viewer: true }, '');
+    setOpen(i);
+  };
+  const closeFace = () => (history.state?.viewer ? history.back() : setOpen(null));
 
   const toggleAlive = () => {
     setAlive((v) => {
@@ -41,10 +61,40 @@ export function Studio() {
     });
   };
 
+  const chooseLook = (next: LookId) => {
+    setLook(next);
+    localStorage.setItem(LOOK_KEY, next);
+    // faces already in the new style rejoin the gallery
+    setOverrides((m) => ([...m.values()].includes(next) ? new Map([...m].filter(([, l]) => l !== next)) : m));
+  };
+
+  const lookFor = (seed: number) => overrides.get(seed) ?? look;
+
+  /** Choosing the gallery's own style hands the face back to the gallery. */
+  const setFaceLook = (seed: number, next: LookId) => {
+    setOverrides((m) => {
+      const out = new Map(m);
+      if (next === look) out.delete(seed);
+      else out.set(seed, next);
+      return out;
+    });
+  };
+
+  const dropOverride = (seed: number) =>
+    setOverrides((m) => {
+      if (!m.has(seed)) return m;
+      const out = new Map(m);
+      out.delete(seed);
+      return out;
+    });
+
   const repaint = useCallback((i: number) => {
     setSeeds((s) => {
       const old = s[i];
-      if (old !== undefined) forget(old);
+      if (old !== undefined) {
+        forget(old);
+        dropOverride(old);
+      }
       return s.map((v, j) => (j === i ? newSeed() : v));
     });
   }, []);
@@ -54,22 +104,25 @@ export function Studio() {
       s.forEach(forget);
       return freshBatch();
     });
+    setOverrides(new Map());
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const act = (kind: ActionKind, seed: number) => runAction(kind, seed, pngSize, show);
+  const act = (kind: ActionKind, seed: number) => runAction(kind, seed, lookFor(seed), pngSize, show);
 
   return (
     <div className="relative z-10 min-h-dvh">
-      <main className="mx-auto max-w-[1400px] px-5 pb-32 pt-8 sm:px-8 sm:pt-12">
+      <SiteHeader className="mx-auto max-w-[1400px] px-5 pt-8 sm:px-8" />
+      <main className="mx-auto max-w-[1400px] px-5 pb-32 pt-8 sm:px-8 sm:pt-10">
         <ul className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 sm:gap-x-7 sm:gap-y-10 lg:grid-cols-4 lg:gap-x-9 lg:gap-y-12">
           {seeds.length
             ? seeds.map((seed, i) => (
                 <FaceCard
                   key={`${i}-${seed}`}
                   seed={seed}
+                  look={lookFor(seed)}
                   index={i}
-                  onOpen={() => setOpen(i)}
+                  onOpen={() => openFace(i)}
                   onRepaint={() => repaint(i)}
                   onAction={(kind) => act(kind, seed)}
                 />
@@ -84,10 +137,12 @@ export function Studio() {
         <Pill className="pointer-events-auto">
           <IconButton label={alive ? 'Hold still' : 'Bring them to life'} role="switch" aria-checked={alive} onClick={toggleAlive}>
             <span className="relative flex size-2.5">
-              {alive && <span className="absolute inline-flex size-full animate-ping rounded-full bg-clay/60" />}
-              <span className={`relative inline-flex size-2.5 rounded-full transition ${alive ? 'bg-clay' : 'bg-ink/30'}`} />
+              {alive && <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent/60" />}
+              <span className={`relative inline-flex size-2.5 rounded-full transition ${alive ? 'bg-accent' : 'bg-ink/30'}`} />
             </span>
           </IconButton>
+          <span className="mx-0.5 h-5 w-px bg-ink/10" aria-hidden />
+          <StylePicker seed={seeds[0]} value={look} onChange={chooseLook} />
           <span className="mx-0.5 h-5 w-px bg-ink/10" aria-hidden />
           <IconButton label="New faces" onClick={shuffleAll}>
             <Shuffle className="size-[17px]" strokeWidth={1.8} />
@@ -95,20 +150,19 @@ export function Studio() {
           <IconButton label="Twelve more" onClick={() => setSeeds((s) => [...s, ...freshBatch()])}>
             <Plus className="size-[18px]" strokeWidth={1.8} />
           </IconButton>
-          <span className="mx-0.5 h-5 w-px bg-ink/10" aria-hidden />
-          <IconButton label="How they're painted" onClick={() => router.push('/how')}>
-            <PenLine className="size-[17px]" strokeWidth={1.8} />
-          </IconButton>
         </Pill>
       </nav>
 
       <Viewer
         seeds={seeds}
         index={open}
+        look={look}
+        lookFor={lookFor}
+        onLook={setFaceLook}
         pngSize={pngSize}
         onPngSize={setPngSize}
         onIndex={setOpen}
-        onClose={() => setOpen(null)}
+        onClose={closeFace}
         onRepaint={repaint}
         onAction={act}
       >

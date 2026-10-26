@@ -14,7 +14,7 @@ let id = 0; const pending = new Map();
 ws.addEventListener('message', (e) => { const m = JSON.parse(e.data); if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); } });
 const send = (method, params = {}) => new Promise((r) => { const i = ++id; pending.set(i, r); ws.send(JSON.stringify({ id: i, method, params })); });
 const evaluate = (expression) => send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true, userGesture: true });
-await send('Page.navigate', { url: 'http://localhost:3417/' });
+await send('Page.navigate', { url: 'http://localhost:3417/gallery' });
 const ready = await evaluate(`new Promise(r => { const t0 = Date.now(); const f = () => { const n = document.querySelectorAll('ul canvas.opacity-100').length; n >= 12 || Date.now() - t0 > 20000 ? r(n) : setTimeout(f, 100); }; f(); })`);
 console.log('painted', ready.result?.result?.value);
 if (pre) await evaluate(pre);

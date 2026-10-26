@@ -1,72 +1,69 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { getStage, type Actor } from '@/lib/stage';
-import { paintRaster, type Scheduled } from '@/lib/studio';
+import type { LookId } from 'fuglios/internal/looks';
+import { mount, type FaceHandle } from 'fuglios/internal/mount';
+import { FaceSkeleton, Restyling } from './Loading';
 
 type Props = {
   seed: number;
+  look: LookId;
   priority: number;
   /** Upper bound on backing-store pixels, to keep memory sane on large screens. */
   maxPx: number;
   label: string;
   /** Tapping the face makes it wobble. */
   pokeable?: boolean;
+  /** Shown on the loaders, for views large enough to carry words. */
+  caption?: string;
 };
 
-export function FaceCanvas({ seed, priority, maxPx, label, pokeable = false }: Props) {
-  const ref = useRef<HTMLCanvasElement>(null);
-  const actorRef = useRef<Actor | null>(null);
-  const [ready, setReady] = useState(false);
+/** Nothing painted yet, an old style still showing while a new one paints, or done. */
+type Status = 'empty' | 'restyling' | 'ready';
 
+const CROSSFADE_MS = 650;
+
+export function FaceCanvas({ seed, look, priority, maxPx, label, pokeable = false, caption }: Props) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  const ghostRef = useRef<HTMLCanvasElement>(null);
+  const handle = useRef<FaceHandle | null>(null);
+  const [status, setStatus] = useState<Status>('empty');
+
+  // one mounted face per seed; a new style repaints it in place under a crossfade
   useEffect(() => {
     const canvas = ref.current;
     if (!canvas) return;
-    const stage = getStage();
-    let disposed = false;
-    let painted = 0;
-    let visible = true;
-    let job: Scheduled<unknown> | null = null;
-    setReady(false);
-
-    const paint = () => {
-      const px = Math.min(maxPx, Math.round(canvas.clientWidth * window.devicePixelRatio));
-      if (!px || (painted && px <= painted * 1.15)) return;
-      job?.cancel();
-      const next = paintRaster(seed, px, priority);
-      job = next;
-      next.promise.then(({ face, raster }) => {
-        if (disposed) return;
-        painted = px;
-        canvas.width = canvas.height = raster.px;
-        actorRef.current ??= stage.add(canvas, face);
-        actorRef.current.raster = raster;
-        actorRef.current.visible = visible;
-        stage.invalidate(actorRef.current);
-        setReady(true);
-      }, () => {});
-    };
-
-    const resize = new ResizeObserver(paint);
-    resize.observe(canvas);
-    const seen = new IntersectionObserver(([entry]) => {
-      visible = entry?.isIntersecting ?? true;
-      if (actorRef.current) {
-        actorRef.current.visible = visible;
-        if (visible) stage.invalidate(actorRef.current);
-      }
-    }, { rootMargin: '120px' });
-    seen.observe(canvas);
-
+    setStatus('empty');
+    const h = mount(canvas, {
+      name: seed,
+      look,
+      priority,
+      maxPx,
+      pokeable,
+      // the gallery's own switch holds every face still at once, through the stage
+      alive: true,
+      beforePaint: (first) => {
+        if (!first) crossfade(canvas, ghostRef.current);
+      },
+      onPaint: () => setStatus('ready'),
+    });
+    handle.current = h;
     return () => {
-      disposed = true;
-      job?.cancel();
-      resize.disconnect();
-      seen.disconnect();
-      if (actorRef.current) stage.remove(actorRef.current);
-      actorRef.current = null;
+      h.destroy();
+      handle.current = null;
     };
-  }, [seed, priority, maxPx]);
+    // look, priority and size changes are passed to the mounted face below rather than remounting it
+  }, [seed]);
+
+  const shownLook = useRef(look);
+  useEffect(() => {
+    const h = handle.current;
+    if (!h) return;
+    // only a new style repaints; the old one stays up, marked as restyling, until it lands
+    if (look !== shownLook.current) setStatus((s) => (s === 'ready' ? 'restyling' : s));
+    shownLook.current = look;
+    h.update({ look, priority, maxPx, pokeable });
+  }, [look, priority, maxPx, pokeable]);
 
   return (
     <div className="absolute inset-0">
@@ -74,24 +71,26 @@ export function FaceCanvas({ seed, priority, maxPx, label, pokeable = false }: P
         ref={ref}
         role="img"
         aria-label={label}
-        onPointerDown={pokeable ? () => actorRef.current && getStage().poke(actorRef.current) : undefined}
-        className={`absolute inset-0 h-full w-full transition-opacity duration-700 ${ready ? 'opacity-100' : 'opacity-0'} ${pokeable ? 'cursor-pointer touch-manipulation' : ''}`}
+        aria-busy={status !== 'ready'}
+        className={`absolute inset-0 h-full w-full transition-opacity duration-700 ${status === 'empty' ? 'opacity-0' : 'opacity-100'} ${status === 'restyling' ? 'face-restyling' : ''} ${pokeable ? 'cursor-pointer touch-manipulation' : ''}`}
       />
-      {!ready && <Sketching />}
+      <canvas ref={ghostRef} aria-hidden className="face-restyling pointer-events-none absolute inset-0 h-full w-full opacity-0" />
+      {status === 'empty' && <FaceSkeleton caption={caption} />}
+      {status === 'restyling' && <Restyling caption={caption} />}
     </div>
   );
 }
 
-function Sketching() {
-  return (
-    <svg className="sketching absolute inset-0 m-auto h-1/2 w-1/2 text-ink-2" viewBox="0 0 100 100" fill="none" aria-hidden>
-      <path
-        pathLength={1}
-        d="M52 14c20 1 33 16 32 36-1 21-16 36-35 35C29 84 15 69 16 49 17 29 31 13 50 14c6 .3 10 2 13 4"
-        stroke="currentColor"
-        strokeWidth={1.4}
-        strokeLinecap="round"
-      />
-    </svg>
-  );
+/** Holds the outgoing painting over the canvas and dissolves it into the new one. */
+function crossfade(from: HTMLCanvasElement, ghost: HTMLCanvasElement | null) {
+  if (!ghost || !from.width || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  // a fade still running from a quicker change would otherwise clear this one when it ends
+  for (const a of ghost.getAnimations()) a.cancel();
+  ghost.width = from.width;
+  ghost.height = from.height;
+  ghost.getContext('2d')?.drawImage(from, 0, 0);
+  ghost.animate([{ opacity: 1 }, { opacity: 0 }], { duration: CROSSFADE_MS, easing: 'ease-out' }).onfinish = () => {
+    // release the copy's pixels once it has faded
+    ghost.width = ghost.height = 0;
+  };
 }

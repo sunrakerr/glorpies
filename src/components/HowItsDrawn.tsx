@@ -1,11 +1,11 @@
 'use client';
 
-import { ArrowLeft, Pause, Play, RotateCcw, Shuffle } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { Pause, Play, RotateCcw, Shuffle } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { loadEngine } from '@/lib/engine';
+import { loadEngine } from 'fuglios/internal/engine';
 import { DURATION, prepareExplainer, VH, VW, type Explainer, type Fonts } from '@/lib/explainer';
-import { newSeed } from '@/lib/studio';
+import { newSeed } from 'fuglios/internal/studio';
+import { SiteHeader } from './SiteHeader';
 import { IconButton, Pill } from './ui';
 
 /** Output pixels per layout pixel: the explainer always renders at 1920×1080 and the page scales it. */
@@ -20,19 +20,18 @@ declare global {
 
 async function loadFonts(): Promise<Fonts> {
   const css = getComputedStyle(document.documentElement);
-  const display = css.getPropertyValue('--font-fraunces').trim() || 'Georgia, serif';
-  const sans = css.getPropertyValue('--font-inter').trim() || 'system-ui, sans-serif';
+  const display = css.getPropertyValue('--font-pixel').trim() || 'ui-monospace, monospace';
+  const text = css.getPropertyValue('--font-geist-mono').trim() || 'ui-monospace, monospace';
   await Promise.all([
-    document.fonts.load(`italic 400 44px ${display}`),
-    document.fonts.load(`400 18px ${sans}`),
-    document.fonts.load(`500 13px ${sans}`),
-    document.fonts.load(`600 13px ${sans}`),
+    document.fonts.load(`500 44px ${display}`),
+    document.fonts.load(`400 18px ${text}`),
+    document.fonts.load(`500 13px ${text}`),
+    document.fonts.load(`600 13px ${text}`),
   ]);
-  return { display, sans };
+  return { display, text };
 }
 
 export function HowItsDrawn() {
-  const router = useRouter();
   const ref = useRef<HTMLCanvasElement>(null);
   const film = useRef<Explainer | null>(null);
   const clock = useRef({ t: 0, last: 0 });
@@ -99,8 +98,9 @@ export function HowItsDrawn() {
   }, []);
 
   return (
-    <div className="relative z-10 flex min-h-dvh flex-col items-center justify-center gap-6 px-4 py-8">
-      <div className="relative w-full max-w-[1280px]">
+    <div className="relative z-10 flex min-h-dvh flex-col items-center gap-6 px-4 pb-8">
+      <SiteHeader className="w-full max-w-[1280px] px-1 pt-8" />
+      <div className="relative my-auto w-full max-w-[1280px]">
         <canvas
           ref={ref}
           width={VW * K}
@@ -110,14 +110,10 @@ export function HowItsDrawn() {
           aria-label="Animated explainer: how a face is painted, from seed to paper, glazes, hatching, ink, live eyes and line boil"
         />
         {!ready && (
-          <p className="sketching absolute inset-0 grid place-items-center font-display text-xl italic text-ink-2">Mixing paints…</p>
+          <p className="sketching absolute inset-0 grid place-items-center font-display text-xl text-ink-2">Mixing paints…</p>
         )}
       </div>
       <Pill>
-        <IconButton label="Back to the faces" onClick={() => router.push('/')}>
-          <ArrowLeft className="size-[17px]" strokeWidth={1.8} />
-        </IconButton>
-        <span className="mx-0.5 h-5 w-px bg-ink/10" aria-hidden />
         <IconButton label={playing ? 'Pause' : 'Play'} onClick={() => setPlaying((p) => !p)} disabled={!ready}>
           {playing ? <Pause className="size-[17px]" strokeWidth={1.8} /> : <Play className="size-[17px]" strokeWidth={1.8} />}
         </IconButton>

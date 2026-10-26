@@ -5,3 +5,9 @@ next-env.d.ts
 *.tsbuildinfo
 .DS_Store
 media/
+
+# library build output
+packages/*/dist
+
+# vercel
+.vercel

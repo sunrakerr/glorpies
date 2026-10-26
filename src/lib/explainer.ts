@@ -1,12 +1,12 @@
-import type { Engine } from './engine';
-import { addPath, bbox, resample, TAU, type Pt } from './geometry';
-import { rgba, type Palette } from './palettes';
-import { buildFace } from './face/build';
-import { applyClip, drawEyes, play, rasterizeFace, vignette, type FaceRaster, type Pose } from './face/render';
-import { hatchLines, inkRibbons, type HatchLine } from './face/strokes';
-import type { Face, HatchOp, InkOp, Op, WashOp } from './face/types';
-import { W } from './face/types';
-import { deform, plan, type Plan, type VPt } from './face/wash';
+import type { Engine } from 'fuglios/internal/engine';
+import { addPath, bbox, resample, TAU, type Pt } from 'fuglios/internal/geometry';
+import { rgba, type Palette } from 'fuglios/internal/palettes';
+import { buildFace } from 'fuglios/internal/face/build';
+import { applyClip, drawEyes, play, rasterizeFace, vignette, type FaceRaster, type Pose } from 'fuglios/internal/face/render';
+import { hatchLines, inkRibbons, type HatchLine } from 'fuglios/internal/face/strokes';
+import type { Face, HatchOp, InkOp, Op, WashOp } from 'fuglios/internal/face/types';
+import { W } from 'fuglios/internal/face/types';
+import { deform, plan, type Plan, type VPt } from 'fuglios/internal/face/wash';
 
 /**
  * A narrated walk through how one face is painted, drawn with the real
@@ -28,11 +28,11 @@ type Scene = { id: SceneId; dur: number; num: string; title: string; body: strin
 
 const SCENES: Scene[] = [
   { id: 'title', dur: 3.6, num: '', title: 'How a face\ngets painted', body: 'Watercolour and dip pen, painted from scratch by code every time a face appears.' },
-  { id: 'seed', dur: 4, num: '01', title: 'One number', body: 'Every face starts as a seed. It drives p5.js random() and noise(), which choose the palette, head, hair, eyes, mouth and quirks. The same seed always paints the same face.' },
+  { id: 'seed', dur: 4, num: '01', title: 'One number', body: 'Every face starts as a seed. It drives p5.js random() and noise(), which choose the palette, head, antennae or horns, eyes, mouth and quirks. The same seed always paints the same face.' },
   { id: 'paper', dur: 2.6, num: '02', title: 'Paper', body: 'A cream sheet with tooth: 6,000 specks of pigment dust and a few stray fibres.' },
   { id: 'pencil', dur: 2.8, num: '03', title: 'Underdrawing', body: 'Faint graphite guides: the oval of the head and the lines where the eyes and nose will sit.' },
   { id: 'glaze', dur: 10, num: '04', title: 'A watercolour glaze', body: '' },
-  { id: 'glazes', dur: 3.8, num: '05', title: 'More glazes', body: 'Background, hair, shadows and cheeks use the same recipe. Glazes multiply, so they darken where they overlap, like real pigment.' },
+  { id: 'glazes', dur: 3.8, num: '05', title: 'More glazes', body: 'Background, horns, shadows and cheeks use the same recipe. Glazes multiply, so they darken where they overlap, like real pigment.' },
   { id: 'hatch', dur: 3.2, num: '06', title: 'Hatching', body: 'Two passes of wobbly parallel lines shade the side away from the light, clipped to the head.' },
   { id: 'ink', dur: 7, num: '07', title: 'Dip-pen ink', body: 'Lines are filled ribbons, not strokes. Perlin noise sets the pen pressure, the ends taper, a second off-register pass ghosts each line, and sometimes the nib runs dry.' },
   { id: 'eyes', dur: 4.4, num: '08', title: 'Eyes stay live', body: "Pupils and lids aren't painted in. They're drawn fresh every frame, so faces glance around, follow your cursor and blink." },
@@ -123,7 +123,7 @@ class Progressive {
   }
 }
 
-export type Fonts = { display: string; sans: string };
+export type Fonts = { display: string; text: string };
 
 export type Explainer = { draw: (ctx: Ctx, t: number) => void; seed: number };
 
@@ -342,6 +342,7 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
       look: o.look,
       blink: o.blink,
       spin: t * 2.4,
+      t,
     };
   }
 
@@ -413,15 +414,15 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
     const lift = (1 - ease(prog(local, 0.1, 0.8))) * 14;
     let y = top + lift;
     if (sc.num) {
-      text(ctx, `${sc.num}`, COL.x, y, `600 13px ${fonts.sans}`, CLAY, a);
+      text(ctx, `${sc.num}`, COL.x, y, `600 13px ${fonts.text}`, CLAY, a);
       layout(ctx);
       ctx.fillStyle = rgba(CLAY, a * 0.5);
       ctx.fillRect(COL.x + 26, y - 5, 28, 1.2);
       y += 50;
     }
     const big = sc.id === 'title' || sc.id === 'outro';
-    y = text(ctx, sc.title, COL.x - 2, y, `italic 400 ${big ? 60 : 44}px ${fonts.display}`, INK, a, COL.w + 40, big ? 64 : 50);
-    if (sc.body) y = text(ctx, sc.body, COL.x, y + 10, `400 18px ${fonts.sans}`, INK_2, a, COL.w - 20, 28);
+    y = text(ctx, sc.title, COL.x - 2, y, `500 ${big ? 60 : 44}px ${fonts.display}`, INK, a, COL.w + 40, big ? 64 : 50);
+    if (sc.body) y = text(ctx, sc.body, COL.x, y + 10, `400 18px ${fonts.text}`, INK_2, a, COL.w - 20, 28);
     return y;
   }
 
@@ -429,7 +430,7 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
   function chip(ctx: Ctx, s: string, alpha: number) {
     if (alpha <= 0 || !s) return;
     layout(ctx);
-    ctx.font = `500 13px ${fonts.sans}`;
+    ctx.font = `500 13px ${fonts.text}`;
     const w = ctx.measureText(s).width + 26;
     const x = FACE.x + FACE.s / 2 - w / 2, y = FACE.y + FACE.s + 22;
     ctx.globalAlpha = alpha;
@@ -492,7 +493,7 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
         liveFrame(ctx, pose(t, { move: 1, look: g.look, blink: g.blink, boil: true }), 1 - ease(prog(local, sc.dur - 0.7, sc.dur)));
         tape(ctx, 1);
         const y = caption(ctx, sc, local, 250);
-        text(ctx, `seed ${seed}`, COL.x, y + 22, `500 14px ${fonts.sans}`, CLAY, ease(prog(local, 0.6, 1.2)) * (1 - ease(prog(local, sc.dur - 0.45, sc.dur))));
+        text(ctx, `seed ${seed}`, COL.x, y + 22, `500 14px ${fonts.text}`, CLAY, ease(prog(local, 0.6, 1.2)) * (1 - ease(prog(local, sc.dur - 0.45, sc.dur))));
         break;
       }
       case 'seed': {
@@ -500,7 +501,7 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
         const y = caption(ctx, sc, local);
         const settle = prog(local, 0.4, 1.6);
         const digits = String(seed).split('').map((d, i) => (settle >= (i + 1) / String(seed).length ? d : String(Math.floor(rng(Math.floor(t * 24) * 31 + i)() * 10))));
-        text(ctx, digits.join(''), COL.x, y + 46, `italic 400 46px ${fonts.display}`, CLAY, ease(prog(local, 0.3, 0.8)) * (1 - ease(prog(local, sc.dur - 0.45, sc.dur))));
+        text(ctx, digits.join(''), COL.x, y + 46, `500 46px ${fonts.display}`, CLAY, ease(prog(local, 0.3, 0.8)) * (1 - ease(prog(local, sc.dur - 0.45, sc.dur))));
         // the palette the seed picked, as dabs on the sheet
         const out = 1 - ease(prog(local, sc.dur - 0.5, sc.dur));
         dabs.forEach((d, i) => {
@@ -514,7 +515,7 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
           ctx.drawImage(d.canvas, cx - 48, cy - 48 + (1 - a) * 8, 96, 96);
           ctx.globalCompositeOperation = 'source-over';
           ctx.globalAlpha = 1;
-          text(ctx, d.name, cx, cy + 70, `500 12px ${fonts.sans}`, INK_2, a, 120, 0, 'center');
+          text(ctx, d.name, cx, cy + 70, `500 12px ${fonts.text}`, INK_2, a, 120, 0, 'center');
         });
         tape(ctx, 1);
         break;
@@ -608,7 +609,7 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
         const step = local < 3.6 ? 0 : local < 6.6 ? 1 : 2;
         const stepStart = [0, 3.6, 6.6][step]!, stepEnd = [3.6, 6.6, sc.dur][step]!;
         const y = caption(ctx, { ...sc, body: '' }, local);
-        text(ctx, body, COL.x, y + 10 + (1 - ease(prog(local, stepStart + 0.05, stepStart + 0.6))) * 8, `400 18px ${fonts.sans}`, INK_2,
+        text(ctx, body, COL.x, y + 10 + (1 - ease(prog(local, stepStart + 0.05, stepStart + 0.6))) * 8, `400 18px ${fonts.text}`, INK_2,
           ease(prog(local, stepStart + 0.05, stepStart + 0.6)) * (1 - ease(prog(local, stepEnd - 0.4, stepEnd - 0.05))), COL.w - 20, 28);
         const label =
           local < 3.6 ? `split + nudge · depth ${li} · ${shown.length} points`
@@ -695,7 +696,7 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
             ctx.fill();
           }
           ctx.restore();
-          text(ctx, i ? 'dry nib: gaps where the noise runs high' : 'pressure from noise · tapered ends · ghost pass', COL.x, sy + 34, `500 12px ${fonts.sans}`, INK_2, insetA, 400);
+          text(ctx, i ? 'dry nib: gaps where the noise runs high' : 'pressure from noise · tapered ends · ghost pass', COL.x, sy + 34, `500 12px ${fonts.text}`, INK_2, insetA, 400);
         });
         chip(ctx, local < 3.4 ? 'one line: a ribbon whose width follows noise' : `${inkOps.length} lines and dots`, ease(prog(local, 0.4, 0.8)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))));
         break;
@@ -777,8 +778,8 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
           const a = ease(prog(local, 1 + i * 0.25, 1.6 + i * 0.25)) * (1 - ease(prog(local, sc.dur - 1.5, sc.dur - 1)));
           if (a <= 0) return;
           const ly = corner.y;
-          text(ctx, name, COL.x, ly - 4, `italic 400 26px ${fonts.display}`, INK, a, 300);
-          text(ctx, what, COL.x, ly + 20, `400 15px ${fonts.sans}`, INK_2, a, 300);
+          text(ctx, name, COL.x, ly - 4, `500 26px ${fonts.display}`, INK, a, 300);
+          text(ctx, what, COL.x, ly + 20, `400 15px ${fonts.text}`, INK_2, a, 300);
           layout(ctx);
           ctx.strokeStyle = rgba(CLAY, a * 0.7);
           ctx.lineWidth = 1;
@@ -819,7 +820,7 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
           ctx.lineWidth = on ? 2.5 : 1;
           ctx.strokeRect(x, ty, s, s);
           ctx.globalAlpha = 1;
-          text(ctx, `sheet ${'ABC'[i]}`, x + s / 2, ty + s + 20, `500 12px ${fonts.sans}`, on ? CLAY : INK_2, a, 120, 0, 'center');
+          text(ctx, `sheet ${'ABC'[i]}`, x + s / 2, ty + s + 20, `500 12px ${fonts.text}`, on ? CLAY : INK_2, a, 120, 0, 'center');
         });
         chip(ctx, '3 inkings · 8 fps · breathing on its neck', ease(prog(local, 0.4, 0.8)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))));
         break;
@@ -834,25 +835,25 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
         const row = [`seed ${seed}`, `${opCount} operations`];
         let x = COL.x;
         layout(ctx);
-        ctx.font = `500 14px ${fonts.sans}`;
+        ctx.font = `500 14px ${fonts.text}`;
         row.forEach((s, i) => {
           const w = ctx.measureText(s).width + 28;
           pill(ctx, x, y + 14, w, s, a(i), i === 0);
           x += w;
           if (i < row.length - 1) {
-            text(ctx, '→', x + 14, y + 33, `400 18px ${fonts.sans}`, INK_2, a(i + 0.5), 40, 0, 'center');
+            text(ctx, '→', x + 14, y + 33, `400 18px ${fonts.text}`, INK_2, a(i + 0.5), 40, 0, 'center');
             x += 28;
           }
         });
         let ox = COL.x;
         ['canvas', 'PNG', 'SVG'].forEach((s, i) => {
           layout(ctx);
-          ctx.font = `500 14px ${fonts.sans}`;
+          ctx.font = `500 14px ${fonts.text}`;
           const w = ctx.measureText(s).width + 28;
           pill(ctx, ox, y + 64, w, s, a(2 + i * 0.4), false);
           ox += w + 10;
         });
-        text(ctx, 'The same list paints this screen, a 2K PNG, or an SVG with real vector ink.', COL.x, y + 142, `400 18px ${fonts.sans}`, INK_2, a(3), COL.w - 20, 28);
+        text(ctx, 'The same list paints this screen, a 2K PNG, or an SVG with real vector ink.', COL.x, y + 142, `400 18px ${fonts.text}`, INK_2, a(3), COL.w - 20, 28);
         break;
       }
     }
@@ -866,7 +867,7 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
     roundRect(ctx, x, y + (1 - a) * 6, w, 30, 15);
     ctx.fill();
     ctx.fillStyle = strong ? PAGE : INK;
-    ctx.font = `500 14px ${fonts.sans}`;
+    ctx.font = `500 14px ${fonts.text}`;
     ctx.textAlign = 'center';
     ctx.fillText(s, x + w / 2, y + 20 + (1 - a) * 6);
     ctx.textAlign = 'left';
