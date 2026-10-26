@@ -12,6 +12,7 @@ import { Sheet } from '../Sheet';
 import { Invader, SiteHeader } from '../SiteHeader';
 import { Pick, Tabs } from '../Tabs';
 import { IconButton, ToastView, useToast } from '../ui';
+import { alienScript, MARKS } from '@/lib/glyphs';
 import { PixelField } from './PixelField';
 import { ENTRIES, PROPS, SNIPPET_FILES, SNIPPET_KINDS, SNIPPETS, START, type Choice, type SnippetKind } from './snippets';
 
@@ -47,16 +48,16 @@ export function Landing() {
         <SiteHeader className="pt-8" />
         <main>
           <Hero />
-          <Section title="playground">
+          <Section title="playground" mark={MARKS.eye}>
             <Playground c={c} name={name} set={set} />
           </Section>
-          <Section title="install" className="mt-16">
+          <Section title="install" mark={MARKS.scarab} className="mt-16">
             <Install />
           </Section>
-          <Section title="code" className="mt-16">
+          <Section title="code" mark={MARKS.scribe} className="mt-16">
             <Usage c={{ ...c, name }} />
           </Section>
-          <Section id="api" title="api" className="py-20">
+          <Section id="api" title="api" mark={MARKS.ankh} className="py-20">
             <Reference onLook={(look) => set({ look })} />
           </Section>
         </main>
@@ -67,10 +68,16 @@ export function Landing() {
 }
 
 function Hero() {
+  // a new transmission every visit, written on the client so server and client markup agree
+  const [script, setScript] = useState('');
+  useEffect(() => setScript(alienScript(3)), []);
   return (
     <section className="pb-16 pt-16">
+      <p aria-hidden title="nobody knows what it says" className={`mb-4 h-7 font-glyph text-[22px] leading-7 tracking-[0.12em] text-accent transition-opacity duration-700 ${script ? 'opacity-90' : 'opacity-0'}`}>
+        {script}
+      </p>
       <h1 className="ink-in font-display text-[clamp(2.5rem,8vw,3.6rem)] leading-[0.98]">
-        {['an', 'ugly', 'alien', null, 'for', 'every', 'name.'].map((w, i, all) =>
+        {['a', 'fugly', 'alien', null, 'for', 'every', 'name.'].map((w, i, all) =>
           w ? <span key={i} style={{ '--i': i } as CSSProperties}>{w}{i === all.length - 1 ? <span aria-hidden className="cursor" /> : '\u00a0'}</span> : <br key={i} />,
         )}
       </h1>
@@ -108,12 +115,12 @@ function Install() {
   );
 }
 
-/** A section with a star and a dashed rule. */
-function Section({ title, id, className = '', children }: { title: string; id?: string; className?: string; children: ReactNode }) {
+/** A section with a hieroglyph and a dashed rule. */
+function Section({ title, mark, id, className = '', children }: { title: string; mark: string; id?: string; className?: string; children: ReactNode }) {
   return (
     <section id={id} aria-labelledby={`${title}-title`} className={`scroll-mt-8 ${className}`}>
       <div className="mb-8 flex items-center gap-3">
-        <span aria-hidden className="text-[13px] leading-none text-accent">✦</span>
+        <span aria-hidden className="font-glyph text-[18px] leading-none text-accent">{mark}</span>
         <h2 id={`${title}-title`} className="scroll-mt-8 font-display text-[15px] leading-none">{title}</h2>
         <span aria-hidden className="h-px flex-1 bg-[repeating-linear-gradient(90deg,currentColor_0_4px,transparent_4px_8px)] text-ink/20" />
       </div>
