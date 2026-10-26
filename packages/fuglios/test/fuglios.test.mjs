@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { gzipSync } from 'node:zlib';
-import { faceOf, LOOKS, seedOf, SHAPES, STATES } from '../dist/index.js';
+import { faceOf, LOOKS, randomName, seedOf, SHAPES, STATES } from '../dist/index.js';
 import { faceGIF, renderImage } from '../dist/server.js';
 
 /**
@@ -27,6 +27,11 @@ const fingerprint = ({ sketch, ...painting }) => createHash('sha256').update(JSO
 test('a name always maps to the same seed', () => {
   for (const [name, [seed]] of Object.entries(KNOWN)) assert.equal(seedOf(name), seed, name);
   assert.equal(seedOf(123456), 123456, 'a seed number passes through');
+});
+
+test('a made-up name is two words and a hyphen', () => {
+  for (let i = 0; i < 200; i++) assert.match(randomName(), /^[a-z]+-[a-z]+$/);
+  assert.equal(randomName(() => 0), 'soggy-glorp', 'the words come from the source of numbers given');
 });
 
 test('a name is always built into the same face', () => {

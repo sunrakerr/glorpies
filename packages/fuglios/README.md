@@ -125,6 +125,7 @@ Publish with pnpm (`pnpm publish`), which swaps the workspace's source `exports`
 | `faceSVG(name, options)` | SVG markup |
 | `faceColors(name)` | the palette a face is painted in, to theme what sits around it |
 | `seedOf(name)` | the number behind a name |
+| `randomName()` | a made-up name for a face nobody has named yet, like `soggy-glorp` |
 | `LOOKS`, `STATES`, `SHAPES` | everything there is to choose from |
 | `setCanvasFactory(f)` | draw on canvases from anywhere (the server entry does this for you) |
 

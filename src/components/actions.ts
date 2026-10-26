@@ -14,12 +14,12 @@ const COPY: Record<ActionKind, { busy: string; done: string }> = {
  * Starts the work before anything is awaited: clipboard writes must begin
  * inside the click that asked for them.
  */
-export function runAction(kind: ActionKind, seed: number, look: LookId, pngSize: number, notify: (text: string, tone: 'busy' | 'ok' | 'error') => void) {
+export function runAction(kind: ActionKind, name: string, look: LookId, pngSize: number, notify: (text: string, tone: 'busy' | 'ok' | 'error') => void) {
   const work =
-    kind === 'copy' ? copyPNG(seed, look)
-    : kind === 'png' ? downloadPNG(seed, pngSize, look)
-    : kind === 'svg' ? downloadSVG(seed, look)
-    : copySVG(seed, look);
+    kind === 'copy' ? copyPNG(name, look)
+    : kind === 'png' ? downloadPNG(name, pngSize, look)
+    : kind === 'svg' ? downloadSVG(name, look)
+    : copySVG(name, look);
   notify(COPY[kind].busy, 'busy');
   work.then(
     () => notify(COPY[kind].done, 'ok'),

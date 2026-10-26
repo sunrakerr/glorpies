@@ -10,14 +10,11 @@ import { Tabs } from './Tabs';
 const KINDS = ['react', 'html', 'url', 'cli'] as const;
 type Kind = (typeof KINDS)[number];
 
-/**
- * What it takes to show this exact face in your own app: its name (a gallery
- * face's name is its seed) and its look, with the code for each way in.
- */
-export function FaceSpec({ seed, look, onClose, className = '' }: { seed: number; look: LookId; onClose: () => void; className?: string }) {
+/** What it takes to show this exact face in your own app: its name and its look, with the code for each way in. */
+export function FaceSpec({ name, look, onClose, className = '' }: { name: string; look: LookId; onClose: () => void; className?: string }) {
   const [kind, setKind] = useState<Kind>('react');
   const l = lookOf(look);
-  const c: Choice = { name: seed, look, shape: 'circle', state: 'idle', alive: true, size: 48 };
+  const c: Choice = { name, look, shape: 'circle', state: 'idle', alive: true, size: 48 };
   return (
     <aside aria-label="Use this face" className={`rounded-2xl border border-ink/10 bg-paper p-5 shadow-pill ${className}`}>
       <div className="flex items-baseline justify-between gap-3">
@@ -28,7 +25,7 @@ export function FaceSpec({ seed, look, onClose, className = '' }: { seed: number
       </div>
 
       <dl className="mt-4 divide-y divide-ink/8 border-y border-ink/8 text-[12.5px]">
-        <Row k="name" v={String(seed)} copy={String(seed)} note="the seed: pass it as name for exactly this face" />
+        <Row k="name" v={`"${name}"`} copy={name} note="pass it as name for exactly this face" />
         <Row k="look" v={`"${l.id}"`} copy={l.id} note={`${l.name.toLowerCase()}. ${l.note}`} />
       </dl>
 

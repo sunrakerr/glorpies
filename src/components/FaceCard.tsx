@@ -1,6 +1,7 @@
 'use client';
 
 import { Copy, FileCode, ImageDown, RefreshCw } from 'lucide-react';
+import { seedOf } from 'fuglios';
 import { lookOf, type LookId } from 'fuglios/internal/looks';
 import { PRIORITY } from 'fuglios/internal/studio';
 import { FaceCanvas } from './FaceCanvas';
@@ -9,15 +10,15 @@ import type { ActionKind } from './actions';
 import { IconButton, Pill } from './ui';
 
 type Props = {
-  seed: number;
+  name: string;
   look: LookId;
-  index: number;
   onOpen: () => void;
   onRepaint: () => void;
   onAction: (kind: ActionKind) => void;
 };
 
-export function FaceCard({ seed, look, index, onOpen, onRepaint, onAction }: Props) {
+export function FaceCard({ name, look, onOpen, onRepaint, onAction }: Props) {
+  const seed = seedOf(name);
   // pinned slightly askew; they settle straighter when you reach for one
   const tilt = (((seed % 997) / 997) - 0.5) * 2.4;
   return (
@@ -26,13 +27,14 @@ export function FaceCard({ seed, look, index, onOpen, onRepaint, onAction }: Pro
         <button
           type="button"
           onClick={onOpen}
-          aria-label={`Open face ${index + 1}`}
+          aria-label={`Open ${name}`}
           className="relative block aspect-square w-full overflow-hidden bg-paper-2/50"
         >
-          <FaceCanvas seed={seed} look={look} priority={PRIORITY.gallery} maxPx={900} label={`Portrait, ${lookOf(look).name}`} />
+          <FaceCanvas seed={seed} look={look} priority={PRIORITY.gallery} maxPx={900} label={`${name}, ${lookOf(look).name}`} />
         </button>
       </Sheet>
-      <div className="pointer-events-none absolute inset-x-0 bottom-3 flex translate-y-1 justify-center opacity-0 transition duration-300 ease-soft group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 [@media(hover:none)]:translate-y-0 [@media(hover:none)]:opacity-100">
+      <p className="mt-3 truncate text-center text-[11.5px] text-ink-2">{name}</p>
+      <div className="pointer-events-none absolute inset-x-0 bottom-10 flex translate-y-1 justify-center opacity-0 transition duration-300 ease-soft group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 [@media(hover:none)]:translate-y-0 [@media(hover:none)]:opacity-100">
         <Pill className="pointer-events-auto">
           <IconButton label="Copy image" onClick={() => onAction('copy')}>
             <Copy className="size-[17px]" strokeWidth={1.8} />

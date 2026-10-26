@@ -7,6 +7,7 @@ import type { Face } from './face/types';
 import { splitLayers } from './layers';
 import { expressed } from './expression';
 import { DEFAULT_LOOK, lookOf, renderLook, type LookId } from './looks';
+import { seedOf, type FaceName } from './seed';
 import type { FaceState } from './states';
 
 const faces = new Map<number, Face>();
@@ -199,6 +200,8 @@ export function paintThumb(seed: number, look: LookId, px: number): Scheduled<HT
   });
 }
 
-export function fileName(seed: number, ext: string, look: LookId = DEFAULT_LOOK): string {
-  return `fuglio-${seed.toString(36)}${look === DEFAULT_LOOK ? '' : `-${look}`}.${ext}`;
+/** `fuglio-soggy-glorp-ink.png`: the name made safe for a file, or its seed when nothing of it is. */
+export function fileName(name: FaceName, ext: string, look: LookId = DEFAULT_LOOK): string {
+  const slug = String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || seedOf(name).toString(36);
+  return `fuglio-${slug}${look === DEFAULT_LOOK ? '' : `-${look}`}.${ext}`;
 }

@@ -67,7 +67,7 @@ out.animates = await evaluate(`(async () => {
 await shot('/tmp/faces-e2e/gallery.png');
 
 // open the viewer on the second face
-await evaluate(`document.querySelectorAll('ul li button[aria-label^="Open face"]')[1].click()`);
+await evaluate(`document.querySelectorAll('ul li button[aria-label^="Open "]')[1].click()`);
 await evaluate(`new Promise(r => { const f = () => document.querySelector('dialog[open] canvas.opacity-100') ? r() : setTimeout(f, 100); f(); })`);
 await sleep(800);
 await shot('/tmp/faces-e2e/viewer.png');

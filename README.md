@@ -15,7 +15,7 @@ pnpm build && pnpm start
 | `/` | Landing page: a playground whose code is always what you see, and the API reference |
 | `/gallery` | A wall of random fuglios. Open one to restyle it, export PNG or SVG, or get its code |
 | `/how` | An animated explainer of how a face is painted |
-| `/api/face` | Face images: `?name=leafy&look=ink&size=128&shape=circle&format=png` (png, webp, jpeg, svg, gif) |
+| `/api/face` | Face images: `?name=soggy-glorp&look=ink&size=128&shape=circle&format=png` (png, webp, jpeg, svg, gif) |
 
 ## Layout
 

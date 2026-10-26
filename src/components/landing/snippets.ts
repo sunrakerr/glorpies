@@ -2,17 +2,17 @@ import type { FaceState, LookChoice, Shape } from 'fuglios';
 import type { Lang } from '@/lib/highlight';
 import { SITE_URL } from '@/lib/site';
 
-/** What a face is set to; every snippet is written from it. A gallery face is named by its seed. */
-export type Choice = { name: string | number; look: LookChoice; shape: Shape; state: FaceState; alive: boolean; size: number };
+/** What a face is set to; every snippet is written from it. */
+export type Choice = { name: string; look: LookChoice; shape: Shape; state: FaceState; alive: boolean; size: number };
 
-export const START: Choice = { name: 'leafy', look: 'auto', shape: 'circle', state: 'idle', alive: true, size: 48 };
+/** The playground's name is made up on arrival; see Landing. */
+export const START: Choice = { name: '', look: 'auto', shape: 'circle', state: 'idle', alive: true, size: 48 };
 
 const q = (s: string) => JSON.stringify(s);
 
 /** Only what differs from the defaults is written out. */
 function props(c: Choice, jsx: boolean) {
-  const name = typeof c.name === 'number' ? (jsx ? `name={${c.name}}` : `name="${c.name}"`) : `name=${q(c.name)}`;
-  const out = [name, jsx ? `size={${c.size}}` : `size="${c.size}"`];
+  const out = [`name=${q(c.name)}`, jsx ? `size={${c.size}}` : `size="${c.size}"`];
   if (c.look !== 'auto') out.push(`look=${q(c.look)}`);
   if (c.shape !== 'circle') out.push(`shape=${q(c.shape)}`);
   if (c.state !== 'idle') out.push(`state=${q(c.state)}`);
@@ -21,7 +21,7 @@ function props(c: Choice, jsx: boolean) {
 }
 
 function query(c: Choice, format?: string) {
-  const p = new URLSearchParams({ name: String(c.name), size: String(c.size * 2) });
+  const p = new URLSearchParams({ name: c.name, size: String(c.size * 2) });
   if (c.look !== 'auto') p.set('look', c.look);
   p.set('shape', c.shape);
   if (c.state !== 'idle') p.set('state', c.state);
@@ -29,7 +29,7 @@ function query(c: Choice, format?: string) {
   return `${SITE_URL}/api/face?${p}`;
 }
 
-const cliName = (c: Choice) => String(c.name).replace(/\s+/g, '-') || 'face';
+const cliName = (c: Choice) => c.name.replace(/\s+/g, '-') || 'face';
 
 export const SNIPPETS = {
   react: (c: Choice) => `import { Fuglio } from "fuglios/react";

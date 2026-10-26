@@ -8,6 +8,7 @@
  * breathe, blink, glance at the pointer and show what an agent is doing.
  */
 export { seedOf, type FaceName } from './seed';
+export { randomName } from './names';
 export {
   DEFAULT_LOOK, FULL_LOOKS, isLook, LOOKS, lookOf, resolveLook, SMALL_BELOW, SMALL_LOOKS,
   type Look, type LookChoice, type LookId,

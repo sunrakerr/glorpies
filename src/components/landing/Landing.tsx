@@ -1,9 +1,9 @@
 'use client';
 
-import { ArrowDown } from 'lucide-react';
+import { ArrowDown, Dices } from 'lucide-react';
 import Link from 'next/link';
-import { useDeferredValue, useState, type CSSProperties, type ReactNode } from 'react';
-import { FULL_LOOKS, LOOKS, lookOf, resolveLook, seedOf, SHAPES, SMALL_LOOKS, STATES, type FaceState, type LookChoice, type LookId } from 'fuglios';
+import { useDeferredValue, useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import { FULL_LOOKS, lookOf, randomName, resolveLook, seedOf, SHAPES, SMALL_LOOKS, STATES, type FaceState, type LookChoice, type LookId } from 'fuglios';
 import { Fuglio } from 'fuglios/react';
 import { CodePanel, CopyButton } from '../Code';
 import { LookThumb } from '../LookPicker';
@@ -32,6 +32,8 @@ export function Landing() {
   // typing repaints a face per keystroke otherwise; the deferred name lets the input stay ahead
   const name = String(useDeferredValue(c.name)) || ' ';
   const set = (patch: Partial<Choice>) => setC((v) => ({ ...v, ...patch }));
+  // a new visitor meets a new face; made up on the client so server and client markup agree
+  useEffect(() => set({ name: randomName() }), []);
 
   return (
     <div className="relative z-10 min-h-dvh">
@@ -59,14 +61,7 @@ export function Landing() {
 function Hero() {
   return (
     <section className="pb-16 pt-16">
-      <p className="flex items-center gap-2.5 text-[11.5px] text-ink-2">
-        <span aria-hidden className="relative flex size-2">
-          <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent/60" />
-          <span className="relative size-2 rounded-full bg-accent" />
-        </span>
-        incoming transmission · {LOOKS.length} looks · {STATES.length} moods<span className="hidden sm:inline"> · 0 dependencies</span>
-      </p>
-      <h1 className="ink-in mt-5 font-display text-[clamp(2.5rem,8vw,3.6rem)] leading-[0.98]">
+      <h1 className="ink-in font-display text-[clamp(2.5rem,8vw,3.6rem)] leading-[0.98]">
         {['every', 'name', null, 'has', 'a', 'fuglio.'].map((w, i) =>
           w ? <span key={i} style={{ '--i': i } as CSSProperties}>{w}{w === 'fuglio.' ? <span aria-hidden className="cursor" /> : '\u00a0'}</span> : <br key={i} />,
         )}
@@ -151,6 +146,9 @@ function Playground({ c, name, set }: { c: Choice; name: string; set: (p: Partia
               placeholder="type any name"
               className="w-full bg-transparent text-[17px] text-ink outline-none placeholder:text-ink-2/50"
             />
+            <button type="button" onClick={() => set({ name: randomName() })} aria-label="Make up a name" title="Make up a name" className="-my-1 grid size-8 shrink-0 place-items-center rounded-md text-ink-2 transition hover:bg-ink/[0.06] hover:text-ink active:scale-90">
+              <Dices className="size-[17px]" strokeWidth={1.8} />
+            </button>
           </label>
         </Field>
         <Field flag="look" hint={c.look === 'auto' ? `auto → ${resolveLook(c.look, c.size)} at ${c.size}px` : `"${c.look}"`}>

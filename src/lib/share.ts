@@ -1,3 +1,4 @@
+import { seedOf } from 'fuglios';
 import type { LookId } from 'fuglios/internal/looks';
 import { fileName, pngBlob, svgMarkup } from 'fuglios/internal/studio';
 
@@ -14,26 +15,26 @@ function save(blob: Blob, name: string) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export async function downloadPNG(seed: number, px: number = 1024, look?: LookId) {
-  save(await pngBlob(seed, px, look), fileName(seed, 'png', look));
+export async function downloadPNG(name: string, px: number = 1024, look?: LookId) {
+  save(await pngBlob(seedOf(name), px, look), fileName(name, 'png', look));
 }
 
-export async function downloadSVG(seed: number, look?: LookId) {
-  const svg = await svgMarkup(seed, look);
-  save(new Blob([svg], { type: 'image/svg+xml' }), fileName(seed, 'svg', look));
+export async function downloadSVG(name: string, look?: LookId) {
+  const svg = await svgMarkup(seedOf(name), look);
+  save(new Blob([svg], { type: 'image/svg+xml' }), fileName(name, 'svg', look));
 }
 
 /**
  * The clipboard item is created synchronously with a pending blob so Safari
  * still counts the write as part of the click that asked for it.
  */
-export async function copyPNG(seed: number, look?: LookId) {
+export async function copyPNG(name: string, look?: LookId) {
   if (!('ClipboardItem' in window) || !navigator.clipboard?.write) throw new Error('This browser cannot copy images');
-  await navigator.clipboard.write([new ClipboardItem({ 'image/png': pngBlob(seed, 1024, look) })]);
+  await navigator.clipboard.write([new ClipboardItem({ 'image/png': pngBlob(seedOf(name), 1024, look) })]);
 }
 
-export async function copySVG(seed: number, look?: LookId) {
-  const svg = svgMarkup(seed, look);
+export async function copySVG(name: string, look?: LookId) {
+  const svg = svgMarkup(seedOf(name), look);
   if ('ClipboardItem' in window && navigator.clipboard?.write) {
     try {
       await navigator.clipboard.write([

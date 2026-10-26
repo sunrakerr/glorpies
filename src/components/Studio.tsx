@@ -2,9 +2,10 @@
 
 import { Plus, Shuffle } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { randomName, seedOf } from 'fuglios';
 import { DEFAULT_LOOK, isLook, type LookId } from 'fuglios/internal/looks';
 import { getStage } from 'fuglios/internal/stage';
-import { forget, newSeed } from 'fuglios/internal/studio';
+import { forget } from 'fuglios/internal/studio';
 import { runAction, type ActionKind } from './actions';
 import { FaceCard } from './FaceCard';
 import { StylePicker } from './LookPicker';
@@ -16,21 +17,36 @@ const BATCH = 12;
 const ALIVE_KEY = 'faces:alive';
 const LOOK_KEY = 'faces:look';
 
-const freshBatch = () => Array.from({ length: BATCH }, newSeed);
+/** A name not already on the wall, so every face on it is its own (until a wall holds most of the names there are). */
+function freshName(taken: ReadonlySet<string>) {
+  let name = randomName();
+  for (let i = 0; i < 64 && taken.has(name); i++) name = randomName();
+  return name;
+}
+
+/** Twelve new names, none of them in `taken`. */
+function freshBatch(taken: readonly string[] = []) {
+  const seen = new Set(taken);
+  return Array.from({ length: BATCH }, () => {
+    const name = freshName(seen);
+    seen.add(name);
+    return name;
+  });
+}
 
 export function Studio() {
-  const [seeds, setSeeds] = useState<number[]>([]);
+  const [names, setNames] = useState<string[]>([]);
   const [alive, setAlive] = useState(true);
   const [look, setLook] = useState<LookId>(DEFAULT_LOOK);
   /** Faces restyled on their own in the viewer; the rest follow the gallery. */
-  const [overrides, setOverrides] = useState<ReadonlyMap<number, LookId>>(() => new Map());
+  const [overrides, setOverrides] = useState<ReadonlyMap<string, LookId>>(() => new Map());
   const [open, setOpen] = useState<number | null>(null);
   const [pngSize, setPngSize] = useState(1024);
   const { toast, show } = useToast();
 
-  // seeds are random, so they're chosen on the client to keep server and client markup identical
+  // names are random, so they're chosen on the client to keep server and client markup identical
   useEffect(() => {
-    setSeeds(freshBatch());
+    setNames(freshBatch());
     const saved = localStorage.getItem(ALIVE_KEY);
     setAlive(saved ? saved === '1' : !matchMedia('(prefers-reduced-motion: reduce)').matches);
     const savedLook = localStorage.getItem(LOOK_KEY);
@@ -68,63 +84,63 @@ export function Studio() {
     setOverrides((m) => ([...m.values()].includes(next) ? new Map([...m].filter(([, l]) => l !== next)) : m));
   };
 
-  const lookFor = (seed: number) => overrides.get(seed) ?? look;
+  const lookFor = (name: string) => overrides.get(name) ?? look;
 
   /** Choosing the gallery's own style hands the face back to the gallery. */
-  const setFaceLook = (seed: number, next: LookId) => {
+  const setFaceLook = (name: string, next: LookId) => {
     setOverrides((m) => {
       const out = new Map(m);
-      if (next === look) out.delete(seed);
-      else out.set(seed, next);
+      if (next === look) out.delete(name);
+      else out.set(name, next);
       return out;
     });
   };
 
-  const dropOverride = (seed: number) =>
+  const dropOverride = (name: string) =>
     setOverrides((m) => {
-      if (!m.has(seed)) return m;
+      if (!m.has(name)) return m;
       const out = new Map(m);
-      out.delete(seed);
+      out.delete(name);
       return out;
     });
 
   const repaint = useCallback((i: number) => {
-    setSeeds((s) => {
+    setNames((s) => {
       const old = s[i];
       if (old !== undefined) {
-        forget(old);
+        forget(seedOf(old));
         dropOverride(old);
       }
-      return s.map((v, j) => (j === i ? newSeed() : v));
+      const next = freshName(new Set(s));
+      return s.map((v, j) => (j === i ? next : v));
     });
   }, []);
 
   const shuffleAll = () => {
-    setSeeds((s) => {
-      s.forEach(forget);
-      return freshBatch();
+    setNames((s) => {
+      for (const name of s) forget(seedOf(name));
+      return freshBatch(s);
     });
     setOverrides(new Map());
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const act = (kind: ActionKind, seed: number) => runAction(kind, seed, lookFor(seed), pngSize, show);
+  const act = (kind: ActionKind, name: string) => runAction(kind, name, lookFor(name), pngSize, show);
 
   return (
     <div className="relative z-10 min-h-dvh">
       <SiteHeader className="mx-auto max-w-[1400px] px-5 pt-8 sm:px-8" />
       <main className="mx-auto max-w-[1400px] px-5 pb-32 pt-8 sm:px-8 sm:pt-10">
         <ul className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 sm:gap-x-7 sm:gap-y-10 lg:grid-cols-4 lg:gap-x-9 lg:gap-y-12">
-          {seeds.length
-            ? seeds.map((seed, i) => (
+          {names.length
+            ? names.map((name, i) => (
                 <FaceCard
-                  key={`${i}-${seed}`}
-                  seed={seed}
-                  look={lookFor(seed)}
-                  index={i}
+                  key={`${i}-${name}`}
+                  name={name}
+                  look={lookFor(name)}
                   onOpen={() => openFace(i)}
                   onRepaint={() => repaint(i)}
-                  onAction={(kind) => act(kind, seed)}
+                  onAction={(kind) => act(kind, name)}
                 />
               ))
             : Array.from({ length: BATCH }, (_, i) => (
@@ -142,19 +158,19 @@ export function Studio() {
             </span>
           </IconButton>
           <span className="mx-0.5 h-5 w-px bg-ink/10" aria-hidden />
-          <StylePicker seed={seeds[0]} value={look} onChange={chooseLook} />
+          <StylePicker seed={names[0] === undefined ? undefined : seedOf(names[0])} value={look} onChange={chooseLook} />
           <span className="mx-0.5 h-5 w-px bg-ink/10" aria-hidden />
           <IconButton label="New faces" onClick={shuffleAll}>
             <Shuffle className="size-[17px]" strokeWidth={1.8} />
           </IconButton>
-          <IconButton label="Twelve more" onClick={() => setSeeds((s) => [...s, ...freshBatch()])}>
+          <IconButton label="Twelve more" onClick={() => setNames((s) => [...s, ...freshBatch(s)])}>
             <Plus className="size-[18px]" strokeWidth={1.8} />
           </IconButton>
         </Pill>
       </nav>
 
       <Viewer
-        seeds={seeds}
+        names={names}
         index={open}
         look={look}
         lookFor={lookFor}

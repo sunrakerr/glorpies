@@ -2,6 +2,7 @@
 
 import { Braces, ChevronLeft, ChevronRight, Code, Copy, FileCode, ImageDown, RefreshCw, X } from 'lucide-react';
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { seedOf } from 'fuglios';
 import { lookOf, type LookId } from 'fuglios/internal/looks';
 import { EXPORT_SIZES } from '@/lib/share';
 import { PRIORITY } from 'fuglios/internal/studio';
@@ -13,27 +14,28 @@ import { Sheet } from './Sheet';
 import { TextButton } from './ui';
 
 type Props = {
-  seeds: number[];
+  names: string[];
   index: number | null;
   /** The gallery's style, and the style a given face is shown in. */
   look: LookId;
-  lookFor: (seed: number) => LookId;
-  onLook: (seed: number, look: LookId) => void;
+  lookFor: (name: string) => LookId;
+  onLook: (name: string, look: LookId) => void;
   pngSize: number;
   onPngSize: (px: number) => void;
   onIndex: (i: number) => void;
   onClose: () => void;
   onRepaint: (i: number) => void;
-  onAction: (kind: ActionKind, seed: number) => void;
+  onAction: (kind: ActionKind, name: string) => void;
   /** Toasts must render inside the modal: it sits in the top layer above the page. */
   children?: ReactNode;
 };
 
-export function Viewer({ seeds, index, look, lookFor, onLook, pngSize, onPngSize, onIndex, onClose, onRepaint, onAction, children }: Props) {
+export function Viewer({ names, index, look, lookFor, onLook, pngSize, onPngSize, onIndex, onClose, onRepaint, onAction, children }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
   const open = index !== null;
-  const seed = index === null ? null : seeds[index] ?? null;
-  const faceLook = seed === null ? look : lookFor(seed);
+  const name = index === null ? null : names[index] ?? null;
+  const seed = name === null ? null : seedOf(name);
+  const faceLook = name === null ? look : lookFor(name);
   /** The integration panel stays open from face to face once asked for. */
   const [spec, setSpec] = useState(false);
 
@@ -45,15 +47,15 @@ export function Viewer({ seeds, index, look, lookFor, onLook, pngSize, onPngSize
   }, [open]);
 
   const go = (step: number) => {
-    if (index === null || !seeds.length) return;
-    onIndex((index + step + seeds.length) % seeds.length);
+    if (index === null || !names.length) return;
+    onIndex((index + step + names.length) % names.length);
   };
 
   const onKey = (e: KeyboardEvent) => {
-    if (e.metaKey || e.ctrlKey || e.altKey || seed === null || index === null) return;
+    if (e.metaKey || e.ctrlKey || e.altKey || name === null || index === null) return;
     if (e.key === 'ArrowRight') go(1);
     else if (e.key === 'ArrowLeft') go(-1);
-    else if (e.key === 'c') onAction('copy', seed);
+    else if (e.key === 'c') onAction('copy', name);
     else if (e.key === 'r') onRepaint(index);
     else if (e.key === 'u') setSpec((v) => !v);
     else return;
@@ -62,7 +64,7 @@ export function Viewer({ seeds, index, look, lookFor, onLook, pngSize, onPngSize
 
   return (
     <dialog ref={ref} className="viewer" onClose={onClose} onKeyDown={onKey} aria-label="Face">
-      {seed !== null && index !== null && (
+      {name !== null && seed !== null && index !== null && (
         <div
           // take initial focus so the close button doesn't open with a focus ring
           tabIndex={-1}
@@ -89,7 +91,7 @@ export function Viewer({ seeds, index, look, lookFor, onLook, pngSize, onPngSize
                   look={faceLook}
                   priority={PRIORITY.focus}
                   maxPx={1600}
-                  label={`Portrait, ${lookOf(faceLook).name}, enlarged`}
+                  label={`${name}, ${lookOf(faceLook).name}, enlarged`}
                   caption={`Painting in ${lookOf(faceLook).name}…`}
                   pokeable
                 />
@@ -103,25 +105,26 @@ export function Viewer({ seeds, index, look, lookFor, onLook, pngSize, onPngSize
               <ChevronLeft className="size-4" strokeWidth={1.8} />
             </button>
             <p className="text-center">
-              Tap the face to give it a nudge
+              <span className="text-ink">{name}</span>
               <span className="mx-2 opacity-50">·</span>
-              <span className="tabular-nums">{index + 1} / {seeds.length}</span>
+              <span className="hidden sm:inline">tap to give it a nudge<span className="mx-2 opacity-50">·</span></span>
+              <span className="tabular-nums">{index + 1} / {names.length}</span>
             </p>
             <button type="button" onClick={() => go(1)} aria-label="Next face" className="grid size-9 place-items-center rounded-full border border-ink/10 bg-paper/70 sm:hidden">
               <ChevronRight className="size-4" strokeWidth={1.8} />
             </button>
           </div>
 
-          <LookStrip seed={seed} value={faceLook} gallery={look} onChange={(l) => onLook(seed, l)} />
+          <LookStrip seed={seed} value={faceLook} gallery={look} onChange={(l) => onLook(name, l)} />
 
           <div className="flex max-w-full flex-wrap items-center justify-center gap-2">
-            <TextButton tone="ink" onClick={() => onAction('copy', seed)}>
+            <TextButton tone="ink" onClick={() => onAction('copy', name)}>
               <Copy className="size-4" strokeWidth={1.8} /> Copy image
             </TextButton>
             <div className="inline-flex h-10 items-center rounded-full border border-ink/12 bg-paper/70 pl-1 pr-1">
               <button
                 type="button"
-                onClick={() => onAction('png', seed)}
+                onClick={() => onAction('png', name)}
                 className="inline-flex h-8 items-center gap-2 rounded-full px-3 text-[13px] font-medium transition hover:bg-ink/[0.06]"
               >
                 <ImageDown className="size-4" strokeWidth={1.8} /> PNG
@@ -141,10 +144,10 @@ export function Viewer({ seeds, index, look, lookFor, onLook, pngSize, onPngSize
                 ))}
               </div>
             </div>
-            <TextButton onClick={() => onAction('svg', seed)}>
+            <TextButton onClick={() => onAction('svg', name)}>
               <FileCode className="size-4" strokeWidth={1.8} /> SVG
             </TextButton>
-            <TextButton onClick={() => onAction('copy-svg', seed)}>
+            <TextButton onClick={() => onAction('copy-svg', name)}>
               <Code className="size-4" strokeWidth={1.8} /> Copy SVG
             </TextButton>
             <TextButton onClick={() => onRepaint(index)}>
@@ -160,9 +163,9 @@ export function Viewer({ seeds, index, look, lookFor, onLook, pngSize, onPngSize
           </div>
         </div>
       )}
-      {spec && seed !== null && (
+      {spec && name !== null && (
         <FaceSpec
-          seed={seed}
+          name={name}
           look={faceLook}
           onClose={() => setSpec(false)}
           className="picker-in absolute inset-x-3 bottom-3 z-10 max-h-[70dvh] overflow-y-auto lg:inset-x-auto lg:bottom-auto lg:right-8 lg:top-1/2 lg:max-h-[calc(100dvh-4rem)] lg:w-[360px] lg:-translate-y-1/2"
