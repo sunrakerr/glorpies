@@ -58,7 +58,12 @@ export type HandlerOptions = Partial<ImageOptions> & {
   cacheControl?: string | null;
   /** Largest size a request may ask for. */
   maxSize?: number;
+  /** Longest name a request may ask for; a name is an id, not a document. */
+  maxName?: number;
 };
+
+/** An SVG opened on its own runs no script and loads nothing but its own embedded pictures. */
+const SVG_CSP = "default-src 'none'; img-src data:; style-src 'unsafe-inline'";
 
 /**
  * A standard web request handler, `(Request) => Response`, so it mounts
@@ -71,11 +76,12 @@ export type HandlerOptions = Partial<ImageOptions> & {
  * svg, gif), and for gif: loop (seconds), fps.
  */
 export function createFaceHandler(defaults: HandlerOptions = {}): (request: Request) => Promise<Response> {
-  const { cacheControl = 'public, max-age=31536000, immutable', maxSize = 1024, ...base } = defaults;
+  const { cacheControl = 'public, max-age=31536000, immutable', maxSize = 1024, maxName = 256, ...base } = defaults;
   return async (request) => {
     const q = new URL(request.url).searchParams;
     const name = q.get('name');
     if (!name) return new Response('Missing ?name=', { status: 400 });
+    if (name.length > maxName) return new Response(`?name= is longer than ${maxName} characters`, { status: 414 });
     const num = (k: string, fallback: number, lo: number, hi: number) => {
       const v = Number(q.get(k));
       return q.has(k) && Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : fallback;
@@ -91,15 +97,18 @@ export function createFaceHandler(defaults: HandlerOptions = {}): (request: Requ
       loop: num('loop', base.loop ?? 3, 1, 8),
       fps: Math.round(num('fps', base.fps ?? 15, 4, 30)),
     };
-    // an animation costs a frame per tick, so its size is kept to avatar scale
+    // an animation costs a frame per tick, so its size is kept to avatar scale (and its frames to FRAME_BUDGET)
     if (o.format === 'gif') o.size = Math.min(o.size!, 320);
     try {
       const { body, type } = await renderImage(name, o);
-      const headers: Record<string, string> = { 'Content-Type': type };
+      const headers: Record<string, string> = { 'Content-Type': type, 'X-Content-Type-Options': 'nosniff' };
+      if (type === TYPES.svg) headers['Content-Security-Policy'] = SVG_CSP;
       if (cacheControl) headers['Cache-Control'] = cacheControl;
       return new Response(body as BodyInit, { headers });
     } catch (e) {
-      return new Response(e instanceof Error ? e.message : 'Could not paint that face', { status: 500 });
+      // the details are for the server's log, not for whoever asked
+      console.error('fuglios: could not paint', name, e);
+      return new Response('Could not paint that face', { status: 500 });
     }
   };
 }
@@ -110,4 +119,4 @@ export function faceRoute(defaults?: HandlerOptions) {
 }
 
 export { faceCanvas, faceSVG } from './still';
-export { animationFrames, faceGIF } from './animate';
+export { animationFrames, faceGIF, FRAME_BUDGET } from './animate';

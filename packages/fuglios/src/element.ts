@@ -1,5 +1,6 @@
 import { isLook, type LookChoice } from './looks';
 import { mount, type FaceHandle } from './mount';
+import { seedOf } from './seed';
 import { isState } from './states';
 import { faceColors, isShape } from './still';
 
@@ -31,6 +32,9 @@ canvas{position:absolute;inset:0;inline-size:100%;block-size:100%;display:block;
 
 const ATTRS = ['name', 'look', 'size', 'shape', 'state', 'alive', 'pokeable', 'label'] as const;
 
+/** An unknown look is painted as "auto". */
+const lookFrom = (v: string | null): LookChoice => (v && (v === 'auto' || isLook(v)) ? v : 'auto');
+
 const Base: typeof HTMLElement = typeof HTMLElement === 'undefined' ? (class {} as typeof HTMLElement) : HTMLElement;
 
 export class FuglioElement extends Base {
@@ -61,7 +65,9 @@ export class FuglioElement extends Base {
   attributeChangedCallback(attr: string, was: string | null, now: string | null) {
     if (was === now || !this.handle) return;
     this.sync();
-    if (attr === 'name' || attr === 'look') this.removeAttribute('data-ready');
+    // the canvas fades out only for a different painting: a renamed face, or a look that resolves to another
+    const repaints = attr === 'name' ? seedOf(was ?? '') !== seedOf(now ?? '') : attr === 'look' && lookFrom(was) !== lookFrom(now);
+    if (repaints) this.removeAttribute('data-ready');
     this.handle.update(this.options());
   }
 
@@ -85,7 +91,7 @@ export class FuglioElement extends Base {
     const alive = this.getAttribute('alive');
     return {
       name: this.name,
-      look: (look && (look === 'auto' || isLook(look)) ? look : 'auto') as LookChoice,
+      look: lookFrom(look),
       state: isState(state) ? state : 'idle',
       alive: alive === null ? undefined : alive !== 'false',
       pokeable: this.hasAttribute('pokeable'),

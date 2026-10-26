@@ -7,11 +7,34 @@ import { splitLayers } from './layers';
 import { expressed } from './expression';
 import { DEFAULT_LOOK, lookOf, renderLook, type LookId } from './looks';
 import { seedOf, type FaceName } from './seed';
-import type { FaceState } from './states';
+import { stillEyes, type FaceState } from './states';
 
-const faces = new Map<number, Face>();
-/** Small previews for the style pickers, keyed `seed:look:px`, so reopening a picker is instant. */
-const thumbs = new Map<string, HTMLCanvasElement>();
+/** A Map that forgets whatever was used least recently once it holds `max` entries. */
+class Recent<K, V> extends Map<K, V> {
+  constructor(private readonly max: number) {
+    super();
+  }
+  override get(key: K) {
+    const v = super.get(key);
+    if (v !== undefined) {
+      // a read makes it the newest again
+      super.delete(key);
+      super.set(key, v);
+    }
+    return v;
+  }
+  override set(key: K, v: V) {
+    super.delete(key);
+    super.set(key, v);
+    if (this.size > this.max) this.delete(this.keys().next().value!);
+    return this;
+  }
+}
+
+/** Faces are a few hundred kilobytes of geometry each; a page (or a server) keeps the ones it used last. */
+const faces = new Recent<number, Face>(256);
+/** Small previews for the style pickers, keyed `seed:look:px`, so reopening a picker is instant. About 110 KB each. */
+const thumbs = new Recent<string, HTMLCanvasElement>(240);
 
 /** The face for a seed, built once and cached, wearing a state's expression if given one. */
 export function faceFor(seed: number, E: Engine, state: FaceState = 'idle'): Face {
@@ -39,7 +62,7 @@ export function newSeed(): number {
  * page as much free time as they took, so faces keep animating smoothly while
  * their eyes are painted.
  */
-type Job = { priority: number; order: number; paced: boolean; run: () => void; cancelled: boolean };
+type Job = { priority: number; order: number; paced: boolean; run: () => void };
 const jobs: Job[] = [];
 let pumping = false;
 let order = 0;
@@ -55,7 +78,7 @@ function pump() {
       return;
     }
     const start = performance.now();
-    if (!job.cancelled) job.run();
+    job.run();
     const took = performance.now() - start;
     if (job.paced) setTimeout(step, Math.min(250, took));
     // a job long enough to have cost a frame lets the page draw one before the next starts
@@ -67,28 +90,34 @@ function pump() {
 
 export type Scheduled<T> = { promise: Promise<T>; cancel: () => void };
 
+/** Work for the queue. Cancelling it, whether it's still waiting for the engine or already queued, rejects with an AbortError. */
 export function schedule<T>(priority: number, work: (E: Engine) => T, paced = false): Scheduled<T> {
   let job: Job | null = null;
+  let abort: (() => void) | null = null;
   let cancelled = false;
-  const promise = loadEngine().then(
-    (E) =>
-      new Promise<T>((resolve, reject) => {
-        if (cancelled) return reject(new DOMException('cancelled', 'AbortError'));
-        job = {
-          priority, order: order++, paced, cancelled: false,
-          run: () => {
-            try { resolve(work(E)); } catch (err) { reject(err); }
-          },
-        };
-        jobs.push(job);
-        pump();
-      }),
-  );
+  const promise = new Promise<T>((resolve, reject) => {
+    abort = () => reject(new DOMException('cancelled', 'AbortError'));
+    loadEngine().then((E) => {
+      if (cancelled) return;
+      job = {
+        priority, order: order++, paced,
+        run: () => {
+          try { resolve(work(E)); } catch (err) { reject(err); }
+        },
+      };
+      jobs.push(job);
+      pump();
+    }, reject);
+  });
   return {
     promise,
     cancel: () => {
+      if (cancelled) return;
       cancelled = true;
-      if (job) job.cancelled = true;
+      // a job that already ran has settled, and a second settle is a no-op
+      const i = job ? jobs.indexOf(job) : -1;
+      if (i >= 0) jobs.splice(i, 1);
+      abort?.();
     },
   };
 }
@@ -127,7 +156,8 @@ export function paintRaster(seed: number, px: number, priority: number, look: Lo
   const base = schedule(priority, (E) => {
     const face = faceFor(seed, E, state);
     const start = performance.now();
-    const still = renderLook(look, face, E, px);
+    // a face that will never move is painted with its eyes already set for its mood, as a still image is
+    const still = renderLook(look, lively || state === 'idle' ? face : posed(face, stillEyes(face, state)), E, px);
     const { motion, eyes, tiles } = lookOf(look);
     const raster: StillRaster = { px, still, layers: 'pending', back: null, figure: null, mask: null, motion, eyes, tiles, patches: [], glance: null };
     // a slow style gets the poses that matter most (a blink, a glance each way) so the page stays smooth

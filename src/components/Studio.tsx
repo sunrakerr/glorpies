@@ -1,7 +1,7 @@
 'use client';
 
 import { Plus, Shuffle } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { randomName, seedOf } from 'fuglios';
 import { DEFAULT_LOOK, isLook, type LookId } from 'fuglios/internal/looks';
 import { getStage } from 'fuglios/internal/stage';
@@ -16,6 +16,12 @@ import { Viewer } from './Viewer';
 const BATCH = 12;
 const ALIVE_KEY = 'faces:alive';
 const LOOK_KEY = 'faces:look';
+
+/** The face a history entry has open, if it's still on the wall (a reload paints a new wall, so its old entries open nothing). */
+function viewerIn(state: unknown, count: number): number | null {
+  const i = (state as { viewer?: unknown } | null)?.viewer;
+  return typeof i === 'number' && Number.isInteger(i) && i >= 0 && i < count ? i : null;
+}
 
 /** A name not already on the wall, so every face on it is its own (until a wall holds most of the names there are). */
 function freshName(taken: ReadonlySet<string>) {
@@ -57,18 +63,26 @@ export function Studio() {
     getStage().setAlive(alive);
   }, [alive]);
 
-  // an open face is a step in history, so the back button closes the viewer rather than leaving the gallery
+  // an open face is a step in history, holding which face: back closes the viewer, forward opens it again
+  const count = useRef(0);
   useEffect(() => {
-    const pop = () => { if (!history.state?.viewer) setOpen(null); };
+    count.current = names.length;
+  }, [names.length]);
+  useEffect(() => {
+    // an entry left open by the last visit points at faces that are gone
+    if (viewerIn(history.state, Infinity) !== null) history.replaceState({ ...history.state, viewer: null }, '');
+    const pop = () => setOpen(viewerIn(history.state, count.current));
     addEventListener('popstate', pop);
     return () => removeEventListener('popstate', pop);
   }, []);
 
   const openFace = (i: number) => {
-    if (!history.state?.viewer) history.pushState({ ...history.state, viewer: true }, '');
+    const state = { ...history.state, viewer: i };
+    if (viewerIn(history.state, names.length) === null) history.pushState(state, '');
+    else history.replaceState(state, '');
     setOpen(i);
   };
-  const closeFace = () => (history.state?.viewer ? history.back() : setOpen(null));
+  const closeFace = () => (viewerIn(history.state, names.length) !== null ? history.back() : setOpen(null));
 
   const toggleAlive = () => {
     setAlive((v) => {
@@ -177,7 +191,7 @@ export function Studio() {
         onLook={setFaceLook}
         pngSize={pngSize}
         onPngSize={setPngSize}
-        onIndex={setOpen}
+        onIndex={openFace}
         onClose={closeFace}
         onRepaint={repaint}
         onAction={act}

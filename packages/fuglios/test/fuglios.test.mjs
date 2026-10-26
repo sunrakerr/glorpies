@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { gzipSync } from 'node:zlib';
 import { faceOf, LOOKS, randomName, seedOf, SHAPES, STATES } from '../dist/index.js';
-import { faceGIF, renderImage } from '../dist/server.js';
+import { animationFrames, createFaceHandler, faceGIF, FRAME_BUDGET, renderImage } from '../dist/server.js';
 
 /**
  * Seeds and fingerprints of the painting each name is built into (everything
@@ -84,6 +84,30 @@ test('an animated face loops and actually moves', () => {
   let frames = 0;
   for (let i = 0; i < gif.length - 1; i++) if (gif[i] === 0x21 && gif[i + 1] === 0xf9) frames++;
   assert.equal(frames, 20);
+});
+
+test('a watercolour svg keeps its state marks', async () => {
+  const idle = await renderImage('agent-47', { format: 'svg', size: 128 });
+  const blocked = await renderImage('agent-47', { format: 'svg', size: 128, state: 'blocked' });
+  const images = (svg) => svg.split('<image').length - 1;
+  assert.equal(images(blocked.body), images(idle.body) + 1, 'the red ! is laid over the painting');
+});
+
+test('a loop stays inside its budget, and nonsense is refused', async () => {
+  const { frames, size, fps } = animationFrames('agent-47', { look: 'ink', size: 400, loop: 10, fps: 30 });
+  assert.ok(frames.length * size * size <= FRAME_BUDGET, 'frames are dropped to fit');
+  assert.equal(frames.length, fps * 10, 'the loop keeps its length');
+  for (const o of [{ loop: Infinity }, { loop: 0 }, { fps: Number.NaN }, { size: 1e9 }]) assert.throws(() => animationFrames('agent-47', o), RangeError);
+});
+
+test('the image handler refuses what it should and hardens svg', async () => {
+  const get = (q) => createFaceHandler()(new Request(`http://x/api/face?${q}`));
+  assert.equal((await get('')).status, 400);
+  assert.equal((await get(`name=${'a'.repeat(300)}`)).status, 414);
+  const svg = await get('name=agent-47&format=svg&size=64');
+  assert.equal(svg.headers.get('content-type'), 'image/svg+xml');
+  assert.match(svg.headers.get('content-security-policy'), /default-src 'none'/);
+  assert.equal(svg.headers.get('x-content-type-options'), 'nosniff');
 });
 
 test('the drop-in script stays small', () => {

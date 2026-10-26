@@ -40,9 +40,14 @@ async function main() {
     console.log(HELP);
     process.exit(values.help ? 0 : 1);
   }
-  const fail = (msg: string) => {
+  const fail = (msg: string): never => {
     console.error(`fuglios: ${msg}`);
     process.exit(1);
+  };
+  const num = (flag: string, v: string | undefined, lo: number, hi: number) => {
+    if (v === undefined) return undefined;
+    const n = Number(v);
+    return Number.isFinite(n) && n >= lo && n <= hi ? n : fail(`--${flag} must be a number from ${lo} to ${hi}`);
   };
   const fromOut = values.out?.split('.').pop()?.replace('jpg', 'jpeg');
   const format = (values.format ?? (FORMATS as readonly string[]).find((f) => f === fromOut) ?? 'png') as ImageFormat;
@@ -54,10 +59,10 @@ async function main() {
   const { body } = await renderImage(name, {
     format,
     look: values.look as never,
-    size: values.size ? Number(values.size) : 256,
+    size: num('size', values.size, 16, 4096) ?? 256,
     shape: values.shape as never,
     state: values.state as never,
-    loop: values.loop ? Number(values.loop) : undefined,
+    loop: num('loop', values.loop, 0.5, 10),
   });
   const out = values.out ?? `${name.replace(/[^\w.-]+/g, '-')}.${format}`;
   if (out === '-') process.stdout.write(body);

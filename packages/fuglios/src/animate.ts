@@ -7,14 +7,35 @@ import { splitLayers } from './layers';
 import { lookOf, marksFor, renderLook, resolveLook } from './looks';
 import { drawMarks } from './marks';
 import { scriptedPose, type FaceState } from './states';
-import { faceOf, shapePath, type StillOptions } from './still';
+import { faceOf, shapePath, sizeOf, type StillOptions } from './still';
 import type { FaceName } from './seed';
 
 export type AnimationOptions = StillOptions & {
-  /** Seconds before the animation repeats exactly. */
+  /** Seconds before the animation repeats exactly, up to 10. */
   loop?: number;
+  /** Up to 30; a loop too large for its frames to fit in FRAME_BUDGET gets fewer. */
   fps?: number;
 };
+
+/**
+ * Every frame of a loop is held until it's encoded, so a loop is bounded by
+ * its pixels across all frames (size² × frames): 256px at 15 fps for 8
+ * seconds, about 31 MB.
+ */
+export const FRAME_BUDGET = 256 * 256 * 120;
+
+/** The size, length and frame rate of a loop, checked, with the frame rate lowered to fit the budget. */
+function timing(o: AnimationOptions) {
+  const size = sizeOf(o.size);
+  const loop = o.loop ?? 3;
+  if (!(loop > 0 && loop <= 10)) throw new RangeError(`loop must be from 0 to 10 seconds, not ${o.loop}`);
+  const wanted = o.fps ?? 15;
+  if (!(wanted >= 1 && wanted <= 30)) throw new RangeError(`fps must be from 1 to 30, not ${o.fps}`);
+  // a long or large loop keeps its length and moves in fewer steps
+  const fps = Math.min(Math.round(wanted), Math.floor(FRAME_BUDGET / (size * size * loop)));
+  if (fps < 1) throw new RangeError(`a ${size}px loop of ${loop}s is too big to animate; try a smaller size or a shorter loop`);
+  return { size, loop, fps };
+}
 
 /**
  * A face's life as a seamless loop of frames, for places that can't run code
@@ -24,9 +45,7 @@ export type AnimationOptions = StillOptions & {
  * scripted pose with no randomness, so the same name always loops the same way.
  */
 export function animationFrames(name: FaceName, o: AnimationOptions = {}): { frames: Uint8ClampedArray[]; size: number; fps: number } {
-  const size = Math.round(o.size ?? 256);
-  const fps = o.fps ?? 15;
-  const loop = o.loop ?? 3;
+  const { size, loop, fps } = timing(o);
   const state: FaceState = o.state ?? 'idle';
   const look = resolveLook(o.look, size);
   const face = faceOf(name, state);
