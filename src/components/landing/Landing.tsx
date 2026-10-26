@@ -34,8 +34,6 @@ const MANAGERS = Object.keys(INSTALL) as Manager[];
 /** The library's front page: a playground whose code is always what you see, then the reference. */
 export function Landing() {
   const [c, setC] = useState<Choice>(START);
-  const [manager, setManager] = useState<Manager>('npm');
-  const install = <Install manager={manager} onManager={setManager} />;
   // typing repaints a face per keystroke otherwise; the deferred name lets the input stay ahead
   const name = String(useDeferredValue(c.name)) || ' ';
   const set = (patch: Partial<Choice>) => setC((v) => ({ ...v, ...patch }));
@@ -48,12 +46,12 @@ export function Landing() {
       <div className="relative mx-auto max-w-[960px] px-6">
         <SiteHeader className="pt-8" />
         <main>
-          <Hero install={install} />
+          <Hero />
           <Section title="playground">
             <Playground c={c} name={name} set={set} />
           </Section>
           <Section title="install" className="mt-16">
-            {install}
+            <Install />
           </Section>
           <Section title="code" className="mt-16">
             <Usage c={{ ...c, name }} />
@@ -68,7 +66,7 @@ export function Landing() {
   );
 }
 
-function Hero({ install }: { install: ReactNode }) {
+function Hero() {
   return (
     <section className="pb-16 pt-16">
       <h1 className="ink-in font-display text-[clamp(2.5rem,8vw,3.6rem)] leading-[0.98]">
@@ -80,7 +78,6 @@ function Hero({ install }: { install: ReactNode }) {
         give it a username, an email or a bot id and get back a face painted in watercolour and ink. the same name always gets the same face. it blinks, it breathes, and it shows what your agent is up to.
       </p>
       <div className="mt-8 flex flex-wrap items-center gap-5">
-        {install}
         <a href="#api" className="inline-flex items-center gap-1.5 text-[12.5px] text-ink-2 transition hover:text-ink">
           api reference <ArrowDown className="size-3.5" strokeWidth={1.8} />
         </a>
@@ -90,11 +87,12 @@ function Hero({ install }: { install: ReactNode }) {
 }
 
 /** A little terminal with the install command, one tab per package manager. */
-function Install({ manager, onManager }: { manager: Manager; onManager: (m: Manager) => void }) {
+function Install() {
+  const [manager, setManager] = useState<Manager>('npm');
   return (
     <div className="w-fit rounded-lg border border-term-fg/10 bg-term text-term-fg shadow-pill">
       <div className="border-b border-term-fg/10 px-2 py-1.5">
-        <Tabs options={MANAGERS} value={manager} onChange={onManager} dark />
+        <Tabs options={MANAGERS} value={manager} onChange={setManager} dark />
       </div>
       <div className="flex h-11 items-center gap-3 pl-4 pr-1.5">
         <span className="text-[13.5px] text-term-accent">❯</span>
