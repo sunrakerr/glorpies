@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process';
 import { mkdirSync, readdirSync, rmSync, writeFileSync, statSync, readFileSync } from 'node:fs';
 
 const CHROME = process.env.CHROME ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-const URL_ = 'http://localhost:3417/gallery';
+const URL_ = `${process.env.BASE_URL ?? 'http://localhost:3417'}/gallery`;
 const DL = '/tmp/faces-e2e/downloads';
 rmSync(DL, { recursive: true, force: true });
 mkdirSync(DL, { recursive: true });
@@ -42,7 +42,7 @@ await send('Page.enable');
 await send('Runtime.enable');
 await send('Emulation.setFocusEmulationEnabled', { enabled: true });
 await send('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath: DL });
-await send('Browser.grantPermissions', { permissions: ['clipboardReadWrite', 'clipboardSanitizedWrite'], origin: 'http://localhost:3417' });
+await send('Browser.grantPermissions', { permissions: ['clipboardReadWrite', 'clipboardSanitizedWrite'], origin: new URL(URL_).origin });
 await send('Page.navigate', { url: URL_ });
 
 const out = {};
