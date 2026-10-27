@@ -2,7 +2,7 @@
 
 import { ArrowDown, Copy, Dices, FileCode, ImageDown } from 'lucide-react';
 import Link from 'next/link';
-import { useDeferredValue, useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import { useDeferredValue, useEffect, useState, type ReactNode } from 'react';
 import { FULL_LOOKS, lookOf, randomName, resolveLook, seedOf, SHAPES, SMALL_LOOKS, STATES, type FaceState, type LookChoice, type LookId } from 'glorpies';
 import { Glorpie } from 'glorpies/react';
 import { runAction, type ActionKind } from '../actions';
@@ -12,9 +12,10 @@ import { Sheet } from '../Sheet';
 import { Invader, SiteHeader } from '../SiteHeader';
 import { Pick, Tabs } from '../Tabs';
 import { IconButton, ToastView, useToast } from '../ui';
-import { alienScript, MARKS } from '@/lib/glyphs';
+import { MARKS } from '@/lib/glyphs';
 import { SITE_URL } from '@/lib/site';
 import { PixelField } from './PixelField';
+import { Transmission } from './Transmission';
 import { ENTRIES, PROPS, SNIPPET_FILES, SNIPPET_KINDS, SNIPPETS, START, type Choice, type SnippetKind } from './snippets';
 
 const SITE_HOST = new URL(SITE_URL).host;
@@ -71,21 +72,11 @@ export function Landing() {
 }
 
 function Hero() {
-  // a new transmission every visit, written on the client so server and client markup agree
-  const [script, setScript] = useState('');
-  useEffect(() => setScript(alienScript(3)), []);
   return (
     <section className="pb-16 pt-16">
-      <p aria-hidden title="nobody knows what it says" className={`mb-4 h-7 font-glyph text-[22px] leading-7 tracking-[0.12em] text-accent transition-opacity duration-700 ${script ? 'opacity-90' : 'opacity-0'}`}>
-        {script}
-      </p>
-      <h1 className="ink-in font-display text-[clamp(2.5rem,8vw,3.6rem)] leading-[0.98]">
-        {['a', 'fugly', 'alien', null, 'for', 'every', 'name.'].map((w, i, all) =>
-          w ? <span key={i} style={{ '--i': i } as CSSProperties}>{w}{i === all.length - 1 ? <span aria-hidden className="cursor" /> : '\u00a0'}</span> : <br key={i} />,
-        )}
-      </h1>
-      <p className="mt-5 max-w-[34rem] text-[15px] leading-relaxed text-ink-2">
-        give it a username, an email or a bot id and get back a face painted in watercolour and ink. the same name always gets the same face. it blinks, it breathes, and it shows what your agent is up to.
+      <Transmission className="font-display text-[clamp(2.5rem,8vw,3.6rem)] leading-[0.98]" />
+      <p className="mt-5 max-w-[36rem] text-[15px] leading-relaxed text-ink-2">
+        glorpies turns any string (a username, an email, a bot id) into a hand-painted alien avatar. the same name always paints the same face, in 29 looks, at any size, in the browser or on a server. faces breathe, blink and show what an agent is doing. zero dependencies: react, a web component, image urls and a cli.
       </p>
       <div className="mt-8 flex flex-wrap items-center gap-5">
         <a href="#api" className="inline-flex items-center gap-1.5 text-[12.5px] text-ink-2 transition hover:text-ink">
