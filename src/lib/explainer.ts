@@ -28,7 +28,7 @@ type Scene = { id: SceneId; dur: number; num: string; title: string; body: strin
 
 const SCENES: Scene[] = [
   { id: 'title', dur: 3.6, num: '', title: 'How a face\ngets painted', body: 'Watercolour and dip pen, painted from scratch by code every time a face appears.' },
-  { id: 'seed', dur: 4, num: '01', title: 'One number', body: 'Every face starts as a seed. It drives p5.js random() and noise(), which choose the palette, head, antennae or horns, eyes, mouth and quirks. The same seed always paints the same face.' },
+  { id: 'seed', dur: 4, num: '01', title: 'One number', body: 'Every face starts as a seed. Out of 9 quadrillion, it drives the random numbers and noise that choose the palette, head, antennae or horns, eyes, mouth and quirks. The same seed always paints the same face.' },
   { id: 'paper', dur: 2.6, num: '02', title: 'Paper', body: 'A cream sheet with tooth: 6,000 specks of pigment dust and a few stray fibres.' },
   { id: 'pencil', dur: 2.8, num: '03', title: 'Underdrawing', body: 'Faint graphite guides: the oval of the head and the lines where the eyes and nose will sit.' },
   { id: 'glaze', dur: 10, num: '04', title: 'A watercolour glaze', body: '' },

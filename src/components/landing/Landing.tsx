@@ -3,7 +3,7 @@
 import { ArrowDown, Copy, Dices, FileCode, ImageDown } from 'lucide-react';
 import Link from 'next/link';
 import { useDeferredValue, useEffect, useState, type ReactNode } from 'react';
-import { FULL_LOOKS, lookOf, randomName, resolveLook, seedOf, SHAPES, SMALL_LOOKS, STATES, type FaceState, type LookChoice, type LookId } from 'glorpies';
+import { FACES, FULL_LOOKS, lookOf, randomName, resolveLook, seedOf, SHAPES, SMALL_LOOKS, STATES, type FaceState, type LookChoice, type LookId } from 'glorpies';
 import { Glorpie } from 'glorpies/react';
 import { runAction, type ActionKind } from '../actions';
 import { CodePanel, CopyButton } from '../Code';
@@ -76,7 +76,7 @@ function Hero() {
     <section className="pb-12 pt-12">
       <Transmission className="font-display text-[clamp(1.9rem,5.6vw,2.75rem)] leading-[1.05]" />
       <p className="mt-4 max-w-[36rem] text-[15px] leading-relaxed text-ink-2">
-        any string becomes a hand-painted alien avatar, one of billions, and the same name always gets the same one. react, a web component, a server route or a cli, with zero dependencies.
+        any string becomes a hand-painted alien avatar, one of <span className="text-ink">{FACES.toLocaleString('en-US')}</span>, and the same name always gets the same one. react, a web component, a server route or a cli, with zero dependencies.
       </p>
       <div className="mt-6 flex flex-wrap items-center gap-5">
         <a href="#api" className="inline-flex items-center gap-1.5 text-[12.5px] text-ink-2 transition hover:text-ink">

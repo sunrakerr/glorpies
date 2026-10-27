@@ -1,10 +1,10 @@
 /**
  * Seeded randomness and Perlin noise behind every face.
  *
- * These are exact ports of p5.js 1.x `randomSeed`/`random`/`randomGaussian`
- * and `noiseSeed`/`noise` (same generator, same constants, same noise table),
- * so every face drawn before p5 was dropped comes out pixel-identical. Being
- * plain arithmetic, they run anywhere: browsers, workers, Node, Bun, Deno.
+ * Random numbers come from sfc32, whose 128 bits of state take a whole 53-bit
+ * seed, so each of the 9 quadrillion seeds is a stream of its own. The noise is
+ * p5.js 1.x's `noise`, ported exactly. Being plain arithmetic, both run
+ * anywhere: browsers, workers, Node, Bun, Deno.
  *
  * Determinism comes from discipline, not isolation: a face is built from one
  * random stream (seeded once), and every paint/ink operation reseeds before it
@@ -20,10 +20,15 @@ export type Engine = {
   noise(x: number, y?: number): number;
 };
 
-// Numerical Recipes' linear congruential generator, as p5 uses it
-const M = 4294967296;
+const TWO_32 = 4294967296;
+
+// Numerical Recipes' linear congruential generator, which fills p5's noise table
+const M = TWO_32;
 const A = 1664525;
 const C = 1013904223;
+
+/** A seed's two halves: the low 32 bits and the 21 above them. */
+const halves = (n: number): [number, number] => [n >>> 0, Math.floor(n / TWO_32) >>> 0];
 
 const PERLIN_YWRAPB = 4;
 const PERLIN_YWRAP = 1 << PERLIN_YWRAPB;
@@ -34,14 +39,20 @@ const FALLOFF = 0.5;
 const scaledCosine = (i: number) => 0.5 * (1 - Math.cos(i * Math.PI));
 
 export function createEngine(): Engine {
-  let state = 0;
+  // sfc32: three words of state and a counter
+  let a = 0, b = 0, c = 0, d = 1;
   let spare: number | null = null;
   const perlin = new Float64Array(PERLIN_SIZE + 1);
   let noiseFor: number | null = null;
 
   const next = () => {
-    state = (A * state + C) % M;
-    return state / M;
+    const t = (((a + b) | 0) + d) | 0;
+    d = (d + 1) | 0;
+    a = b ^ (b >>> 9);
+    b = (c + (c << 3)) | 0;
+    c = (c << 21) | (c >>> 11);
+    c = (c + t) | 0;
+    return (t >>> 0) / TWO_32;
   };
 
   const random = (lo: number, hi: number) => {
@@ -51,7 +62,13 @@ export function createEngine(): Engine {
 
   return {
     seed: (n) => {
-      state = n >>> 0;
+      const [lo, hi] = halves(n);
+      a = lo;
+      b = hi;
+      c = lo ^ 0x9e3779b9;
+      d = 1;
+      // a few rounds so seeds that differ by a bit start far apart
+      for (let i = 0; i < 12; i++) next();
       spare = null;
     },
     random,
@@ -75,7 +92,8 @@ export function createEngine(): Engine {
     noiseSeed: (n) => {
       if (noiseFor === n) return;
       noiseFor = n;
-      let z = n >>> 0;
+      const [lo, hi] = halves(n);
+      let z = (lo ^ Math.imul(hi, 0x9e3779b1)) >>> 0;
       for (let i = 0; i <= PERLIN_SIZE; i++) {
         z = (A * z + C) % M;
         perlin[i] = z / M;

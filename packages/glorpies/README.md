@@ -1,6 +1,6 @@
 # glorpies
 
-Ugly little alien faces from any string. Antennae, extra eyes, horns, halos and too many teeth, painted in watercolour and dip pen. Billions of them, the same one for the same name every time, and alive: they breathe, blink and glance at you.
+Ugly little alien faces from any string. Antennae, extra eyes, horns, halos and too many teeth, painted in watercolour and dip pen. 9,007,199,254,740,992 of them (about 9 quadrillion), the same one for the same name every time, and alive: they breathe, blink and glance at you.
 
 The same name is always the same face, on every device and every server. No API calls, no storage, zero dependencies.
 
@@ -133,7 +133,7 @@ Publish with pnpm (`pnpm publish`), which swaps the workspace's source `exports`
 | `faceCanvas(name, options)` | one finished picture, in any look, state and shape |
 | `faceSVG(name, options)` | SVG markup |
 | `faceColors(name)` | the palette a face is painted in, to theme what sits around it |
-| `seedOf(name)` | the number behind a name |
+| `seedOf(name)` | the number behind a name, below `FACES` (2^53: there are 9,007,199,254,740,992 faces) |
 | `randomName()` | a made-up name for a face nobody has named yet, like `soggy-glorp` |
 | `LOOKS`, `STATES`, `SHAPES` | everything there is to choose from |
 | `setCanvasFactory(f)` | draw on canvases from anywhere (the server entry does this for you) |

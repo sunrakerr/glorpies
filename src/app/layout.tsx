@@ -16,7 +16,7 @@ const tifinagh = Noto_Sans_Tifinagh({ subsets: ['tifinagh'], weight: '400', vari
 const braille = Noto_Sans_Symbols_2({ subsets: ['braille'], weight: '400', variable: '--font-braille-dots', preload: false });
 
 const description =
-  'any string becomes a hand-painted alien avatar, one of billions, the same one for the same name every time. alive, with moods for agents. react, a web component, a server route or a cli, with zero dependencies.';
+  'any string becomes a hand-painted alien avatar, one of 9 quadrillion, the same one for the same name every time. alive, with moods for agents. react, a web component, a server route or a cli, with zero dependencies.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

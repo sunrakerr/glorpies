@@ -4,22 +4,21 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { gzipSync } from 'node:zlib';
-import { faceOf, LOOKS, randomName, seedOf, SHAPES, STATES } from '../dist/index.js';
+import { FACES, faceOf, LOOKS, randomName, seedOf, SHAPES, STATES } from '../dist/index.js';
 import { animationFrames, createFaceHandler, faceGIF, FRAME_BUDGET, renderImage } from '../dist/server.js';
 
 /**
  * Seeds and fingerprints of the painting each name is built into (everything
  * but the sketch, which is bookkeeping about the painting). These are the
  * public contract: if one changes, every face with that name changes too.
- * Recorded when the faces became aliens (the p5 port itself was verified
- * pixel-identical to p5).
+ * Recorded when names went to 53-bit seeds, one of 9 quadrillion faces each.
  */
 const KNOWN = {
-  'agent-47': [2032515433, '55a1912a8fae05cb'],
-  'ada@lovelace.dev': [1057956733, 'ee55faaa1809844c'],
-  'research-bot': [1919146844, 'cb1a47cb96c3c27b'],
-  '': [725515276, '7d147c372858ed4b'],
-  'ünïcödé 🙂': [1291488839, '408cf6b629f0dc33'],
+  'agent-47': [1179788404427480, 'f61af2b422eebfcf'],
+  'ada@lovelace.dev': [816544292710256, '33697e303fbeac9b'],
+  'research-bot': [4219008871287063, 'd49078467ee20b5d'],
+  '': [3338908027751811, '5505feb33658da6e'],
+  'ünïcödé 🙂': [7080240272725757, '7853891e54b6716f'],
 };
 
 const fingerprint = ({ sketch, ...painting }) => createHash('sha256').update(JSON.stringify(painting)).digest('hex').slice(0, 16);
@@ -32,6 +31,14 @@ test('a name always maps to the same seed', () => {
 test('a made-up name is two words and a hyphen', () => {
   for (let i = 0; i < 200; i++) assert.match(randomName(), /^[a-z]+-[a-z]+$/);
   assert.equal(randomName(() => 0), 'soggy-glorp', 'the words come from the source of numbers given');
+});
+
+test('every bit of a seed counts: there are 9 quadrillion faces', () => {
+  assert.equal(FACES, 9007199254740992);
+  for (const [name] of Object.entries(KNOWN)) assert.ok(seedOf(name) < FACES && Number.isSafeInteger(seedOf(name)));
+  // seeds that differ only above the low 32 bits are different faces (a 32-bit generator would make them twins)
+  assert.notEqual(fingerprint(faceOf(5)), fingerprint(faceOf(5 + 2 ** 32)));
+  assert.notEqual(fingerprint(faceOf(5)), fingerprint(faceOf(5 + 2 ** 52)));
 });
 
 test('a name is always built into the same face', () => {

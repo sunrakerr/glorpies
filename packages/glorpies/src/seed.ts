@@ -1,24 +1,28 @@
 /** A face is named by any string (an email, a username, a bot id) or by its seed number directly. */
 export type FaceName = string | number;
 
+/** How many faces there are: every whole number below 2^53, the largest JavaScript counts exactly. 9,007,199,254,740,992. */
+export const FACES = 2 ** 53;
+
 /**
- * The seed behind a name. Numbers that are already seeds pass straight
- * through; strings are hashed (FNV-1a with a final avalanche) onto the same
+ * The seed behind a name. Whole numbers below FACES are seeds already and
+ * pass straight through; anything else is hashed (cyrb53) onto the same
  * range. This mapping is part of the public contract: changing it would give
  * every name in the world a different face.
  */
 export function seedOf(name: FaceName): number {
-  if (typeof name === 'number' && Number.isInteger(name) && name >= 0) return name % 2147483647;
+  if (typeof name === 'number' && Number.isInteger(name) && name >= 0) return name % FACES;
   const s = String(name);
-  let h = 0x811c9dc5;
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
   for (let i = 0; i < s.length; i++) {
-    h ^= s.charCodeAt(i);
-    h = Math.imul(h, 0x01000193);
+    const ch = s.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
   }
-  h ^= h >>> 16;
-  h = Math.imul(h, 0x85ebca6b);
-  h ^= h >>> 13;
-  h = Math.imul(h, 0xc2b2ae35);
-  h ^= h >>> 16;
-  return (h >>> 0) % 2147483647;
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+  h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+  h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  // 21 bits of one half above all 32 of the other: 53 bits, exact in a double
+  return 4294967296 * (2097151 & h2) + (h1 >>> 0);
 }
