@@ -117,16 +117,17 @@ export function Transmission({ className = '' }: { className?: string }) {
   return (
     <h1 className={className}>
       <span className="sr-only">glorpies: {LINES.join(' ')}</span>
-      <span aria-hidden className="block min-h-[2lh]">
+      {/* room for the longest line, so nothing below moves as they change: two lines on a phone, one from tablets up */}
+      <span aria-hidden className="block min-h-[2lh] md:min-h-[1lh]">
         {words.map((w, wi) => (
           <span key={wi} className="inline-block whitespace-nowrap">
             {w.cells.map((c, ci) => (
               <span key={ci} className="inline-flex w-[1ch] justify-center">
-                {c.kind === 'letter' ? c.ch : <span className={`leading-none text-accent ${c.kind === 'glyph' ? 'font-glyph text-[0.7em]' : 'font-braille text-[1.2em]'}`}>{c.ch}</span>}
+                {c.kind === 'letter' ? c.ch : <span className={`leading-none text-accent ${c.kind === 'glyph' ? 'glyph-bold font-glyph text-[0.78em]' : 'font-braille text-[1.2em]'}`}>{c.ch}</span>}
               </span>
             ))}
             {wi === last && <span className="cursor" />}
-            {wi < last && <span className="inline-block w-[1ch]"> </span>}
+            {wi < last && <span className="inline-block w-[0.45ch]"> </span>}
           </span>
         ))}
         {!words.length && <span className="cursor" />}

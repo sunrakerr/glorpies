@@ -338,3 +338,9 @@ dialog.viewer[open]::backdrop {
 .checker {
   background: repeating-conic-gradient(rgb(var(--shade) / 0.07) 0 25%, transparent 0 50%) 0 0 / 20px 20px, var(--color-paper-2);
 }
+
+/* the hieroglyph font comes in one thin weight; a stroke the colour of the glyph thickens it to sit with the pixel letters */
+.glyph-bold {
+  -webkit-text-stroke: 0.045em currentColor;
+  paint-order: stroke fill;
+}

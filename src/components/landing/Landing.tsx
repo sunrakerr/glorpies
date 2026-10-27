@@ -55,13 +55,13 @@ export function Landing() {
           <Section title="playground" mark={MARKS.eye}>
             <Playground c={c} name={name} set={set} />
           </Section>
-          <Section title="install" mark={MARKS.scarab} className="mt-16">
+          <Section title="install" mark={MARKS.scarab} className="mt-12">
             <Install />
           </Section>
-          <Section title="code" mark={MARKS.scribe} className="mt-16">
+          <Section title="code" mark={MARKS.scribe} className="mt-12">
             <Usage c={{ ...c, name }} />
           </Section>
-          <Section id="api" title="api" mark={MARKS.ankh} className="py-20">
+          <Section id="api" title="api" mark={MARKS.ankh} className="pb-14 pt-12">
             <Reference onLook={(look) => set({ look })} />
           </Section>
         </main>
@@ -73,12 +73,12 @@ export function Landing() {
 
 function Hero() {
   return (
-    <section className="pb-16 pt-16">
-      <Transmission className="font-display text-[clamp(2.5rem,8vw,3.6rem)] leading-[0.98]" />
-      <p className="mt-5 max-w-[36rem] text-[15px] leading-relaxed text-ink-2">
+    <section className="pb-12 pt-12">
+      <Transmission className="font-display text-[clamp(1.9rem,5.6vw,2.75rem)] leading-[1.05]" />
+      <p className="mt-4 max-w-[36rem] text-[15px] leading-relaxed text-ink-2">
         glorpies turns any string (a username, an email, a bot id) into a hand-painted alien avatar. the same name always paints the same face, in 29 looks, at any size, in the browser or on a server. faces breathe, blink and show what an agent is doing. zero dependencies: react, a web component, image urls and a cli.
       </p>
-      <div className="mt-8 flex flex-wrap items-center gap-5">
+      <div className="mt-6 flex flex-wrap items-center gap-5">
         <a href="#api" className="inline-flex items-center gap-1.5 text-[12.5px] text-ink-2 transition hover:text-ink">
           api reference <ArrowDown className="size-3.5" strokeWidth={1.8} />
         </a>
@@ -113,7 +113,7 @@ function Install() {
 function Section({ title, mark, id, className = '', children }: { title: string; mark: string; id?: string; className?: string; children: ReactNode }) {
   return (
     <section id={id} aria-labelledby={`${title}-title`} className={`scroll-mt-8 ${className}`}>
-      <div className="mb-8 flex items-center gap-3">
+      <div className="mb-6 flex items-center gap-3">
         <span aria-hidden className="font-glyph text-[18px] leading-none text-accent">{mark}</span>
         <h2 id={`${title}-title`} className="scroll-mt-8 font-display text-[15px] leading-none">{title}</h2>
         <span aria-hidden className="h-px flex-1 bg-[repeating-linear-gradient(90deg,currentColor_0_4px,transparent_4px_8px)] text-ink/20" />
@@ -301,7 +301,7 @@ function Reference({ onLook }: { onLook: (l: LookId) => void }) {
         </table>
       </div>
 
-      <h3 className="mt-14 text-[12px] text-ink-2">look ids</h3>
+      <h3 className="mt-10 text-[12px] text-ink-2">look ids</h3>
       <div className="mt-3 space-y-4 text-[12px]">
         {[{ label: 'paintings', looks: FULL_LOOKS }, { label: 'avatars', looks: SMALL_LOOKS }].map((g) => (
           <div key={g.label} className="flex flex-wrap items-center gap-1.5">
@@ -315,7 +315,7 @@ function Reference({ onLook }: { onLook: (l: LookId) => void }) {
         ))}
       </div>
 
-      <h3 className="mt-14 text-[12px] text-ink-2">imports</h3>
+      <h3 className="mt-10 text-[12px] text-ink-2">imports</h3>
       <ul className="mt-3 divide-y divide-ink/8 border-y border-ink/8 text-[12.5px]">
         {ENTRIES.map((e) => (
           <li key={e.path} className="grid list-none gap-1 py-3 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-4">
