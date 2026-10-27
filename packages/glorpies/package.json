@@ -1,5 +1,5 @@
 {
-  "name": "fuglios",
+  "name": "glorpies",
   "version": "0.1.0",
   "description": "Ugly little alien faces from any string: painted in watercolour and ink, 29 looks, alive. Deterministic, zero dependencies, works anywhere.",
   "license": "MIT",
@@ -53,11 +53,11 @@
       }
     },
     "bin": {
-      "fuglios": "./dist/cli.js"
+      "glorpies": "./dist/cli.js"
     }
   },
-  "unpkg": "./dist/cdn/fuglios.js",
-  "jsdelivr": "./dist/cdn/fuglios.js",
+  "unpkg": "./dist/cdn/glorpies.js",
+  "jsdelivr": "./dist/cdn/glorpies.js",
   "files": [
     "dist",
     "README.md",

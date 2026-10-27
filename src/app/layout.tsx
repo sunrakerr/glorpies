@@ -17,11 +17,11 @@ const description =
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: 'fuglios · a fugly alien for every name', template: '%s · fuglios' },
+  title: { default: 'glorpies · a fugly alien for every name', template: '%s · glorpies' },
   description,
-  applicationName: 'fuglios',
-  openGraph: { title: 'fuglios', description, siteName: 'fuglios', type: 'website' },
-  twitter: { card: 'summary', title: 'fuglios', description },
+  applicationName: 'glorpies',
+  openGraph: { title: 'glorpies', description, siteName: 'glorpies', type: 'website' },
+  twitter: { card: 'summary', title: 'glorpies', description },
 };
 
 export const viewport: Viewport = {

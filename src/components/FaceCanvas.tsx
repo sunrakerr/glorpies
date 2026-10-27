@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import type { LookId } from 'fuglios/internal/looks';
-import { mount, type FaceHandle } from 'fuglios/internal/mount';
+import type { LookId } from 'glorpies/internal/looks';
+import { mount, type FaceHandle } from 'glorpies/internal/mount';
 import { FaceSkeleton, Restyling } from './Loading';
 
 type Props = {

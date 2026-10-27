@@ -227,8 +227,8 @@ export function paintThumb(seed: number, look: LookId, px: number): Scheduled<HT
   });
 }
 
-/** `fuglio-soggy-glorp-ink.png`: the name made safe for a file, or its seed when nothing of it is. */
+/** `glorpie-soggy-glorp-ink.png`: the name made safe for a file, or its seed when nothing of it is. */
 export function fileName(name: FaceName, ext: string, look: LookId = DEFAULT_LOOK): string {
   const slug = String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || seedOf(name).toString(36);
-  return `fuglio-${slug}${look === DEFAULT_LOOK ? '' : `-${look}`}.${ext}`;
+  return `glorpie-${slug}${look === DEFAULT_LOOK ? '' : `-${look}`}.${ext}`;
 }

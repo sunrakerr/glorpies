@@ -1,4 +1,4 @@
-import type { FaceState, LookChoice, Shape } from 'fuglios';
+import type { FaceState, LookChoice, Shape } from 'glorpies';
 import type { Lang } from '@/lib/highlight';
 
 /** What a face is set to; every snippet is written from it. */
@@ -49,22 +49,22 @@ function cli(c: Choice) {
     c.look !== 'auto' && `--look ${c.look}`, '--size 256', c.background ? `--shape ${c.shape}` : '--background false',
     c.state !== 'idle' && `--state ${c.state}`, '-o face.png',
   ].filter(Boolean);
-  return `npx -p fuglios -p @napi-rs/canvas fuglios ${flags.join(' ')} ${c.name.startsWith('-') ? '-- ' : ''}${shellWord(c.name || 'face')}`;
+  return `npx -p glorpies -p @napi-rs/canvas glorpies ${flags.join(' ')} ${c.name.startsWith('-') ? '-- ' : ''}${shellWord(c.name || 'face')}`;
 }
 
 export const SNIPPETS = {
-  react: (c: Choice) => `import { Fuglio } from "fuglios/react";
+  react: (c: Choice) => `import { Glorpie } from "glorpies/react";
 
-<Fuglio ${props(c, true)} />`,
-  html: (c: Choice) => `<script type="module" src="https://unpkg.com/fuglios"></script>
+<Glorpie ${props(c, true)} />`,
+  html: (c: Choice) => `<script type="module" src="https://unpkg.com/glorpies"></script>
 
-<fuglio-face ${props(c, false)}></fuglio-face>`,
+<glorpie-face ${props(c, false)}></glorpie-face>`,
   server: () => `// faces as images, from your own app: app/api/face/route.ts (Next.js)
-import { faceRoute } from "fuglios/server";
+import { faceRoute } from "glorpies/server";
 export const { GET } = faceRoute();
 
 // or anything that speaks fetch: Bun, Deno, Hono
-import { createFaceHandler } from "fuglios/server";
+import { createFaceHandler } from "glorpies/server";
 Bun.serve({ fetch: createFaceHandler() });`,
   url: (c: Choice) => `<!-- from your route: png, or svg, webp, jpeg -->
 <img src="${query(c)}" width="${c.size}" />
@@ -102,9 +102,9 @@ export const PROPS: { prop: string; type: string; fallback: string; note: string
 
 /** Where each piece lives. */
 export const ENTRIES: { path: string; what: string }[] = [
-  { path: 'fuglios/react', what: '<Fuglio>, plus <Avatar>, <AvatarImage> and <AvatarFallback> for a photo with a face behind it' },
-  { path: 'fuglios/element', what: '<fuglio-face>, a web component for html, vue, svelte, angular. the same attributes as the props' },
-  { path: 'fuglios', what: 'mount(canvas, options) for your own canvas, faceSVG(), faceColors(), seedOf(), LOOKS, STATES' },
-  { path: 'fuglios/server', what: 'faceRoute() for your own image route, createFaceHandler(), renderImage(): png, webp, jpeg, svg and gif' },
-  { path: 'npx fuglios', what: 'the command line: any name to an image file' },
+  { path: 'glorpies/react', what: '<Glorpie>, plus <Avatar>, <AvatarImage> and <AvatarFallback> for a photo with a face behind it' },
+  { path: 'glorpies/element', what: '<glorpie-face>, a web component for html, vue, svelte, angular. the same attributes as the props' },
+  { path: 'glorpies', what: 'mount(canvas, options) for your own canvas, faceSVG(), faceColors(), seedOf(), LOOKS, STATES' },
+  { path: 'glorpies/server', what: 'faceRoute() for your own image route, createFaceHandler(), renderImage(): png, webp, jpeg, svg and gif' },
+  { path: 'npx glorpies', what: 'the command line: any name to an image file' },
 ];

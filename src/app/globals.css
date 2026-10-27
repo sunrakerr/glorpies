@@ -121,7 +121,7 @@ body::before {
   50% { opacity: 0; }
 }
 
-/* syntax colours, from the fuglios' own paints: alien green strings, violet keywords, magenta tags */
+/* syntax colours, from the glorpies' own paints: alien green strings, violet keywords, magenta tags */
 :root {
   --tk-comment: #9a8c7d;
   --tk-string: #2f7d24;

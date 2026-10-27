@@ -8,7 +8,7 @@ import type { FaceName } from './seed';
 /**
  * Faces as image files, on a server or anywhere else without a DOM: Node, Bun,
  * Deno and serverless functions. Drawing uses `@napi-rs/canvas` (install it
- * alongside fuglios); it's loaded the first time an image is asked for.
+ * alongside glorpies); it's loaded the first time an image is asked for.
  */
 
 export const FORMATS = ['png', 'webp', 'jpeg', 'svg', 'gif'] as const;
@@ -36,7 +36,7 @@ export function useNativeCanvas(): Promise<void> {
       });
     },
     () => {
-      throw new Error('fuglios/server draws with @napi-rs/canvas; install it next to fuglios (npm i @napi-rs/canvas)');
+      throw new Error('glorpies/server draws with @napi-rs/canvas; install it next to glorpies (npm i @napi-rs/canvas)');
     },
   );
   return native;
@@ -109,7 +109,7 @@ export function createFaceHandler(defaults: HandlerOptions = {}): (request: Requ
       return new Response(body as BodyInit, { headers });
     } catch (e) {
       // the details are for the server's log, not for whoever asked
-      console.error('fuglios: could not paint', name, e);
+      console.error('glorpies: could not paint', name, e);
       return new Response('Could not paint that face', { status: 500 });
     }
   };

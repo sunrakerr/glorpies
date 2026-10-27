@@ -2,9 +2,9 @@
 
 import { Pause, Play, RotateCcw, Shuffle } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { loadEngine } from 'fuglios/internal/engine';
+import { loadEngine } from 'glorpies/internal/engine';
 import { DURATION, prepareExplainer, VH, VW, type Explainer, type Fonts } from '@/lib/explainer';
-import { newSeed } from 'fuglios/internal/studio';
+import { newSeed } from 'glorpies/internal/studio';
 import { SiteHeader } from './SiteHeader';
 import { IconButton, Pill } from './ui';
 

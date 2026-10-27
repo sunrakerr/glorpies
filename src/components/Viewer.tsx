@@ -2,10 +2,10 @@
 
 import { Braces, ChevronLeft, ChevronRight, Code, Copy, Eraser, FileCode, ImageDown, RefreshCw, X } from 'lucide-react';
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
-import { seedOf } from 'fuglios';
-import { lookOf, type LookId } from 'fuglios/internal/looks';
+import { seedOf } from 'glorpies';
+import { lookOf, type LookId } from 'glorpies/internal/looks';
 import { EXPORT_SIZES, type Still } from '@/lib/share';
-import { PRIORITY } from 'fuglios/internal/studio';
+import { PRIORITY } from 'glorpies/internal/studio';
 import { trueName } from '@/lib/glyphs';
 import type { ActionKind } from './actions';
 import { FaceCanvas } from './FaceCanvas';

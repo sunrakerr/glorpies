@@ -11,9 +11,9 @@ importers:
       '@napi-rs/canvas':
         specifier: ^1.0.13
         version: 1.0.13
-      fuglios:
+      glorpies:
         specifier: workspace:*
-        version: link:packages/fuglios
+        version: link:packages/glorpies
       lucide-react:
         specifier: ^1.61.0
         version: 1.61.0(@types/react@19.3.0)(react@19.3.1)
@@ -46,7 +46,7 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  packages/fuglios:
+  packages/glorpies:
     devDependencies:
       '@napi-rs/canvas':
         specifier: ^1.0.13

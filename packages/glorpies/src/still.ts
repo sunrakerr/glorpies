@@ -83,7 +83,7 @@ export function faceSVG(name: FaceName, o: StillOptions = {}): string {
     ? watercolourSVG(paintedFace(name, o), size, o.state, o.background !== false)
     : `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><image width="${size}" height="${size}" href="${faceCanvas(name, { ...o, shape: 'square' }).toDataURL('image/png')}"/></svg>`;
   if (o.background === false || !o.shape || o.shape === 'square') return inner;
-  const id = `fuglio-${seedOf(name).toString(36)}-${o.shape}`;
+  const id = `glorpie-${seedOf(name).toString(36)}-${o.shape}`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><defs><clipPath id="${id}"><path d="${shapeD(o.shape, size)}"/></clipPath></defs><g clip-path="url(#${id})">${inner}</g></svg>`;
 }
 
@@ -119,7 +119,7 @@ function watercolourSVG(face: Face, size: number, state: FaceState | undefined, 
       g.globalCompositeOperation = 'source-in';
       g.fillStyle = '#ffffff';
       g.fillRect(0, 0, m, m);
-      const id = `fuglio-cut-${face.seed.toString(36)}`;
+      const id = `glorpie-cut-${face.seed.toString(36)}`;
       svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><defs><mask id="${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="${size}" height="${size}"><image width="${size}" height="${size}" href="${cut.mask.toDataURL('image/png')}"/></mask></defs><g mask="url(#${id})">${svg}</g></svg>`;
     }
   }

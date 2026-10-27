@@ -2,10 +2,10 @@
 
 import { Plus, Shuffle } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { randomName, seedOf } from 'fuglios';
-import { DEFAULT_LOOK, isLook, type LookId } from 'fuglios/internal/looks';
-import { getStage } from 'fuglios/internal/stage';
-import { forget } from 'fuglios/internal/studio';
+import { randomName, seedOf } from 'glorpies';
+import { DEFAULT_LOOK, isLook, type LookId } from 'glorpies/internal/looks';
+import { getStage } from 'glorpies/internal/stage';
+import { forget } from 'glorpies/internal/studio';
 import type { Still } from '@/lib/share';
 import { runAction, type ActionKind } from './actions';
 import { FaceCard } from './FaceCard';

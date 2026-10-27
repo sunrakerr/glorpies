@@ -5,7 +5,7 @@ import { isState } from './states';
 import { faceColors, isShape } from './still';
 
 /**
- * <fuglio-face name="agent-47" size="48"></fuglio-face>
+ * <glorpie-face name="agent-47" size="48"></glorpie-face>
  *
  * Works in plain HTML and in any framework. Attributes:
  *   name      any string (required); the same name is always the same face
@@ -39,7 +39,7 @@ const lookFrom = (v: string | null): LookChoice => (v && (v === 'auto' || isLook
 
 const Base: typeof HTMLElement = typeof HTMLElement === 'undefined' ? (class {} as typeof HTMLElement) : HTMLElement;
 
-export class FuglioElement extends Base {
+export class GlorpieElement extends Base {
   static observedAttributes = ATTRS;
   private canvas: HTMLCanvasElement | null = null;
   private handle: FaceHandle | null = null;
@@ -83,7 +83,7 @@ export class FuglioElement extends Base {
     this.style.setProperty('--wash', faceColors(this.name).bg);
     this.setAttribute('aria-label', this.getAttribute('label') ?? 'Avatar');
     const shape = this.getAttribute('shape');
-    if (shape && !isShape(shape)) console.warn(`<fuglio-face> unknown shape "${shape}"`);
+    if (shape && !isShape(shape)) console.warn(`<glorpie-face> unknown shape "${shape}"`);
   }
 
   private get name() {
@@ -105,16 +105,16 @@ export class FuglioElement extends Base {
   }
 }
 
-/** Registers the element (as <fuglio-face> unless you name it). Safe to call more than once, and on a server. */
-export function defineFuglio(tag = 'fuglio-face') {
+/** Registers the element (as <glorpie-face> unless you name it). Safe to call more than once, and on a server. */
+export function defineGlorpie(tag = 'glorpie-face') {
   if (typeof customElements === 'undefined' || customElements.get(tag)) return;
-  customElements.define(tag, class extends FuglioElement {});
+  customElements.define(tag, class extends GlorpieElement {});
 }
 
-defineFuglio();
+defineGlorpie();
 
 declare global {
   interface HTMLElementTagNameMap {
-    'fuglio-face': FuglioElement;
+    'glorpie-face': GlorpieElement;
   }
 }

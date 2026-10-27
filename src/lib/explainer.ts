@@ -1,12 +1,12 @@
-import type { Engine } from 'fuglios/internal/engine';
-import { addPath, bbox, resample, TAU, type Pt } from 'fuglios/internal/geometry';
-import { rgba, type Palette } from 'fuglios/internal/palettes';
-import { buildFace } from 'fuglios/internal/face/build';
-import { applyClip, drawEyes, play, rasterizeFace, vignette, type FaceRaster, type Pose } from 'fuglios/internal/face/render';
-import { hatchLines, inkRibbons, type HatchLine } from 'fuglios/internal/face/strokes';
-import type { Face, HatchOp, InkOp, Op, WashOp } from 'fuglios/internal/face/types';
-import { W } from 'fuglios/internal/face/types';
-import { deform, plan, type Plan, type VPt } from 'fuglios/internal/face/wash';
+import type { Engine } from 'glorpies/internal/engine';
+import { addPath, bbox, resample, TAU, type Pt } from 'glorpies/internal/geometry';
+import { rgba, type Palette } from 'glorpies/internal/palettes';
+import { buildFace } from 'glorpies/internal/face/build';
+import { applyClip, drawEyes, play, rasterizeFace, vignette, type FaceRaster, type Pose } from 'glorpies/internal/face/render';
+import { hatchLines, inkRibbons, type HatchLine } from 'glorpies/internal/face/strokes';
+import type { Face, HatchOp, InkOp, Op, WashOp } from 'glorpies/internal/face/types';
+import { W } from 'glorpies/internal/face/types';
+import { deform, plan, type Plan, type VPt } from 'glorpies/internal/face/wash';
 
 /**
  * A narrated walk through how one face is painted, drawn with the real

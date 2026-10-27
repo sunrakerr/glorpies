@@ -1,9 +1,9 @@
 'use client';
 
 import { Copy, FileCode, ImageDown, RefreshCw } from 'lucide-react';
-import { seedOf } from 'fuglios';
-import { lookOf, type LookId } from 'fuglios/internal/looks';
-import { PRIORITY } from 'fuglios/internal/studio';
+import { seedOf } from 'glorpies';
+import { lookOf, type LookId } from 'glorpies/internal/looks';
+import { PRIORITY } from 'glorpies/internal/studio';
 import { trueName } from '@/lib/glyphs';
 import { FaceCanvas } from './FaceCanvas';
 import { Sheet } from './Sheet';

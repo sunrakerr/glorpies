@@ -25,9 +25,9 @@ export function SiteHeader({ className = '' }: { className?: string }) {
   const path = usePathname();
   return (
     <header className={`flex items-center justify-between gap-4 ${className}`}>
-      <Link href="/" className="group flex items-center gap-2.5" aria-label="fuglios, home">
+      <Link href="/" className="group flex items-center gap-2.5" aria-label="glorpies, home">
         <Invader className="h-[13px] text-accent transition group-hover:-translate-y-px" />
-        <span className="font-display text-[18px] leading-none">fuglios</span>
+        <span className="font-display text-[18px] leading-none">glorpies</span>
       </Link>
       <nav className="flex items-center gap-4 text-[12.5px] text-ink-2">
         {LINKS.map((l) => {

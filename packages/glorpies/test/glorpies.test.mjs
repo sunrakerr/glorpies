@@ -137,6 +137,6 @@ test('without a background, every look keeps only the face', async () => {
 });
 
 test('the drop-in script stays small', () => {
-  const kb = gzipSync(readFileSync(new URL('../dist/cdn/fuglios.js', import.meta.url))).length / 1024;
-  assert.ok(kb < 60, `dist/cdn/fuglios.js is ${kb.toFixed(1)} KB gzipped`);
+  const kb = gzipSync(readFileSync(new URL('../dist/cdn/glorpies.js', import.meta.url))).length / 1024;
+  assert.ok(kb < 60, `dist/cdn/glorpies.js is ${kb.toFixed(1)} KB gzipped`);
 });

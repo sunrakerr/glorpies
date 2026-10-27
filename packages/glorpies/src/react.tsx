@@ -10,7 +10,7 @@ import type { FaceName } from './seed';
 import type { FaceState } from './states';
 import { faceColors, type Shape } from './still';
 
-export type FuglioProps = {
+export type GlorpieProps = {
   /** Any string or seed; the same name is always the same face. */
   name: FaceName;
   /** A look id, or `auto`: watercolour when large, the ink badge below 72px. */
@@ -42,7 +42,7 @@ const length = (size: number | string) => (typeof size === 'number' ? `${size}px
  * A living face. It renders on the server as a softly coloured placeholder in
  * the face's own background colour, then paints on the client.
  */
-export function Fuglio({ name, look = 'auto', size = 48, shape = 'circle', state = 'idle', background = true, alive, pokeable = false, label = 'Avatar', priority, className, style }: FuglioProps) {
+export function Glorpie({ name, look = 'auto', size = 48, shape = 'circle', state = 'idle', background = true, alive, pokeable = false, label = 'Avatar', priority, className, style }: GlorpieProps) {
   const ref = useRef<HTMLCanvasElement>(null);
   const handle = useRef<FaceHandle | null>(null);
   const [ready, setReady] = useState(false);
@@ -138,9 +138,9 @@ export function AvatarImage({ src, alt = '', style, ...rest }: ImgHTMLAttributes
   );
 }
 
-/** The face shown while the photo loads, or instead of it. Takes every `Fuglio` prop except size and shape, which come from `Avatar`. */
-export function AvatarFallback(props: Omit<FuglioProps, 'size' | 'shape'>) {
+/** The face shown while the photo loads, or instead of it. Takes every `Glorpie` prop except size and shape, which come from `Avatar`. */
+export function AvatarFallback(props: Omit<GlorpieProps, 'size' | 'shape'>) {
   const { status } = useAvatar('AvatarFallback');
   if (status === 'loaded') return null;
-  return <Fuglio {...props} size="100%" shape="square" style={{ gridArea: '1 / 1', ...props.style }} />;
+  return <Glorpie {...props} size="100%" shape="square" style={{ gridArea: '1 / 1', ...props.style }} />;
 }

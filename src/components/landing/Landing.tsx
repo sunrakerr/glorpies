@@ -3,8 +3,8 @@
 import { ArrowDown, Copy, Dices, FileCode, ImageDown } from 'lucide-react';
 import Link from 'next/link';
 import { useDeferredValue, useEffect, useState, type CSSProperties, type ReactNode } from 'react';
-import { FULL_LOOKS, lookOf, randomName, resolveLook, seedOf, SHAPES, SMALL_LOOKS, STATES, type FaceState, type LookChoice, type LookId } from 'fuglios';
-import { Fuglio } from 'fuglios/react';
+import { FULL_LOOKS, lookOf, randomName, resolveLook, seedOf, SHAPES, SMALL_LOOKS, STATES, type FaceState, type LookChoice, type LookId } from 'glorpies';
+import { Glorpie } from 'glorpies/react';
 import { runAction, type ActionKind } from '../actions';
 import { CodePanel, CopyButton } from '../Code';
 import { LookThumb } from '../LookPicker';
@@ -31,7 +31,7 @@ const MOODS: Record<FaceState, string> = {
 };
 
 /** The install command, in each package manager's own words. */
-const INSTALL = { npm: 'npm i fuglios', pnpm: 'pnpm add fuglios', yarn: 'yarn add fuglios', bun: 'bun add fuglios' } as const;
+const INSTALL = { npm: 'npm i glorpies', pnpm: 'pnpm add glorpies', yarn: 'yarn add glorpies', bun: 'bun add glorpies' } as const;
 type Manager = keyof typeof INSTALL;
 const MANAGERS = Object.keys(INSTALL) as Manager[];
 
@@ -149,7 +149,7 @@ function Playground({ c, name, set }: { c: Choice; name: string; set: (p: Partia
             <div className="bg-[#f4eee4]">
               {/* off its background the face sits on a checkerboard, the usual sign for transparent */}
               <div className={`relative aspect-square w-full overflow-hidden transition-[padding] duration-500 ease-soft ${c.background ? 'bg-[#ebe3d5]/50' : 'checker'} ${c.shape === 'square' || !c.background ? 'p-0' : 'p-[8%]'}`}>
-                <Fuglio
+                <Glorpie
                   name={name} look={portraitLook} size="100%" shape={c.shape} state={c.state} background={c.background} alive={c.alive} pokeable priority={3} label={`The face for “${name}”`}
                   style={{ transition: 'border-radius .5s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow .5s', boxShadow: c.shape === 'square' || !c.background ? 'none' : '0 1px 2px rgb(60 40 20 / 0.12), 0 12px 28px -14px rgb(60 40 20 / 0.4)' }}
                 />
@@ -170,7 +170,7 @@ function Playground({ c, name, set }: { c: Choice; name: string; set: (p: Partia
         <div role="radiogroup" aria-label="Size" className="mt-8 flex items-end gap-5">
           {SIZES.map((size) => (
             <button key={size} type="button" role="radio" aria-checked={c.size === size} onClick={() => set({ size })} className="flex flex-col items-center gap-2">
-              <Fuglio name={name} size={size} look={c.look} shape={c.shape} state={c.state} background={c.background} alive={c.alive} priority={2.5} label={`${name}, ${size}px`} />
+              <Glorpie name={name} size={size} look={c.look} shape={c.shape} state={c.state} background={c.background} alive={c.alive} priority={2.5} label={`${name}, ${size}px`} />
               <Pick on={c.size === size}>{size}</Pick>
             </button>
           ))}
@@ -343,7 +343,7 @@ function Footer() {
     <footer className="mb-10 flex items-center justify-between gap-4 border-t border-dashed border-ink/20 pt-5 text-[11.5px] text-ink-2">
       <span className="flex items-center gap-2">
         <Invader className="h-[10px] text-accent" />
-        <span className="text-ink">fuglios</span> · mit licence
+        <span className="text-ink">glorpies</span> · mit licence
       </span>
       <nav className="flex items-center gap-4">
         <Link href="/gallery" className="transition hover:text-ink">./gallery</Link>

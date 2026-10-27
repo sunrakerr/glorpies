@@ -13,8 +13,8 @@ export default defineConfig([
     noExternal: ['gifenc'],
   },
   {
-    // one self-contained file for <script type="module" src="…/fuglios.js">, no bundler needed
-    entry: { fuglios: 'src/element.ts' },
+    // one self-contained file for <script type="module" src="…/glorpies.js">, no bundler needed
+    entry: { glorpies: 'src/element.ts' },
     format: ['esm'],
     target: 'es2022',
     minify: true,

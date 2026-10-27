@@ -1,5 +1,5 @@
 {
-  "name": "fuglios-site",
+  "name": "glorpies-site",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -8,11 +8,11 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "pnpm --filter fuglios build && pnpm --filter fuglios test"
+    "test": "pnpm --filter glorpies build && pnpm --filter glorpies test"
   },
   "dependencies": {
     "@napi-rs/canvas": "^1.0.13",
-    "fuglios": "workspace:*",
+    "glorpies": "workspace:*",
     "lucide-react": "^1.61.0",
     "next": "^16.4.2",
     "react": "^19.3.1",

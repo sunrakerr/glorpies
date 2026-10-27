@@ -5,9 +5,9 @@ import { FORMATS, renderImage, type ImageFormat } from './server';
 import { isState, STATES } from './states';
 import { isShape, SHAPES } from './still';
 
-const HELP = `fuglios: paint a face from any name
+const HELP = `glorpies: paint a face from any name
 
-  npx -p fuglios -p @napi-rs/canvas fuglios [options] <name>
+  npx -p glorpies -p @napi-rs/canvas glorpies [options] <name>
 
   -l, --look    ${'auto'}, or one of: ${LOOKS.map((l) => l.id).join(', ')}
   -s, --size    pixels (default 256)
@@ -19,8 +19,8 @@ const HELP = `fuglios: paint a face from any name
   -o, --out     file to write (default <name>.<format>; "-" for stdout)
   -h, --help
 
-  npx fuglios agent-47 --look ink --size 128 --shape circle -o agent.png
-  npx fuglios agent-47 --state thinking -f gif`;
+  npx glorpies agent-47 --look ink --size 128 --shape circle -o agent.png
+  npx glorpies agent-47 --state thinking -f gif`;
 
 async function main() {
   const { values, positionals } = parseArgs({
@@ -43,7 +43,7 @@ async function main() {
     process.exit(values.help ? 0 : 1);
   }
   const fail = (msg: string): never => {
-    console.error(`fuglios: ${msg}`);
+    console.error(`glorpies: ${msg}`);
     process.exit(1);
   };
   const num = (flag: string, v: string | undefined, lo: number, hi: number) => {
@@ -77,6 +77,6 @@ async function main() {
 
 main().catch((e) => {
   console.error(e instanceof Error ? e.message : e);
-  if (e instanceof Error && e.message.includes('@napi-rs/canvas')) console.error('with npx: npx -p fuglios -p @napi-rs/canvas fuglios <name>');
+  if (e instanceof Error && e.message.includes('@napi-rs/canvas')) console.error('with npx: npx -p glorpies -p @napi-rs/canvas glorpies <name>');
   process.exit(1);
 });

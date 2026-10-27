@@ -1,6 +1,6 @@
-import { faceCanvas, faceSVG, type FaceState, type Shape } from 'fuglios';
-import type { LookId } from 'fuglios/internal/looks';
-import { fileName, PRIORITY, schedule } from 'fuglios/internal/studio';
+import { faceCanvas, faceSVG, type FaceState, type Shape } from 'glorpies';
+import type { LookId } from 'glorpies/internal/looks';
+import { fileName, PRIORITY, schedule } from 'glorpies/internal/studio';
 
 export const EXPORT_SIZES = [1024, 2048] as const;
 

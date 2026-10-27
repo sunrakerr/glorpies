@@ -1,7 +1,7 @@
 /**
- * fuglios: hand-painted, wobbly faces from any string.
+ * glorpies: hand-painted, wobbly faces from any string.
  *
- *   import { mount, faceCanvas, faceSVG } from 'fuglios';
+ *   import { mount, faceCanvas, faceSVG } from 'glorpies';
  *
  * The same name always paints the same face, in any of 29 looks, at any size,
  * in the browser or on a server. Faces mounted on a canvas come alive: they

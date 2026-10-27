@@ -1,29 +1,29 @@
-# fuglios
+# glorpies
 
 Ugly little alien faces from any string. Antennae, extra eyes, horns, halos and too many teeth, painted in watercolour and dip pen, in 29 looks, and alive: they breathe, blink and glance at you.
 
 The same name is always the same face, on every device and every server. No API calls, no storage, zero dependencies.
 
 ```bash
-npm i fuglios
+npm i glorpies
 ```
 
 ## Anywhere: one tag
 
 ```html
-<script type="module" src="https://unpkg.com/fuglios"></script>
+<script type="module" src="https://unpkg.com/glorpies"></script>
 
-<fuglio-face name="ada@lovelace.dev" size="48"></fuglio-face>
+<glorpie-face name="ada@lovelace.dev" size="48"></glorpie-face>
 ```
 
-Works in plain HTML and in any framework (Vue, Svelte, Angular, Astro…). With a bundler, `import 'fuglios/element'` registers the tag.
+Works in plain HTML and in any framework (Vue, Svelte, Angular, Astro…). With a bundler, `import 'glorpies/element'` registers the tag.
 
 ## React
 
 ```tsx
-import { Fuglio, Avatar, AvatarImage, AvatarFallback } from 'fuglios/react';
+import { Glorpie, Avatar, AvatarImage, AvatarFallback } from 'glorpies/react';
 
-<Fuglio name="agent-47" size={40} state="thinking" />
+<Glorpie name="agent-47" size={40} state="thinking" />
 
 // a photo that falls back to a face while it loads, or if it fails
 <Avatar size={40}>
@@ -65,7 +65,7 @@ It renders on the server as a soft placeholder in the face's own background colo
 ## Your own canvas
 
 ```ts
-import { mount } from 'fuglios';
+import { mount } from 'glorpies';
 
 const face = mount(canvas, { name: 'agent-47', look: 'gouache', state: 'working' });
 face.update({ state: 'done' });
@@ -79,16 +79,16 @@ Faces paint once they come near the screen, at their displayed size × devicePix
 Faces as image files, from a route in your own app:
 
 ```bash
-npm i fuglios @napi-rs/canvas
+npm i glorpies @napi-rs/canvas
 ```
 
 ```ts
 // app/api/face/route.ts (Next.js)
-import { faceRoute } from 'fuglios/server';
+import { faceRoute } from 'glorpies/server';
 export const { GET } = faceRoute();
 
 // anything that speaks fetch: Hono, Bun.serve, Deno.serve, Remix
-import { createFaceHandler } from 'fuglios/server';
+import { createFaceHandler } from 'glorpies/server';
 Bun.serve({ fetch: createFaceHandler() });
 ```
 
@@ -101,12 +101,12 @@ Query: `name` (required), `look`, `size` (16–1024), `shape` (outside is transp
 
 GIFs loop seamlessly with a scripted pose, so the same name always loops the same way. Watercolour SVG is real vector paths; it's large, so prefer PNG or WebP at avatar sizes.
 
-To try the urls before you've set anything up, [fuglios.vercel.app](https://fuglios.vercel.app) answers them too, at `https://fuglios.vercel.app/api/face?name=you`. It's a demo, not a CDN for your app: host the route for anything real.
+To try the urls before you've set anything up, [glorpies.vercel.app](https://glorpies.vercel.app) answers them too, at `https://glorpies.vercel.app/api/face?name=you`. It's a demo, not a CDN for your app: host the route for anything real.
 
 Or directly:
 
 ```ts
-import { renderImage, faceGIF } from 'fuglios/server';
+import { renderImage, faceGIF } from 'glorpies/server';
 const { body, type } = await renderImage('agent-47', { look: 'sticker', size: 256, format: 'webp' });
 ```
 
@@ -115,11 +115,11 @@ const { body, type } = await renderImage('agent-47', { look: 'sticker', size: 25
 The CLI paints with `@napi-rs/canvas`, so ask npx for both:
 
 ```bash
-npx -p fuglios -p @napi-rs/canvas fuglios agent-47 --look ink --size 128 --shape circle -o agent.png
-npx -p fuglios -p @napi-rs/canvas fuglios agent-47 --state thinking -f gif
+npx -p glorpies -p @napi-rs/canvas glorpies agent-47 --look ink --size 128 --shape circle -o agent.png
+npx -p glorpies -p @napi-rs/canvas glorpies agent-47 --state thinking -f gif
 ```
 
-Installed in a project (`npm i fuglios @napi-rs/canvas`), it's just `npx fuglios agent-47`.
+Installed in a project (`npm i glorpies @napi-rs/canvas`), it's just `npx glorpies agent-47`.
 
 ## Publishing
 

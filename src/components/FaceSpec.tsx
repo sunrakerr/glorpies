@@ -2,7 +2,7 @@
 
 import { X } from 'lucide-react';
 import { useState } from 'react';
-import { lookOf, type LookId } from 'fuglios/internal/looks';
+import { lookOf, type LookId } from 'glorpies/internal/looks';
 import { CodePanel, CopyButton } from './Code';
 import { SNIPPET_FILES, SNIPPETS, type Choice } from './landing/snippets';
 import { Tabs } from './Tabs';

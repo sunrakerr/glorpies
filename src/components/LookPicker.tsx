@@ -2,8 +2,8 @@
 
 import { Check, Palette } from 'lucide-react';
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { FULL_LOOKS, LOOKS, lookOf, SMALL_LOOKS, type Look, type LookId } from 'fuglios/internal/looks';
-import { cachedThumb, paintThumb } from 'fuglios/internal/studio';
+import { FULL_LOOKS, LOOKS, lookOf, SMALL_LOOKS, type Look, type LookId } from 'glorpies/internal/looks';
+import { cachedThumb, paintThumb } from 'glorpies/internal/studio';
 import { ThumbSkeleton } from './Loading';
 
 /** One size for every preview, so the gallery picker and the viewer strip share a cache. */
