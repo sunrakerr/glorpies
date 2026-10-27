@@ -3,6 +3,9 @@ import { buildFace } from './face/build';
 import { EYE_POSES, eyePatch, pixelsOf, posed } from './alive';
 import { rasterizeFace, renderStill, type Painting, type StillRaster } from './face/render';
 import type { Face } from './face/types';
+import { makeCanvas } from './canvas';
+import { cutBackdrop, cutOut } from './cutout';
+import { unguided } from './face/bare';
 import { splitLayers } from './layers';
 import { expressed } from './expression';
 import { DEFAULT_LOOK, lookOf, renderLook, type LookId } from './looks';
@@ -139,12 +142,23 @@ const SLOW_STYLE_MS = 40;
  * is one still, followed by its eye poses: each is a job of its own so the page
  * never stalls for long, and each patch joins the raster as soon as it's ready.
  */
-/** `lively: false` paints only the still: a face that will never move needs no split background and no eye poses. */
-export function paintRaster(seed: number, px: number, priority: number, look: LookId = DEFAULT_LOOK, lively = true, state: FaceState = 'idle'): Scheduled<{ face: Face; raster: Painting }> {
+/** How a face is painted: its look, whether it will move, its mood, and whether it keeps its background. */
+export type PaintOptions = { look?: LookId; lively?: boolean; state?: FaceState; background?: boolean };
+
+/**
+ * `lively: false` paints only the still: a face that will never move needs no
+ * split background and no eye poses. `background: false` lifts the face off
+ * its paper (and its pencil lines) for every look.
+ */
+export function paintRaster(seed: number, px: number, priority: number, o: PaintOptions = {}): Scheduled<{ face: Face; raster: Painting }> {
+  const { look = DEFAULT_LOOK, lively = true, state = 'idle', background = true } = o;
+  const faceOf = (E: Engine) => (background ? faceFor(seed, E, state) : unguided(faceFor(seed, E, state)));
   if (look === DEFAULT_LOOK) {
     return schedule(priority, (E) => {
-      const face = faceFor(seed, E, state);
-      return { face, raster: rasterizeFace(face, E, px) };
+      const face = faceOf(E);
+      const raster = rasterizeFace(face, E, px);
+      if (!background) cutBackdrop(raster, face);
+      return { face, raster };
     });
   }
   const follow: Scheduled<void>[] = [];
@@ -154,19 +168,22 @@ export function paintRaster(seed: number, px: number, priority: number, look: Lo
     follow.push(job);
   };
   const base = schedule(priority, (E) => {
-    const face = faceFor(seed, E, state);
+    const face = faceOf(E);
     const start = performance.now();
     // a face that will never move is painted with its eyes already set for its mood, as a still image is
-    const still = renderLook(look, lively || state === 'idle' ? face : posed(face, stillEyes(face, state)), E, px);
+    const whole = renderLook(look, lively || state === 'idle' ? face : posed(face, stillEyes(face, state)), E, px);
     const { motion, eyes, tiles } = lookOf(look);
-    const raster: StillRaster = { px, still, layers: 'pending', back: null, figure: null, mask: null, motion, eyes, tiles, patches: [], glance: null };
+    const raster: StillRaster = { px, still: whole, layers: 'pending', back: null, figure: null, mask: null, motion, eyes, tiles, patches: [], glance: null };
+    // off its background the face is cut out now, before it's ever shown, and moves over nothing
+    const cut = background ? null : cutOut(whole, renderLook(look, face, E, px, true));
+    if (cut) Object.assign(raster, { still: cut.figure, layers: 'split', back: makeCanvas(px), figure: cut.figure, mask: cut.mask });
     // a slow style gets the poses that matter most (a blink, a glance each way) so the page stays smooth
     const wanted = !lively ? [] : performance.now() - start > SLOW_STYLE_MS ? EYE_POSES.slice(0, 3) : EYE_POSES;
 
     // first the background bare, so the face can move without it; every face is split before any eyes are painted
-    if (lively) later(priority - LAYER_LAG, (E) => {
+    if (lively && !cut) later(priority - LAYER_LAG, (E) => {
       const back = renderLook(look, face, E, px, true);
-      const split = splitLayers(still, back);
+      const split = splitLayers(whole, back);
       if (split) Object.assign(raster, { layers: 'split', back, figure: split.figure, mask: split.mask });
       else raster.layers = 'whole';
     });
@@ -175,7 +192,8 @@ export function paintRaster(seed: number, px: number, priority: number, look: Lo
     wanted.forEach((pose, i) => {
       // ordered by pose across faces: every face learns to blink before any learns to glance
       later(priority - POSE_LAG - i * 0.01, (E) => {
-        rest ??= pixelsOf(still);
+        // patches are found against the whole painting, then trimmed to the cut
+        rest ??= pixelsOf(whole);
         const patch = eyePatch(rest, renderLook(look, posed(face, pose), E, px), face, pose, raster.mask);
         if (patch) raster.patches.push(patch);
         if (i === wanted.length - 1) rest = null;

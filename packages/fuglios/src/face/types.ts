@@ -4,6 +4,9 @@ import type { Palette } from '../palettes';
 /** Faces are authored on a fixed square canvas and scaled at render time. */
 export const W = 480;
 
+/** The pencil a face is sketched in before it's painted: its construction lines, behind everything. */
+export const GRAPHITE = '#55555f';
+
 /** 'paper' resolves to the sheet colour on the backdrop and to white inside the multiplied figure layer. */
 export type Color = string;
 

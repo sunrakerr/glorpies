@@ -14,6 +14,8 @@ type Props = {
   label: string;
   /** Tapping the face makes it wobble. */
   pokeable?: boolean;
+  /** `false` paints only the face, on nothing. */
+  background?: boolean;
   /** Shown on the loaders, for views large enough to carry words. */
   caption?: string;
 };
@@ -23,7 +25,7 @@ type Status = 'empty' | 'restyling' | 'ready';
 
 const CROSSFADE_MS = 650;
 
-export function FaceCanvas({ seed, look, priority, maxPx, label, pokeable = false, caption }: Props) {
+export function FaceCanvas({ seed, look, priority, maxPx, label, pokeable = false, background = true, caption }: Props) {
   const ref = useRef<HTMLCanvasElement>(null);
   const ghostRef = useRef<HTMLCanvasElement>(null);
   const handle = useRef<FaceHandle | null>(null);
@@ -40,6 +42,7 @@ export function FaceCanvas({ seed, look, priority, maxPx, label, pokeable = fals
       priority,
       maxPx,
       pokeable,
+      background,
       // the gallery's own switch holds every face still at once, through the stage
       alive: true,
       beforePaint: (first) => {
@@ -62,8 +65,8 @@ export function FaceCanvas({ seed, look, priority, maxPx, label, pokeable = fals
     // only a new style repaints; the old one stays up, marked as restyling, until it lands
     if (look !== shownLook.current) setStatus((s) => (s === 'ready' ? 'restyling' : s));
     shownLook.current = look;
-    h.update({ look, priority, maxPx, pokeable });
-  }, [look, priority, maxPx, pokeable]);
+    h.update({ look, priority, maxPx, pokeable, background });
+  }, [look, priority, maxPx, pokeable, background]);
 
   return (
     <div className="absolute inset-0">

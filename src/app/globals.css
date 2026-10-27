@@ -332,3 +332,8 @@ dialog.viewer[open]::backdrop {
   }
   .skeleton-sketch path { stroke-dashoffset: 0; }
 }
+
+/* the usual sign for transparent: a soft checkerboard */
+.checker {
+  background: repeating-conic-gradient(rgb(var(--shade) / 0.07) 0 25%, transparent 0 50%) 0 0 / 20px 20px, var(--color-paper-2);
+}

@@ -1,7 +1,11 @@
 import { posed } from './alive';
 import { makeCanvas } from './canvas';
 import { getEngine } from './engine';
+import { cutOut } from './cutout';
+import { bareFace, unguided } from './face/bare';
+import { renderStill } from './face/render';
 import { faceToSVG } from './face/svg';
+import { faceMask } from './layers';
 import type { Face } from './face/types';
 import { marksFor, renderLook, resolveLook, type LookChoice, type LookId } from './looks';
 import { drawMarks } from './marks';
@@ -21,7 +25,10 @@ export type StillOptions = {
   /** Width and height in pixels. */
   size?: number;
   state?: FaceState;
+  /** Crops the picture; ignored without a background, which is all a crop would cut. */
   shape?: Shape;
+  /** `false` keeps only the face: no backdrop, no pencil lines, transparent all around. Defaults to true. */
+  background?: boolean;
 };
 
 /** The largest still there is: 8192² is already a quarter of a gigabyte of pixels. */
@@ -49,10 +56,13 @@ function inState(name: FaceName, state: FaceState | undefined): Face {
 export function faceCanvas(name: FaceName, o: StillOptions = {}): HTMLCanvasElement {
   const size = sizeOf(o.size);
   const look = resolveLook(o.look, size);
-  const face = inState(name, o.state);
-  const c = renderLook(look, face, getEngine(), size);
+  const face = paintedFace(name, o);
+  const E = getEngine();
+  let c = renderLook(look, face, E, size);
+  if (o.background === false) c = cutOut(c, renderLook(look, face, E, size, true))?.figure ?? c;
+  // marks sit beside the head, so they go on after the cut
   drawStateMarks(c, face, look, o.state);
-  if (!o.shape || o.shape === 'square') return c;
+  if (o.background === false || !o.shape || o.shape === 'square') return c;
   const out = makeCanvas(size);
   const g = out.getContext('2d')!;
   shapePath(g, o.shape, size);
@@ -70,9 +80,9 @@ export function faceSVG(name: FaceName, o: StillOptions = {}): string {
   const size = sizeOf(o.size);
   const look = resolveLook(o.look, size);
   const inner = look === 'watercolour'
-    ? watercolourSVG(inState(name, o.state), size, o.state)
+    ? watercolourSVG(paintedFace(name, o), size, o.state, o.background !== false)
     : `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><image width="${size}" height="${size}" href="${faceCanvas(name, { ...o, shape: 'square' }).toDataURL('image/png')}"/></svg>`;
-  if (!o.shape || o.shape === 'square') return inner;
+  if (o.background === false || !o.shape || o.shape === 'square') return inner;
   const id = `fuglio-${seedOf(name).toString(36)}-${o.shape}`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><defs><clipPath id="${id}"><path d="${shapeD(o.shape, size)}"/></clipPath></defs><g clip-path="url(#${id})">${inner}</g></svg>`;
 }
@@ -83,9 +93,36 @@ function drawStateMarks(c: HTMLCanvasElement, face: Face, look: LookId, state: F
   if (marks) drawMarks(c.getContext('2d')!, face, state!, marks, 0, true);
 }
 
-/** The watercolour as vector paths, with the state's marks laid over it as a picture: they're drawn for canvas, not as paths. */
-function watercolourSVG(face: Face, size: number, state: FaceState | undefined): string {
-  const svg = faceToSVG(face, getEngine(), size);
+/** The face as painted for these options: in its state's expression, and without its pencil lines when it's off its paper. */
+function paintedFace(name: FaceName, o: StillOptions): Face {
+  const face = inState(name, o.state);
+  return o.background === false ? unguided(face) : face;
+}
+
+/** Up to this size, a vector face's cut is worked out from a painting of it; it's a soft edge, so it needn't be sharper. */
+const SVG_CUT_PX = 512;
+
+/**
+ * The watercolour as vector paths, with the state's marks laid over it as a
+ * picture: they're drawn for canvas, not as paths. Off its background, the
+ * paths stay vector under a soft mask of the face, painted white so it reads
+ * the same as an alpha or a luminance mask.
+ */
+function watercolourSVG(face: Face, size: number, state: FaceState | undefined, background: boolean): string {
+  const E = getEngine();
+  let svg = faceToSVG(face, E, size);
+  if (!background) {
+    const m = Math.min(size, SVG_CUT_PX);
+    const cut = faceMask(renderStill(face, E, m), renderStill(bareFace(face), E, m), true);
+    if (cut) {
+      const g = cut.mask.getContext('2d')!;
+      g.globalCompositeOperation = 'source-in';
+      g.fillStyle = '#ffffff';
+      g.fillRect(0, 0, m, m);
+      const id = `fuglio-cut-${face.seed.toString(36)}`;
+      svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><defs><mask id="${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="${size}" height="${size}"><image width="${size}" height="${size}" href="${cut.mask.toDataURL('image/png')}"/></mask></defs><g mask="url(#${id})">${svg}</g></svg>`;
+    }
+  }
   if (!state || state === 'idle') return svg;
   const marks = makeCanvas(size);
   drawStateMarks(marks, face, 'watercolour', state);

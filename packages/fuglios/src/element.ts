@@ -13,13 +13,15 @@ import { faceColors, isShape } from './still';
  *   size      pixels, or any CSS length (default 48)
  *   shape     circle (default), squircle, rounded, square
  *   state     idle, thinking, working, waiting, blocked, done
+ *   background  "false" shows only the face: no backdrop, no pencil lines, no crop
  *   alive     "false" holds the face still (it also holds still for reduced motion)
  *   pokeable  tapping makes it wobble
  *   label     accessible name (default "Avatar")
  */
 const CSS = `
 :host{display:inline-block;position:relative;inline-size:var(--size);block-size:var(--size);overflow:hidden;vertical-align:middle;border-radius:50%;background:var(--wash);contain:layout paint}
-:host([shape=square]){border-radius:0}
+:host([shape=square]),:host([background=false]){border-radius:0}
+:host([background=false]){background:none}
 :host([shape=rounded]){border-radius:16%}
 :host([shape=squircle]){border-radius:30%}
 @supports (corner-shape:squircle){:host([shape=squircle]){border-radius:50%;corner-shape:squircle}}
@@ -30,7 +32,7 @@ canvas{position:absolute;inset:0;inline-size:100%;block-size:100%;display:block;
 @media (prefers-reduced-motion:reduce){:host(:not([data-ready]))::after{animation:none}canvas{transition:none}}
 `;
 
-const ATTRS = ['name', 'look', 'size', 'shape', 'state', 'alive', 'pokeable', 'label'] as const;
+const ATTRS = ['name', 'look', 'size', 'shape', 'state', 'background', 'alive', 'pokeable', 'label'] as const;
 
 /** An unknown look is painted as "auto". */
 const lookFrom = (v: string | null): LookChoice => (v && (v === 'auto' || isLook(v)) ? v : 'auto');
@@ -66,7 +68,10 @@ export class FuglioElement extends Base {
     if (was === now || !this.handle) return;
     this.sync();
     // the canvas fades out only for a different painting: a renamed face, or a look that resolves to another
-    const repaints = attr === 'name' ? seedOf(was ?? '') !== seedOf(now ?? '') : attr === 'look' && lookFrom(was) !== lookFrom(now);
+    const repaints =
+      attr === 'name' ? seedOf(was ?? '') !== seedOf(now ?? '')
+      : attr === 'look' ? lookFrom(was) !== lookFrom(now)
+      : attr === 'background' && (was !== 'false') !== (now !== 'false');
     if (repaints) this.removeAttribute('data-ready');
     this.handle.update(this.options());
   }
@@ -93,6 +98,7 @@ export class FuglioElement extends Base {
       name: this.name,
       look: lookFrom(look),
       state: isState(state) ? state : 'idle',
+      background: this.getAttribute('background') !== 'false',
       alive: alive === null ? undefined : alive !== 'false',
       pokeable: this.hasAttribute('pokeable'),
     };

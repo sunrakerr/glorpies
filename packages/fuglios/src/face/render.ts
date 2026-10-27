@@ -179,6 +179,8 @@ export function drawFrame(ctx: Ctx, face: Face, raster: FaceRaster, pose: Pose, 
   const k = px / W;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.globalCompositeOperation = 'source-over';
+  // a face off its background leaves the canvas transparent around it, so the last frame has to go first
+  ctx.clearRect(0, 0, px, px);
   ctx.drawImage(raster.back, 0, 0, px, px);
 
   ctx.save();
@@ -246,6 +248,7 @@ export function drawStill(ctx: Ctx, face: Face, raster: StillRaster, pose: Pose,
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.globalCompositeOperation = 'source-over';
   ctx.globalAlpha = 1;
+  ctx.clearRect(0, 0, px, px);
 
   if (raster.layers === 'split' && raster.back && raster.figure) {
     ctx.drawImage(raster.back, 0, 0, px, px);
@@ -288,7 +291,6 @@ export function drawStill(ctx: Ctx, face: Face, raster: StillRaster, pose: Pose,
     need = Math.max(need, Math.abs(ux) / (W / 2), Math.abs(uy) / (W / 2));
   }
   const grow = Math.max(STILL_OVERSCALE, need + 0.004);
-  ctx.clearRect(0, 0, px, px);
   ctx.save();
   place(ctx, face, pose, 'sway', 0, 0, px);
   ctx.translate(px / 2, px / 2);

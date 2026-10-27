@@ -10,6 +10,8 @@ export type MountOptions = {
   /** Breathing, blinking and following the pointer. Defaults to on, unless the reader prefers reduced motion. */
   alive?: boolean;
   state?: FaceState;
+  /** `false` lifts the face off its paper: no backdrop, no pencil lines, transparent all around. Defaults to true. */
+  background?: boolean;
   /** Tapping the face makes it wobble. */
   pokeable?: boolean;
   /** Higher paints sooner when many faces are waiting. */
@@ -67,13 +69,14 @@ export function mount(canvas: HTMLCanvasElement, options: MountOptions): FaceHan
     const seed = seedOf(o.name);
     // a state is painted into the face (its expression), so a new state is a new painting
     const state = o.state ?? 'idle';
-    const next = `${seed}:${look}:${state}`;
+    const background = o.background ?? true;
+    const next = `${seed}:${look}:${state}:${background}`;
     if (!px || (!force && next === key && painted && px <= painted * 1.15)) return;
     if (next !== key) painted = 0;
     key = next;
     job?.cancel();
     lively = wantsLife();
-    const j = paintRaster(seed, px, o.priority ?? PRIORITY.gallery, look, lively, state);
+    const j = paintRaster(seed, px, o.priority ?? PRIORITY.gallery, { look, lively, state, background });
     job = j;
     j.promise.then(({ face, raster }) => {
       if (disposed || job !== j) return;
@@ -123,7 +126,8 @@ export function mount(canvas: HTMLCanvasElement, options: MountOptions): FaceHan
         else canvas.removeEventListener('pointerdown', tap);
       }
       // a face that was painted to hold still is painted again, fully, when it comes alive
-      if (seedOf(was.name) !== seedOf(o.name) || was.look !== o.look || was.state !== o.state || (wantsLife() && !lively)) paint(true);
+      const repaint = seedOf(was.name) !== seedOf(o.name) || was.look !== o.look || was.state !== o.state || (was.background ?? true) !== (o.background ?? true);
+      if (repaint || (wantsLife() && !lively)) paint(true);
       else apply();
     },
     poke: tap,

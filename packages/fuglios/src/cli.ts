@@ -14,6 +14,7 @@ const HELP = `fuglios: paint a face from any name
   -f, --format  ${FORMATS.join(', ')} (default: from --out, else png)
       --shape   ${SHAPES.join(', ')} (default square)
       --state   ${STATES.join(', ')} (default idle)
+      --background false  only the face: no backdrop, no pencil lines
       --loop    seconds, for gif (default 3)
   -o, --out     file to write (default <name>.<format>; "-" for stdout)
   -h, --help
@@ -31,6 +32,7 @@ async function main() {
       shape: { type: 'string' },
       state: { type: 'string' },
       loop: { type: 'string' },
+      background: { type: 'string' },
       out: { type: 'string', short: 'o' },
       help: { type: 'boolean', short: 'h' },
     },
@@ -63,6 +65,7 @@ async function main() {
     shape: values.shape as never,
     state: values.state as never,
     loop: num('loop', values.loop, 0.5, 10),
+    background: values.background === undefined ? undefined : values.background !== 'false',
   });
   const out = values.out ?? `${name.replace(/[^\w.-]+/g, '-')}.${format}`;
   if (out === '-') process.stdout.write(body);

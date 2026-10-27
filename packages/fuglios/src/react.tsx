@@ -17,8 +17,11 @@ export type FuglioProps = {
   look?: LookChoice;
   /** Pixels, or any CSS length. Defaults to 48. */
   size?: number | string;
+  /** The crop. Ignored without a background. */
   shape?: Shape;
   state?: FaceState;
+  /** `false` shows only the face: no backdrop, no pencil lines, no crop, transparent all around. Defaults to true. */
+  background?: boolean;
   /** Breathing, blinking and glancing. Defaults to on, unless the reader prefers reduced motion. */
   alive?: boolean;
   /** Tapping makes the face wobble. */
@@ -39,14 +42,14 @@ const length = (size: number | string) => (typeof size === 'number' ? `${size}px
  * A living face. It renders on the server as a softly coloured placeholder in
  * the face's own background colour, then paints on the client.
  */
-export function Fuglio({ name, look = 'auto', size = 48, shape = 'circle', state = 'idle', alive, pokeable = false, label = 'Avatar', priority, className, style }: FuglioProps) {
+export function Fuglio({ name, look = 'auto', size = 48, shape = 'circle', state = 'idle', background = true, alive, pokeable = false, label = 'Avatar', priority, className, style }: FuglioProps) {
   const ref = useRef<HTMLCanvasElement>(null);
   const handle = useRef<FaceHandle | null>(null);
   const [ready, setReady] = useState(false);
   const wash = useMemo(() => faceColors(name).bg, [name]);
 
   useEffect(() => {
-    const h = mount(ref.current!, { name, look, state, alive, pokeable, priority, onPaint: () => setReady(true) });
+    const h = mount(ref.current!, { name, look, state, background, alive, pokeable, priority, onPaint: () => setReady(true) });
     handle.current = h;
     return () => {
       h.destroy();
@@ -56,8 +59,8 @@ export function Fuglio({ name, look = 'auto', size = 48, shape = 'circle', state
   }, []);
 
   useEffect(() => {
-    handle.current?.update({ name, look, state, alive, pokeable });
-  }, [name, look, state, alive, pokeable]);
+    handle.current?.update({ name, look, state, background, alive, pokeable });
+  }, [name, look, state, background, alive, pokeable]);
 
   return (
     <span
@@ -66,7 +69,8 @@ export function Fuglio({ name, look = 'auto', size = 48, shape = 'circle', state
       className={className}
       style={{
         display: 'inline-block', position: 'relative', overflow: 'hidden', verticalAlign: 'middle', flexShrink: 0,
-        width: length(size), height: length(size), borderRadius: RADIUS[shape], background: wash, ...style,
+        // a face off its background waits on nothing: no placeholder wash, and no crop
+        width: length(size), height: length(size), borderRadius: background ? RADIUS[shape] : 0, background: background ? wash : 'none', ...style,
       }}
     >
       <canvas

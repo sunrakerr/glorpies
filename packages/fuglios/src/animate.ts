@@ -3,6 +3,8 @@ import { EYE_POSES, eyePatch, pixelsOf, posed } from './alive';
 import { makeCanvas } from './canvas';
 import { getEngine } from './engine';
 import { drawFrame, drawStill, rasterizeFace, type Painting, type StillRaster } from './face/render';
+import { cutBackdrop, cutOut } from './cutout';
+import { unguided } from './face/bare';
 import { splitLayers } from './layers';
 import { lookOf, marksFor, renderLook, resolveLook } from './looks';
 import { drawMarks } from './marks';
@@ -49,18 +51,23 @@ export function animationFrames(name: FaceName, o: AnimationOptions = {}): { fra
   const { size, loop, count } = timing(o);
   const state: FaceState = o.state ?? 'idle';
   const look = resolveLook(o.look, size);
-  const face = faceOf(name, state);
+  const background = o.background !== false;
+  const face = background ? faceOf(name, state) : unguided(faceOf(name, state));
   const E = getEngine();
 
   let raster: Painting;
-  if (look === 'watercolour') raster = rasterizeFace(face, E, size);
-  else {
+  if (look === 'watercolour') {
+    raster = rasterizeFace(face, E, size);
+    if (!background) cutBackdrop(raster, face);
+  } else {
     const still = renderLook(look, face, E, size);
     const { motion, eyes, tiles } = lookOf(look);
     const r: StillRaster = { px: size, still, layers: 'whole', back: null, figure: null, mask: null, motion, eyes, tiles, patches: [], glance: null };
     const back = renderLook(look, face, E, size, true);
-    const split = splitLayers(still, back);
-    if (split) Object.assign(r, { layers: 'split', back, figure: split.figure, mask: split.mask });
+    // off its background the face moves over nothing; otherwise over its own background, held still
+    const cut = background ? null : cutOut(still, back);
+    const split = cut ? { figure: cut.figure, mask: cut.mask } : splitLayers(still, back);
+    if (split) Object.assign(r, { layers: 'split', back: cut ? makeCanvas(size) : back, figure: split.figure, mask: split.mask });
     const rest = pixelsOf(still);
     for (const pose of EYE_POSES) {
       const patch = eyePatch(rest, renderLook(look, posed(face, pose), E, size), face, pose, r.mask);
@@ -81,7 +88,7 @@ export function animationFrames(name: FaceName, o: AnimationOptions = {}): { fra
     if ('still' in raster) drawStill(g, face, raster, pose, size);
     else drawFrame(g, face, raster, pose, size);
     if (marks) drawMarks(g, face, state, marks, t);
-    if (o.shape && o.shape !== 'square') {
+    if (background && o.shape && o.shape !== 'square') {
       g.setTransform(1, 0, 0, 1, 0, 0);
       g.globalCompositeOperation = 'destination-in';
       shapePath(g, o.shape, size);
@@ -101,7 +108,8 @@ export function animationFrames(name: FaceName, o: AnimationOptions = {}): { fra
  */
 export function faceGIF(name: FaceName, o: AnimationOptions = {}): Uint8Array {
   const { frames, size, loop } = animationFrames(name, o);
-  const shaped = !!o.shape && o.shape !== 'square';
+  // a crop or a face off its background leaves pixels to keep transparent
+  const shaped = o.background === false || (!!o.shape && o.shape !== 'square');
   const sample = new Uint8ClampedArray(frames.length > 4 ? size * size * 4 * 4 : frames[0]!.length);
   if (frames.length > 4) for (let k = 0; k < 4; k++) sample.set(frames[Math.floor((k * frames.length) / 4)]!, k * size * size * 4);
   else sample.set(frames[0]!);

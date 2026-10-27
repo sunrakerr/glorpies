@@ -11,10 +11,10 @@ const KINDS = ['react', 'html', 'url', 'cli'] as const;
 type Kind = (typeof KINDS)[number];
 
 /** What it takes to show this exact face in your own app: its name and its look, with the code for each way in. */
-export function FaceSpec({ name, look, onClose, className = '' }: { name: string; look: LookId; onClose: () => void; className?: string }) {
+export function FaceSpec({ name, look, background, onClose, className = '' }: { name: string; look: LookId; background: boolean; onClose: () => void; className?: string }) {
   const [kind, setKind] = useState<Kind>('react');
   const l = lookOf(look);
-  const c: Choice = { name, look, shape: 'circle', state: 'idle', alive: true, size: 48 };
+  const c: Choice = { name, look, shape: 'circle', state: 'idle', background, alive: true, size: 48 };
   return (
     <aside aria-label="Use this face" className={`rounded-2xl border border-ink/10 bg-paper p-5 shadow-pill ${className}`}>
       <div className="flex items-baseline justify-between gap-3">

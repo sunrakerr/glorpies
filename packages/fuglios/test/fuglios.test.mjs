@@ -120,6 +120,22 @@ test('the image handler refuses what it should and hardens svg', async () => {
   assert.equal(svg.headers.get('x-content-type-options'), 'nosniff');
 });
 
+test('without a background, every look keeps only the face', async () => {
+  const { faceCanvas } = await import('../dist/server.js');
+  for (const look of LOOKS) {
+    const c = faceCanvas('agent-47', { look: look.id, size: 96, background: false });
+    const px = c.getContext('2d').getImageData(0, 0, 96, 96).data;
+    let clear = 0;
+    for (let i = 3; i < px.length; i += 4) if (px[i] === 0) clear++;
+    // mosaic, topo, thermal and holo draw their background from the face, so some of it stays
+    if (!['mosaic', 'topo', 'thermal', 'holo'].includes(look.id)) assert.ok(clear > px.length / 4 / 4, `${look.id} is see-through around the face`);
+  }
+  const gif = faceGIF('agent-47', { look: 'ink', size: 48, loop: 1, background: false });
+  assert.ok(gif.length > 0);
+  const svg = await renderImage('agent-47', { format: 'svg', size: 128, background: false });
+  assert.match(svg.body, /<mask /, 'the vector paths stay, under a mask of the face');
+});
+
 test('the drop-in script stays small', () => {
   const kb = gzipSync(readFileSync(new URL('../dist/cdn/fuglios.js', import.meta.url))).length / 1024;
   assert.ok(kb < 60, `dist/cdn/fuglios.js is ${kb.toFixed(1)} KB gzipped`);

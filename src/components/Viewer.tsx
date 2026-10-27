@@ -1,10 +1,10 @@
 'use client';
 
-import { Braces, ChevronLeft, ChevronRight, Code, Copy, FileCode, ImageDown, RefreshCw, X } from 'lucide-react';
+import { Braces, ChevronLeft, ChevronRight, Code, Copy, Eraser, FileCode, ImageDown, RefreshCw, X } from 'lucide-react';
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { seedOf } from 'fuglios';
 import { lookOf, type LookId } from 'fuglios/internal/looks';
-import { EXPORT_SIZES } from '@/lib/share';
+import { EXPORT_SIZES, type Still } from '@/lib/share';
 import { PRIORITY } from 'fuglios/internal/studio';
 import { trueName } from '@/lib/glyphs';
 import type { ActionKind } from './actions';
@@ -26,7 +26,7 @@ type Props = {
   onIndex: (i: number) => void;
   onClose: () => void;
   onRepaint: (i: number) => void;
-  onAction: (kind: ActionKind, name: string) => void;
+  onAction: (kind: ActionKind, still: Still) => void;
   /** Toasts must render inside the modal: it sits in the top layer above the page. */
   children?: ReactNode;
 };
@@ -37,8 +37,10 @@ export function Viewer({ names, index, look, lookFor, onLook, pngSize, onPngSize
   const name = index === null ? null : names[index] ?? null;
   const seed = name === null ? null : seedOf(name);
   const faceLook = name === null ? look : lookFor(name);
-  /** The integration panel stays open from face to face once asked for. */
+  /** The integration panel, and a face off its background, stay that way from face to face once asked for. */
   const [spec, setSpec] = useState(false);
+  const [background, setBackground] = useState(true);
+  const still = (n: string): Still => ({ name: n, look: lookFor(n), background });
 
   useEffect(() => {
     const d = ref.current;
@@ -56,7 +58,8 @@ export function Viewer({ names, index, look, lookFor, onLook, pngSize, onPngSize
     if (e.metaKey || e.ctrlKey || e.altKey || name === null || index === null) return;
     if (e.key === 'ArrowRight') go(1);
     else if (e.key === 'ArrowLeft') go(-1);
-    else if (e.key === 'c') onAction('copy', name);
+    else if (e.key === 'c') onAction('copy', still(name));
+    else if (e.key === 'b') setBackground((v) => !v);
     else if (e.key === 'r') onRepaint(index);
     else if (e.key === 'u') setSpec((v) => !v);
     else return;
@@ -85,11 +88,12 @@ export function Viewer({ names, index, look, lookFor, onLook, pngSize, onPngSize
           <div className="flex w-full items-center justify-center gap-3 sm:gap-8" onClick={(e) => e.target === e.currentTarget && onClose()}>
             <NavButton label="Previous face" onClick={() => go(-1)}><ChevronLeft className="size-5" strokeWidth={1.8} /></NavButton>
             <Sheet seed={seed} tilt={-0.5} className="w-[min(90vw,calc(100dvh-21rem),760px)]">
-              <div className="relative aspect-square w-full overflow-hidden bg-paper-2/50">
+              <div className={`relative aspect-square w-full overflow-hidden ${background ? 'bg-paper-2/50' : 'checker'}`}>
                 <FaceCanvas
                   key={seed}
                   seed={seed}
                   look={faceLook}
+                  background={background}
                   priority={PRIORITY.focus}
                   maxPx={1600}
                   label={`${name}, ${lookOf(faceLook).name}, enlarged`}
@@ -120,13 +124,13 @@ export function Viewer({ names, index, look, lookFor, onLook, pngSize, onPngSize
           <LookStrip seed={seed} value={faceLook} gallery={look} onChange={(l) => onLook(name, l)} />
 
           <div className="flex max-w-full flex-wrap items-center justify-center gap-2">
-            <TextButton tone="ink" onClick={() => onAction('copy', name)}>
+            <TextButton tone="ink" onClick={() => onAction('copy', still(name))}>
               <Copy className="size-4" strokeWidth={1.8} /> Copy image
             </TextButton>
             <div className="inline-flex h-10 items-center rounded-full border border-ink/12 bg-paper/70 pl-1 pr-1">
               <button
                 type="button"
-                onClick={() => onAction('png', name)}
+                onClick={() => onAction('png', still(name))}
                 className="inline-flex h-8 items-center gap-2 rounded-full px-3 text-[13px] font-medium transition hover:bg-ink/[0.06]"
               >
                 <ImageDown className="size-4" strokeWidth={1.8} /> PNG
@@ -146,11 +150,14 @@ export function Viewer({ names, index, look, lookFor, onLook, pngSize, onPngSize
                 ))}
               </div>
             </div>
-            <TextButton onClick={() => onAction('svg', name)}>
+            <TextButton onClick={() => onAction('svg', still(name))}>
               <FileCode className="size-4" strokeWidth={1.8} /> SVG
             </TextButton>
-            <TextButton onClick={() => onAction('copy-svg', name)}>
+            <TextButton onClick={() => onAction('copy-svg', still(name))}>
               <Code className="size-4" strokeWidth={1.8} /> Copy SVG
+            </TextButton>
+            <TextButton aria-pressed={!background} onClick={() => setBackground((v) => !v)} className={background ? '' : 'border-accent/50 bg-accent/10'}>
+              <Eraser className="size-4" strokeWidth={1.8} /> No background
             </TextButton>
             <TextButton onClick={() => onRepaint(index)}>
               <RefreshCw className="size-4" strokeWidth={1.8} /> Repaint
@@ -161,7 +168,7 @@ export function Viewer({ names, index, look, lookFor, onLook, pngSize, onPngSize
           </div>
 
           <div className="hidden items-center gap-4 text-[11px] text-ink-2/80 sm:flex">
-            <Key k="←" /><Key k="→" /> browse <Key k="C" /> copy <Key k="R" /> repaint <Key k="U" /> code <Key k="Esc" /> close
+            <Key k="←" /><Key k="→" /> browse <Key k="C" /> copy <Key k="R" /> repaint <Key k="B" /> background <Key k="U" /> code <Key k="Esc" /> close
           </div>
         </div>
       )}
@@ -169,6 +176,7 @@ export function Viewer({ names, index, look, lookFor, onLook, pngSize, onPngSize
         <FaceSpec
           name={name}
           look={faceLook}
+          background={background}
           onClose={() => setSpec(false)}
           className="picker-in absolute inset-x-3 bottom-3 z-10 max-h-[70dvh] overflow-y-auto lg:inset-x-auto lg:bottom-auto lg:right-8 lg:top-1/2 lg:max-h-[calc(100dvh-4rem)] lg:w-[360px] lg:-translate-y-1/2"
         />

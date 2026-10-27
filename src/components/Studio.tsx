@@ -6,6 +6,7 @@ import { randomName, seedOf } from 'fuglios';
 import { DEFAULT_LOOK, isLook, type LookId } from 'fuglios/internal/looks';
 import { getStage } from 'fuglios/internal/stage';
 import { forget } from 'fuglios/internal/studio';
+import type { Still } from '@/lib/share';
 import { runAction, type ActionKind } from './actions';
 import { FaceCard } from './FaceCard';
 import { StylePicker } from './LookPicker';
@@ -143,7 +144,7 @@ export function Studio() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const act = (kind: ActionKind, name: string) => runAction(kind, { name, look: lookFor(name) }, pngSize, show);
+  const act = (kind: ActionKind, still: Still) => runAction(kind, still, pngSize, show);
 
   return (
     <div className="relative z-10 min-h-dvh">
@@ -158,7 +159,7 @@ export function Studio() {
                   look={lookFor(name)}
                   onOpen={() => openFace(i)}
                   onRepaint={() => repaint(i)}
-                  onAction={(kind) => act(kind, name)}
+                  onAction={(kind) => act(kind, { name, look: lookFor(name) })}
                 />
               ))
             : Array.from({ length: BATCH }, (_, i) => (

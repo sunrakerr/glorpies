@@ -13,8 +13,11 @@ import { Invader, SiteHeader } from '../SiteHeader';
 import { Pick, Tabs } from '../Tabs';
 import { IconButton, ToastView, useToast } from '../ui';
 import { alienScript, MARKS } from '@/lib/glyphs';
+import { SITE_URL } from '@/lib/site';
 import { PixelField } from './PixelField';
 import { ENTRIES, PROPS, SNIPPET_FILES, SNIPPET_KINDS, SNIPPETS, START, type Choice, type SnippetKind } from './snippets';
+
+const SITE_HOST = new URL(SITE_URL).host;
 
 const SIZES = [72, 48, 32, 20];
 
@@ -134,7 +137,7 @@ function Playground({ c, name, set }: { c: Choice; name: string; set: (p: Partia
   const portraitLook: LookId = c.look === 'auto' ? 'watercolour' : c.look;
   const { toast, show } = useToast();
   // exports are the portrait as shown: its look, crop and mood
-  const act = (kind: ActionKind) => runAction(kind, { name, look: portraitLook, shape: c.shape, state: c.state }, 1024, show);
+  const act = (kind: ActionKind) => runAction(kind, { name, look: portraitLook, shape: c.shape, state: c.state, background: c.background }, 1024, show);
   const blank = !name.trim();
   return (
     <div className="grid gap-x-12 gap-y-10 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
@@ -144,10 +147,11 @@ function Playground({ c, name, set }: { c: Choice; name: string; set: (p: Partia
             {/* square fills the sheet; the rounder crops sit on it with a margin of paper, as they would in an app.
                 the paper is opaque and stays cream in the dark, so the sheet's lifted-corner shadows don't show through */}
             <div className="bg-[#f4eee4]">
-              <div className={`relative aspect-square w-full overflow-hidden bg-[#ebe3d5]/50 transition-[padding] duration-500 ease-soft ${c.shape === 'square' ? 'p-0' : 'p-[8%]'}`}>
+              {/* off its background the face sits on a checkerboard, the usual sign for transparent */}
+              <div className={`relative aspect-square w-full overflow-hidden transition-[padding] duration-500 ease-soft ${c.background ? 'bg-[#ebe3d5]/50' : 'checker'} ${c.shape === 'square' || !c.background ? 'p-0' : 'p-[8%]'}`}>
                 <Fuglio
-                  name={name} look={portraitLook} size="100%" shape={c.shape} state={c.state} alive={c.alive} pokeable priority={3} label={`The face for “${name}”`}
-                  style={{ transition: 'border-radius .5s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow .5s', boxShadow: c.shape === 'square' ? 'none' : '0 1px 2px rgb(60 40 20 / 0.12), 0 12px 28px -14px rgb(60 40 20 / 0.4)' }}
+                  name={name} look={portraitLook} size="100%" shape={c.shape} state={c.state} background={c.background} alive={c.alive} pokeable priority={3} label={`The face for “${name}”`}
+                  style={{ transition: 'border-radius .5s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow .5s', boxShadow: c.shape === 'square' || !c.background ? 'none' : '0 1px 2px rgb(60 40 20 / 0.12), 0 12px 28px -14px rgb(60 40 20 / 0.4)' }}
                 />
               </div>
             </div>
@@ -166,7 +170,7 @@ function Playground({ c, name, set }: { c: Choice; name: string; set: (p: Partia
         <div role="radiogroup" aria-label="Size" className="mt-8 flex items-end gap-5">
           {SIZES.map((size) => (
             <button key={size} type="button" role="radio" aria-checked={c.size === size} onClick={() => set({ size })} className="flex flex-col items-center gap-2">
-              <Fuglio name={name} size={size} look={c.look} shape={c.shape} state={c.state} alive={c.alive} priority={2.5} label={`${name}, ${size}px`} />
+              <Fuglio name={name} size={size} look={c.look} shape={c.shape} state={c.state} background={c.background} alive={c.alive} priority={2.5} label={`${name}, ${size}px`} />
               <Pick on={c.size === size}>{size}</Pick>
             </button>
           ))}
@@ -195,8 +199,13 @@ function Playground({ c, name, set }: { c: Choice; name: string; set: (p: Partia
         <Field flag="look" hint={c.look === 'auto' ? `auto picks ${resolveLook(c.look, c.size)} at ${c.size}px` : `"${c.look}"`}>
           <LookGrid seed={seed} value={c.look} onChange={(look) => set({ look })} />
         </Field>
-        <Field flag="shape">
-          <Tabs options={SHAPES} value={c.shape} onChange={(shape) => set({ shape })} />
+        <Field flag="background" hint={c.background ? undefined : 'only the face: no backdrop, no pencil lines'}>
+          <Tabs options={['true', 'false'] as const} value={c.background ? 'true' : 'false'} onChange={(v) => set({ background: v === 'true' })} />
+        </Field>
+        <Field flag="shape" hint={c.background ? undefined : 'nothing to crop without a background'}>
+          <div className={c.background ? '' : 'pointer-events-none opacity-40'}>
+            <Tabs options={SHAPES} value={c.shape} onChange={(shape) => set({ shape })} />
+          </div>
         </Field>
         <Field flag="state" hint={MOODS[c.state]}>
           <Tabs options={STATES} value={c.state} onChange={(state) => set({ state })} />
@@ -212,7 +221,7 @@ function Playground({ c, name, set }: { c: Choice; name: string; set: (p: Partia
 /** A flag column and its value, like a command's options. */
 function Field({ flag, hint, children }: { flag: string; hint?: string; children: ReactNode }) {
   return (
-    <div className="grid grid-cols-[64px_minmax(0,1fr)] gap-x-4">
+    <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-x-4">
       <span className="pt-1 text-[12px] text-ink-2">--{flag}</span>
       <div className="min-w-0">
         {children}
@@ -256,17 +265,25 @@ function LookGrid({ seed, value, onChange }: { seed: number; value: LookChoice; 
 function Usage({ c }: { c: Choice }) {
   const [tab, setTab] = useState<SnippetKind>('react');
   const { file, lang } = SNIPPET_FILES[tab];
+  const images = tab === 'server' || tab === 'url';
   return (
-    <CodePanel
-      code={SNIPPETS[tab](c)}
-      lang={lang}
-      title={
-        <div className="flex items-center gap-3">
-          <Tabs options={SNIPPET_KINDS} value={tab} onChange={setTab} dark />
-          <span className="ml-auto hidden sm:inline">{file}</span>
-        </div>
-      }
-    />
+    <>
+      <CodePanel
+        code={SNIPPETS[tab](c)}
+        lang={lang}
+        title={
+          <div className="flex items-center gap-3">
+            <Tabs options={SNIPPET_KINDS} value={tab} onChange={setTab} dark />
+            <span className="ml-auto hidden sm:inline">{file}</span>
+          </div>
+        }
+      />
+      {images && (
+        <p className="mt-3 text-[11.5px] text-ink-2">
+          no server yet? <a href={`/api/face?name=${encodeURIComponent(c.name || 'you')}&size=256`} className="text-ink underline decoration-ink/25 underline-offset-2 hover:decoration-accent">{SITE_HOST}/api/face</a> answers the same urls, for trying things out.
+        </p>
+      )}
+    </>
   );
 }
 

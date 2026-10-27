@@ -48,8 +48,8 @@ export async function renderImage(name: FaceName, o: ImageOptions = {}): Promise
   const format = o.format ?? 'png';
   if (format === 'svg') return { body: faceSVG(name, o), type: TYPES.svg };
   if (format === 'gif') return { body: faceGIF(name, o), type: TYPES.gif };
-  // jpeg has no transparency to crop with, so it is always square
-  const c = faceCanvas(name, format === 'jpeg' ? { ...o, shape: 'square' } : o) as unknown as NativeCanvas;
+  // jpeg has no transparency to crop or cut with, so it is always square and on its paper
+  const c = faceCanvas(name, format === 'jpeg' ? { ...o, shape: 'square', background: true } : o) as unknown as NativeCanvas;
   return { body: await c.encode(format, o.quality ?? 90), type: TYPES[format] };
 }
 
@@ -72,8 +72,9 @@ const SVG_CSP = "default-src 'none'; img-src data:; style-src 'unsafe-inline'";
  *
  *   GET /api/face?name=agent-47&look=ink&size=128&shape=circle&format=png
  *
- * Query: name (required), look, size, shape, state, format (png, webp, jpeg,
- * svg, gif), and for gif: loop (seconds), fps.
+ * Query: name (required), look, size, shape, state, background (false for
+ * only the face), format (png, webp, jpeg, svg, gif), and for gif: loop
+ * (seconds), fps.
  */
 export function createFaceHandler(defaults: HandlerOptions = {}): (request: Request) => Promise<Response> {
   const { cacheControl = 'public, max-age=31536000, immutable', maxSize = 1024, maxName = 256, ...base } = defaults;
@@ -86,12 +87,13 @@ export function createFaceHandler(defaults: HandlerOptions = {}): (request: Requ
       const v = Number(q.get(k));
       return q.has(k) && Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : fallback;
     };
-    const look = q.get('look'), shape = q.get('shape'), state = q.get('state'), format = q.get('format');
+    const look = q.get('look'), shape = q.get('shape'), state = q.get('state'), format = q.get('format'), background = q.get('background');
     const o: ImageOptions = {
       ...base,
       look: look && (look === 'auto' || isLook(look)) ? (look as LookChoice) : base.look,
       shape: isShape(shape) ? shape : base.shape,
       state: isState(state) ? state : base.state,
+      background: background === null ? base.background : !['false', '0', 'no', 'none'].includes(background),
       format: (FORMATS as readonly string[]).includes(format ?? '') ? (format as ImageFormat) : base.format,
       size: Math.round(num('size', base.size ?? 256, 16, maxSize)),
       loop: num('loop', base.loop ?? 3, 1, 8),

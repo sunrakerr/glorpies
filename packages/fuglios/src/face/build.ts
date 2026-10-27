@@ -2,7 +2,7 @@ import type { Engine } from '../engine';
 import { bbox, inside, ribbon, shift, shrink, sparse, spline, TAU, type Pt } from '../geometry';
 import { mix, multiply, PALETTES } from '../palettes';
 import type { Color, EyeKind, EyeSpec, Face, HairKind, HatchOp, InkOp, Op, Sketch, WashOp } from './types';
-import { W } from './types';
+import { GRAPHITE, W } from './types';
 
 /** Pen lines are drawn this many times heavier than the authored widths. */
 const INK_WEIGHT = 2;
@@ -241,7 +241,7 @@ export function buildFace(seed: number, E: Engine): Face {
 
   // ================= backdrop =================
   back.push({ k: 'paper', seed: nextSeed() });
-  const graphite: InkOpts = { raw: true, col: '#55555f', alpha: 0.16, w: 0.7, passes: 1, jit: 0.5 };
+  const graphite: InkOpts = { raw: true, col: GRAPHITE, alpha: 0.16, w: 0.7, passes: 1, jit: 0.5 };
   ink(arcPts(cx + R(-6, 6), cy + R(-6, 6), hrx * R(0.98, 1.1), hry * R(0.98, 1.08), R(0, TAU), R(0, TAU) + R(5, 6.6), 60, 0.03), graphite);
   ink([{ x: cx + R(-4, 4), y: cy - hry * 1.12 }, { x: cx + R(-4, 4), y: cy + hry * 1.12 }], { ...graphite, alpha: 0.08 });
   ink([{ x: cx - hrx * 1.2, y: eyeY + R(-3, 3) }, { x: cx + hrx * 1.2, y: eyeY + R(-3, 3) }], { ...graphite, alpha: 0.13 });

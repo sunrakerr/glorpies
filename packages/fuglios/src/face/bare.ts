@@ -1,4 +1,4 @@
-import type { Face } from './types';
+import { GRAPHITE, type Face } from './types';
 
 /**
  * The face taken out of its own picture: same paper, glazes and seed, but no
@@ -8,4 +8,9 @@ import type { Face } from './types';
  */
 export function bareFace(face: Face): Face {
   return { ...face, figure: [], eyes: [] };
+}
+
+/** The face without its pencil construction lines, for a face shown off its paper. */
+export function unguided(face: Face): Face {
+  return { ...face, back: face.back.filter((op) => !(op.k === 'ink' && op.col === GRAPHITE)) };
 }

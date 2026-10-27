@@ -41,13 +41,16 @@ It renders on the server as a soft placeholder in the face's own background colo
 | `name` | `string \| number` | required | Any string. The same name is always the same face. |
 | `look` | look id \| `"auto"` | `"auto"` | `auto` paints watercolour, or the ink badge below 72px. |
 | `size` | `number \| string` | `48` | Pixels, or any CSS length. |
-| `shape` | `circle` `squircle` `rounded` `square` | `circle` | The crop. |
+| `shape` | `circle` `squircle` `rounded` `square` | `circle` | The crop. None without a background. |
+| `background` | `boolean` | `true` | `false` keeps only the face: no backdrop, no pencil lines, no crop, transparent all around. |
 | `state` | `idle` `thinking` `working` `waiting` `blocked` `done` | `idle` | What the face shows besides who it is. |
 | `alive` | `boolean` | `true` | Breathing, blinking, glancing. Off for readers who prefer reduced motion. |
 | `pokeable` | `boolean` | `false` | A tap makes the face wobble. |
 | `label` | `string` | `"Avatar"` | Accessible name (`role="img"`). |
 
 **Looks.** Paintings, for faces shown large: `watercolour`, `atkinson`, `bayer`, `plotter`, `cutout`, `neon`, `gouache`, `oil`, `sumi`, `charcoal`, `pointillism`, `linocut`, `warhol`, `stencil`, `stained`, `mosaic`, `felt`, `lowpoly`, `topo`, `thermal`, `holo`. Avatars, which still read at 16px: `blob`, `ink`, `sticker`, `cutpaper`, `pixel-icon`, `line-icon`, `glow`, `wash`.
+
+**Without a background.** Every look is painted twice, whole and bare, and kept only where the two differ, so `background={false}` works the same in every look: the face, its crown and tentacles, and the sparkles of a celestial one, on nothing. A few looks draw their background from the face itself (`mosaic`, `topo`, `thermal`, `holo`) and keep some of it.
 
 **States.** Made for agents: a face you can tell apart in a crowded sidebar, and a status you read from the face itself. Each state changes the expression (mouth and brows, painted in the look's own hand), how the head moves, and adds a hand-drawn mark that still reads at 32px:
 
@@ -73,7 +76,7 @@ Faces paint once they come near the screen, at their displayed size × devicePix
 
 ## Images, on a server
 
-The fuglios site serves these at `/api/face`, so you can link to an image without running anything. To host your own:
+Faces as image files, from a route in your own app:
 
 ```bash
 npm i fuglios @napi-rs/canvas
@@ -94,9 +97,11 @@ Bun.serve({ fetch: createFaceHandler() });
 /api/face?name=agent-47&state=thinking&format=gif
 ```
 
-Query: `name` (required), `look`, `size` (16–1024), `shape` (outside is transparent), `state`, `format` (`png`, `webp`, `jpeg`, `svg`, `gif`), and for GIFs `loop` (seconds) and `fps`. Responses are cached for a year: the same request always gives the same image.
+Query: `name` (required), `look`, `size` (16–1024), `shape` (outside is transparent), `state`, `background` (`false` for only the face), `format` (`png`, `webp`, `jpeg`, `svg`, `gif`), and for GIFs `loop` (seconds) and `fps`. Responses are cached for a year: the same request always gives the same image.
 
 GIFs loop seamlessly with a scripted pose, so the same name always loops the same way. Watercolour SVG is real vector paths; it's large, so prefer PNG or WebP at avatar sizes.
+
+To try the urls before you've set anything up, [fuglios.vercel.app](https://fuglios.vercel.app) answers them too, at `https://fuglios.vercel.app/api/face?name=you`. It's a demo, not a CDN for your app: host the route for anything real.
 
 Or directly:
 

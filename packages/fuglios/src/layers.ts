@@ -35,9 +35,26 @@ export type Layers = {
 };
 
 export function splitLayers(full: HTMLCanvasElement, back: HTMLCanvasElement): Layers | null {
+  const cut = faceMask(full, back);
+  if (!cut) return null;
+  const figure = makeCanvas(full.width, full.height);
+  const fg = figure.getContext('2d')!;
+  fg.drawImage(full, 0, 0);
+  fg.globalCompositeOperation = 'destination-in';
+  fg.drawImage(cut.mask, 0, 0);
+  return { figure, ...cut };
+}
+
+/**
+ * Where the face is, as alpha. `tight` is for a face lifted off its background
+ * altogether: a grid of two-pixel cells, not grown, so almost none of the
+ * background comes along, rather than a coarse cut whose margin is hidden by
+ * the background staying underneath.
+ */
+export function faceMask(full: HTMLCanvasElement, back: HTMLCanvasElement, tight = false): { mask: HTMLCanvasElement; cover: number } | null {
   const w = full.width, h = full.height;
   const a = pixelsOf(full), b = pixelsOf(back);
-  const step = Math.max(2, Math.ceil(Math.max(w, h) / GRID));
+  const step = tight ? 2 : Math.max(2, Math.ceil(Math.max(w, h) / GRID));
   const cols = Math.ceil(w / step), rows = Math.ceil(h / step);
   const cells = new Uint8Array(cols * rows);
 
@@ -51,7 +68,7 @@ export function splitLayers(full: HTMLCanvasElement, back: HTMLCanvasElement): L
     }
   }
 
-  const grown = grow(cells, cols, rows, GROW);
+  const grown = tight ? cells : grow(cells, cols, rows, GROW);
   const solid = closeHoles(grown, cols, rows);
   let on = 0;
   for (const v of solid) on += v;
@@ -79,13 +96,7 @@ export function splitLayers(full: HTMLCanvasElement, back: HTMLCanvasElement): L
   mg.imageSmoothingEnabled = true;
   mg.imageSmoothingQuality = 'high';
   mg.drawImage(small, 0, 0, cols * step, rows * step);
-
-  const figure = makeCanvas(w, h);
-  const fg = figure.getContext('2d')!;
-  fg.drawImage(full, 0, 0);
-  fg.globalCompositeOperation = 'destination-in';
-  fg.drawImage(mask, 0, 0);
-  return { figure, mask, cover };
+  return { mask, cover };
 }
 
 /** Square dilation by `r` cells, as two running passes. */
