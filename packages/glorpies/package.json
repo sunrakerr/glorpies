@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "description": "Ugly little alien faces from any string: 9 quadrillion of them, hand-painted in watercolour and ink, alive. The same name always gets the same face. Zero dependencies, works anywhere.",
   "license": "MIT",
+  "author": "Aditya Shenoy",
+  "homepage": "https://glorpies.vercel.app",
   "type": "module",
   "engines": {
     "node": ">=20"
@@ -31,9 +33,12 @@
     "./element": "./src/element.ts",
     "./react": "./src/react.tsx",
     "./server": "./src/server.ts",
-    "./internal/*": "./src/*.ts"
+    "./internal/*": "./src/*.ts",
+    "./package.json": "./package.json"
   },
   "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
     "exports": {
       ".": {
         "types": "./dist/index.d.ts",
@@ -50,7 +55,8 @@
       "./server": {
         "types": "./dist/server.d.ts",
         "import": "./dist/server.js"
-      }
+      },
+      "./package.json": "./package.json"
     },
     "bin": {
       "glorpies": "./dist/cli.js"
