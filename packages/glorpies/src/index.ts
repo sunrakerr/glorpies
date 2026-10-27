@@ -3,7 +3,7 @@
  *
  *   import { mount, faceCanvas, faceSVG } from 'glorpies';
  *
- * The same name always paints the same face, in any of 29 looks, at any size,
+ * Billions of faces, and the same name always paints the same one, in any look, at any size,
  * in the browser or on a server. Faces mounted on a canvas come alive: they
  * breathe, blink, glance at the pointer and show what an agent is doing.
  */

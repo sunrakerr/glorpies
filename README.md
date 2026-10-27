@@ -1,6 +1,6 @@
 # glorpies
 
-Every name has a glorpie: an ugly little alien face, painted in watercolour and dip pen from any string. Antennae, extra eyes, horns, halos, too many teeth. The same name is always the same face, in 29 looks, and alive: they breathe, blink and glance at you.
+Every name has a glorpie: an ugly little alien face, painted in watercolour and dip pen from any string. Antennae, extra eyes, horns, halos, too many teeth. There are billions of them, the same name always gets the same one, and they're alive: they breathe, blink and glance at you.
 
 This repo is the **[glorpies](packages/glorpies/README.md)** library and its site. The site also runs the library's image route at `/api/face`, as a demo of what `glorpies/server` gives your own app.
 

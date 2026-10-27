@@ -1,6 +1,6 @@
 # glorpies
 
-Ugly little alien faces from any string. Antennae, extra eyes, horns, halos and too many teeth, painted in watercolour and dip pen, in 29 looks, and alive: they breathe, blink and glance at you.
+Ugly little alien faces from any string. Antennae, extra eyes, horns, halos and too many teeth, painted in watercolour and dip pen. Billions of them, the same one for the same name every time, and alive: they breathe, blink and glance at you.
 
 The same name is always the same face, on every device and every server. No API calls, no storage, zero dependencies.
 

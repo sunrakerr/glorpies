@@ -76,7 +76,7 @@ function Hero() {
     <section className="pb-12 pt-12">
       <Transmission className="font-display text-[clamp(1.9rem,5.6vw,2.75rem)] leading-[1.05]" />
       <p className="mt-4 max-w-[36rem] text-[15px] leading-relaxed text-ink-2">
-        glorpies turns any string (a username, an email, a bot id) into a hand-painted alien avatar. the same name always paints the same face, in 29 looks, at any size, in the browser or on a server. faces breathe, blink and show what an agent is doing. zero dependencies: react, a web component, image urls and a cli.
+        any string becomes a hand-painted alien avatar, one of billions, and the same name always gets the same one. react, a web component, a server route or a cli, with zero dependencies.
       </p>
       <div className="mt-6 flex flex-wrap items-center gap-5">
         <a href="#api" className="inline-flex items-center gap-1.5 text-[12.5px] text-ink-2 transition hover:text-ink">
