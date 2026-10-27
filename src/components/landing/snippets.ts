@@ -5,7 +5,7 @@ import type { Lang } from '@/lib/highlight';
 export type Choice = { name: string; look: LookChoice; shape: Shape; state: FaceState; background: boolean; alive: boolean; size: number };
 
 /** The playground's name is made up on arrival; see Landing. */
-export const START: Choice = { name: '', look: 'auto', shape: 'circle', state: 'idle', background: true, alive: true, size: 48 };
+export const START: Choice = { name: '', look: 'auto', shape: 'square', state: 'idle', background: true, alive: true, size: 48 };
 
 const q = (s: string) => JSON.stringify(s);
 
