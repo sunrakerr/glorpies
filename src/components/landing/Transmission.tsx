@@ -30,30 +30,33 @@ function lengths(n: number): Record<Phase, number> {
   return { type: n * TYPE, wait: WAIT, turn: (n - 1) * STAGGER + DITHER.length * STEP, hold: HOLD, erase: n * ERASE, gap: GAP };
 }
 
-/** Upright hieroglyphs that fit a letter's width: people, birds, the ankh, the scarab, reeds and staves. */
-const ALPHABET = [...'𓀀𓀁𓀔𓁐𓄿𓅃𓅓𓅱𓆣𓇋𓇳𓊃𓊪𓊽𓋹𓋴𓏞𓐍𓆓𓁷𓄤𓃀𓀭𓁶𓅂𓆄𓋞𓀾𓁀𓅐'];
+/** The alien alphabet: Tifinagh, all dots, rings and strokes, even in weight like the pixel letters. */
+const TIFINAGH = 0x2d30, LETTERS = 0x2d67 - 0x2d30 + 1;
 
 /** Each letter's alien counterpart, the same one for the same letter every time, like a real alphabet. */
-const glyph = (ch: string) => ALPHABET[(ch.charCodeAt(0) * 7) % ALPHABET.length]!;
+const glyph = (ch: string) => String.fromCodePoint(TIFINAGH + ((ch.charCodeAt(0) * 7) % LETTERS));
 
-type Cell = { ch: string; kind: 'glyph' | 'dots' | 'letter' };
+/** What a cell shows, and the letter it stands for (which holds its place, so every cell is a letter's size). */
+type Cell = { ch: string; kind: 'glyph' | 'dots' | 'letter'; en: string };
 
 /** What's on screen `e` ms into a phase of a line: the cells shown, so far. */
 function frame(text: string, phase: Phase, e: number): Cell[] {
   const n = text.length;
   const chars = [...text];
-  if (phase === 'type') return chars.slice(0, Math.min(n, Math.floor(e / TYPE) + 1)).map((ch) => ({ ch: ch === ' ' ? ' ' : glyph(ch), kind: 'glyph' }));
-  if (phase === 'wait') return chars.map((ch) => ({ ch: ch === ' ' ? ' ' : glyph(ch), kind: 'glyph' }));
+  const alien = (en: string): Cell => (en === ' ' ? { ch: en, kind: 'letter', en } : { ch: glyph(en), kind: 'glyph', en });
+  const plain = (en: string): Cell => ({ ch: en, kind: 'letter', en });
+  if (phase === 'type') return chars.slice(0, Math.min(n, Math.floor(e / TYPE) + 1)).map(alien);
+  if (phase === 'wait') return chars.map(alien);
   if (phase === 'turn') {
-    return chars.map((ch, i) => {
-      if (ch === ' ') return { ch, kind: 'letter' };
+    return chars.map((en, i) => {
+      if (en === ' ') return plain(en);
       const step = Math.floor((e - i * STAGGER) / STEP);
-      if (step < 0) return { ch: glyph(ch), kind: 'glyph' };
-      return step < DITHER.length ? { ch: DITHER[step]!, kind: 'dots' } : { ch, kind: 'letter' };
+      if (step < 0) return alien(en);
+      return step < DITHER.length ? { ch: DITHER[step]!, kind: 'dots', en } : plain(en);
     });
   }
-  if (phase === 'hold') return chars.map((ch) => ({ ch, kind: 'letter' }));
-  if (phase === 'erase') return chars.slice(0, Math.max(0, n - Math.floor(e / ERASE) - 1)).map((ch) => ({ ch, kind: 'letter' }));
+  if (phase === 'hold') return chars.map(plain);
+  if (phase === 'erase') return chars.slice(0, Math.max(0, n - Math.floor(e / ERASE) - 1)).map(plain);
   return [];
 }
 
@@ -61,7 +64,7 @@ const keyOf = (cells: Cell[]) => cells.map((c) => c.ch).join('');
 
 /**
  * The headline as an incoming transmission: each line types out in an alien
- * script, comes into focus through braille dots as English, holds, and is
+ * script (Tifinagh), comes into focus through braille dots as English, holds, and is
  * erased by the cursor for the next. Screen readers get the plain words;
  * readers who prefer less motion see the lines change without the effect.
  */
@@ -72,7 +75,7 @@ export function Transmission({ className = '' }: { className?: string }) {
   useEffect(() => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
       let line = 0;
-      const show = () => setCells([...LINES[line]!].map((ch) => ({ ch, kind: 'letter' })));
+      const show = () => setCells([...LINES[line]!].map((en) => ({ ch: en, kind: 'letter', en })));
       show();
       const id = setInterval(() => {
         line = (line + 1) % LINES.length;
@@ -122,8 +125,12 @@ export function Transmission({ className = '' }: { className?: string }) {
         {words.map((w, wi) => (
           <span key={wi} className="inline-block whitespace-nowrap">
             {w.cells.map((c, ci) => (
-              <span key={ci} className="inline-flex w-[1ch] justify-center">
-                {c.kind === 'letter' ? c.ch : <span className={`leading-none text-accent ${c.kind === 'glyph' ? 'glyph-bold font-glyph text-[0.78em]' : 'font-braille text-[1.2em]'}`}>{c.ch}</span>}
+              // the letter always sets the cell's size and the line's height; glyphs and dots are laid over it, so other fonts' taller lines never push the page down
+              <span key={ci} className="relative inline-block w-[1ch] text-center">
+                <span className={c.kind === 'letter' ? '' : 'invisible'}>{c.en}</span>
+                {c.kind !== 'letter' && (
+                  <span className={`absolute inset-0 flex items-center justify-center leading-none text-accent ${c.kind === 'glyph' ? 'font-alien text-[0.92em]' : 'font-braille text-[1.2em]'}`}>{c.ch}</span>
+                )}
               </span>
             ))}
             {wi === last && <span className="cursor" />}
