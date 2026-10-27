@@ -1,7 +1,6 @@
 'use client';
 
 import { ArrowDown, Copy, Dices, FileCode, ImageDown } from 'lucide-react';
-import Link from 'next/link';
 import { useDeferredValue, useEffect, useState, type ReactNode } from 'react';
 import { FACES, FULL_LOOKS, lookOf, randomName, resolveLook, seedOf, SHAPES, SMALL_LOOKS, STATES, type FaceState, type LookChoice, type LookId } from 'glorpies';
 import { Glorpie } from 'glorpies/react';
@@ -9,12 +8,11 @@ import { runAction, type ActionKind } from '../actions';
 import { CodePanel, CopyButton } from '../Code';
 import { LookThumb } from '../LookPicker';
 import { Sheet } from '../Sheet';
-import { Invader, SiteHeader } from '../SiteHeader';
+import { Page, Section } from '../Page';
 import { Pick, Tabs } from '../Tabs';
 import { IconButton, ToastView, useToast } from '../ui';
 import { MARKS } from '@/lib/glyphs';
 import { SITE_URL } from '@/lib/site';
-import { PixelField } from './PixelField';
 import { Transmission } from './Transmission';
 import { ENTRIES, PROPS, SNIPPET_FILES, SNIPPET_KINDS, SNIPPETS, START, type Choice, type SnippetKind } from './snippets';
 
@@ -46,28 +44,21 @@ export function Landing() {
   useEffect(() => set({ name: randomName() }), []);
 
   return (
-    <div className="relative z-10 min-h-dvh">
-      <PixelField />
-      <div className="relative mx-auto max-w-[960px] px-6">
-        <SiteHeader className="pt-8" />
-        <main>
-          <Hero />
-          <Section title="playground" mark={MARKS.eye}>
-            <Playground c={c} name={name} set={set} />
-          </Section>
-          <Section title="install" mark={MARKS.scarab} className="mt-12">
-            <Install />
-          </Section>
-          <Section title="code" mark={MARKS.scribe} className="mt-12">
-            <Usage c={{ ...c, name }} />
-          </Section>
-          <Section id="api" title="api" mark={MARKS.ankh} className="pb-14 pt-12">
-            <Reference onLook={(look) => set({ look })} />
-          </Section>
-        </main>
-        <Footer />
-      </div>
-    </div>
+    <Page>
+      <Hero />
+      <Section title="playground" mark={MARKS.eye}>
+        <Playground c={c} name={name} set={set} />
+      </Section>
+      <Section title="install" mark={MARKS.scarab} className="mt-12">
+        <Install />
+      </Section>
+      <Section title="code" mark={MARKS.scribe} className="mt-12">
+        <Usage c={{ ...c, name }} />
+      </Section>
+      <Section id="api" title="api" mark={MARKS.ankh} className="pt-12">
+        <Reference onLook={(look) => set({ look })} />
+      </Section>
+    </Page>
   );
 }
 
@@ -109,19 +100,6 @@ function Install() {
   );
 }
 
-/** A section with a hieroglyph and a dashed rule. */
-function Section({ title, mark, id, className = '', children }: { title: string; mark: string; id?: string; className?: string; children: ReactNode }) {
-  return (
-    <section id={id} aria-labelledby={`${title}-title`} className={`scroll-mt-8 ${className}`}>
-      <div className="mb-6 flex items-center gap-3">
-        <span aria-hidden className="font-glyph text-[18px] leading-none text-accent">{mark}</span>
-        <h2 id={`${title}-title`} className="scroll-mt-8 font-display text-[15px] leading-none">{title}</h2>
-        <span aria-hidden className="h-px flex-1 bg-[repeating-linear-gradient(90deg,currentColor_0_4px,transparent_4px_8px)] text-ink/20" />
-      </div>
-      {children}
-    </section>
-  );
-}
 
 function Playground({ c, name, set }: { c: Choice; name: string; set: (p: Partial<Choice>) => void }) {
   const seed = seedOf(name);
@@ -328,18 +306,3 @@ function Reference({ onLook }: { onLook: (l: LookId) => void }) {
   );
 }
 
-/** The mark, the licence and the other pages, under a dashed rule like the sections'. */
-function Footer() {
-  return (
-    <footer className="mb-10 flex items-center justify-between gap-4 border-t border-dashed border-ink/20 pt-5 text-[11.5px] text-ink-2">
-      <span className="flex items-center gap-2">
-        <Invader className="h-[10px] text-accent" />
-        <span className="text-ink">glorpies</span> · mit licence
-      </span>
-      <nav className="flex items-center gap-4">
-        <Link href="/gallery" className="transition hover:text-ink">./gallery</Link>
-        <Link href="/how" className="transition hover:text-ink">./how</Link>
-      </nav>
-    </footer>
-  );
-}

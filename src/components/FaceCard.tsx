@@ -4,7 +4,7 @@ import { Copy, FileCode, ImageDown, RefreshCw } from 'lucide-react';
 import { seedOf } from 'glorpies';
 import { lookOf, type LookId } from 'glorpies/internal/looks';
 import { PRIORITY } from 'glorpies/internal/studio';
-import { trueName } from '@/lib/glyphs';
+import { inAlien } from '@/lib/glyphs';
 import { FaceCanvas } from './FaceCanvas';
 import { Sheet } from './Sheet';
 import type { ActionKind } from './actions';
@@ -36,7 +36,7 @@ export function FaceCard({ name, look, onOpen, onRepaint, onAction }: Props) {
       </Sheet>
       <p className="mt-3 flex items-baseline justify-center gap-2 truncate text-[11.5px] text-ink-2">
         {name}
-        <span aria-hidden className="font-glyph text-[13px] text-accent/80">{trueName(seed)}</span>
+        <span aria-hidden className="truncate font-alien text-[12px] text-accent/80">{inAlien(name)}</span>
       </p>
       <div className="pointer-events-none absolute inset-x-0 bottom-10 flex translate-y-1 justify-center opacity-0 transition duration-300 ease-soft group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 [@media(hover:none)]:translate-y-0 [@media(hover:none)]:opacity-100">
         <Pill className="pointer-events-auto">

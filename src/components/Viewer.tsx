@@ -6,7 +6,7 @@ import { seedOf } from 'glorpies';
 import { lookOf, type LookId } from 'glorpies/internal/looks';
 import { EXPORT_SIZES, type Still } from '@/lib/share';
 import { PRIORITY } from 'glorpies/internal/studio';
-import { trueName } from '@/lib/glyphs';
+import { inAlien } from '@/lib/glyphs';
 import type { ActionKind } from './actions';
 import { FaceCanvas } from './FaceCanvas';
 import { FaceSpec } from './FaceSpec';
@@ -111,7 +111,7 @@ export function Viewer({ names, index, look, lookFor, onLook, pngSize, onPngSize
             </button>
             <p className="text-center">
               <span className="text-ink">{name}</span>
-              <span aria-hidden className="ml-2 font-glyph text-[13px] text-accent/80">{trueName(seed)}</span>
+              <span aria-hidden className="ml-2 font-alien text-[12px] text-accent/80">{inAlien(name)}</span>
               <span className="mx-2 opacity-50">·</span>
               <span className="hidden sm:inline">tap to give it a nudge<span className="mx-2 opacity-50">·</span></span>
               <span className="tabular-nums">{index + 1} / {names.length}</span>

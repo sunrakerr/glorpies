@@ -10,7 +10,8 @@ import type { Still } from '@/lib/share';
 import { runAction, type ActionKind } from './actions';
 import { FaceCard } from './FaceCard';
 import { StylePicker } from './LookPicker';
-import { SiteHeader } from './SiteHeader';
+import { MARKS } from '@/lib/glyphs';
+import { Heading, Page } from './Page';
 import { IconButton, Pill, ToastView, useToast } from './ui';
 import { Viewer } from './Viewer';
 
@@ -147,26 +148,24 @@ export function Studio() {
   const act = (kind: ActionKind, still: Still) => runAction(kind, still, pngSize, show);
 
   return (
-    <div className="relative z-10 min-h-dvh">
-      <SiteHeader className="mx-auto max-w-[1400px] px-5 pt-8 sm:px-8" />
-      <main className="mx-auto max-w-[1400px] px-5 pb-32 pt-8 sm:px-8 sm:pt-10">
-        <ul className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 sm:gap-x-7 sm:gap-y-10 lg:grid-cols-4 lg:gap-x-9 lg:gap-y-12">
-          {names.length
-            ? names.map((name, i) => (
-                <FaceCard
-                  key={`${i}-${name}`}
-                  name={name}
-                  look={lookFor(name)}
-                  onOpen={() => openFace(i)}
-                  onRepaint={() => repaint(i)}
-                  onAction={(kind) => act(kind, { name, look: lookFor(name) })}
-                />
-              ))
-            : Array.from({ length: BATCH }, (_, i) => (
-                <li key={i} className="aspect-square list-none rounded-[3px] bg-paper-2/50 shadow-sheet" />
-              ))}
-        </ul>
-      </main>
+    <Page className="pb-16 pt-12">
+      <Heading as="h1" title="gallery" mark={MARKS.head} aside={names.length ? `${names.length} glorpies, each one named` : undefined} />
+      <ul className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 sm:gap-x-7 sm:gap-y-10 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-11">
+        {names.length
+          ? names.map((name, i) => (
+              <FaceCard
+                key={`${i}-${name}`}
+                name={name}
+                look={lookFor(name)}
+                onOpen={() => openFace(i)}
+                onRepaint={() => repaint(i)}
+                onAction={(kind) => act(kind, { name, look: lookFor(name) })}
+              />
+            ))
+          : Array.from({ length: BATCH }, (_, i) => (
+              <li key={i} className="aspect-square list-none rounded-[3px] bg-paper-2/50 shadow-sheet" />
+            ))}
+      </ul>
 
       <nav aria-label="Gallery controls" className="pointer-events-none fixed inset-x-0 bottom-5 z-30 flex justify-center">
         <Pill className="pointer-events-auto">
@@ -204,7 +203,7 @@ export function Studio() {
         {open !== null && <ToastView toast={toast} />}
       </Viewer>
       {open === null && <ToastView toast={toast} />}
-    </div>
+    </Page>
   );
 }
 

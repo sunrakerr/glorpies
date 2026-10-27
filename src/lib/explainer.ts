@@ -2,10 +2,11 @@ import type { Engine } from 'glorpies/internal/engine';
 import { addPath, bbox, resample, TAU, type Pt } from 'glorpies/internal/geometry';
 import { rgba, type Palette } from 'glorpies/internal/palettes';
 import { buildFace } from 'glorpies/internal/face/build';
+import { seedOf } from 'glorpies/internal/seed';
 import { applyClip, drawEyes, play, rasterizeFace, vignette, type FaceRaster, type Pose } from 'glorpies/internal/face/render';
 import { hatchLines, inkRibbons, type HatchLine } from 'glorpies/internal/face/strokes';
 import type { Face, HatchOp, InkOp, Op, WashOp } from 'glorpies/internal/face/types';
-import { W } from 'glorpies/internal/face/types';
+import { GRAPHITE, W } from 'glorpies/internal/face/types';
 import { deform, plan, type Plan, type VPt } from 'glorpies/internal/face/wash';
 
 /**
@@ -18,28 +19,33 @@ export const VW = 1280;
 export const VH = 720;
 const FACE = { x: 660, y: 58, s: 560 };
 const COL = { x: 92, w: 470 };
-const PAGE = '#f4eee4';
-const INK = '#2b231d';
-const INK_2 = '#75685c';
-const CLAY = '#b8573a';
+/** The page's colours, from the site's theme: paper and ink by day, deep space by night. */
+export type Theme = { page: string; ink: string; ink2: string; accent: string };
+
+/** Notes drawn on the face's own sheet, which stays cream in either theme. */
+const S = { ink: '#2b231d', ink2: '#75685c', accent: '#2f7d24' };
 
 type SceneId = 'title' | 'seed' | 'paper' | 'pencil' | 'glaze' | 'glazes' | 'hatch' | 'ink' | 'eyes' | 'sheets' | 'boil' | 'outro';
-type Scene = { id: SceneId; dur: number; num: string; title: string; body: string };
+/** A step: how long it plays, what it's called, what it says, and the line of real code it comes down to. */
+type Scene = { id: SceneId; dur: number; title: string; body: string; code?: (f: { name: string; seed: number }) => string };
 
 const SCENES: Scene[] = [
-  { id: 'title', dur: 3.6, num: '', title: 'How a face\ngets painted', body: 'Watercolour and dip pen, painted from scratch by code every time a face appears.' },
-  { id: 'seed', dur: 4, num: '01', title: 'One number', body: 'Every face starts as a seed. Out of 9 quadrillion, it drives the random numbers and noise that choose the palette, head, antennae or horns, eyes, mouth and quirks. The same seed always paints the same face.' },
-  { id: 'paper', dur: 2.6, num: '02', title: 'Paper', body: 'A cream sheet with tooth: 6,000 specks of pigment dust and a few stray fibres.' },
-  { id: 'pencil', dur: 2.8, num: '03', title: 'Underdrawing', body: 'Faint graphite guides: the oval of the head and the lines where the eyes and nose will sit.' },
-  { id: 'glaze', dur: 10, num: '04', title: 'A watercolour glaze', body: '' },
-  { id: 'glazes', dur: 3.8, num: '05', title: 'More glazes', body: 'Background, horns, shadows and cheeks use the same recipe. Glazes multiply, so they darken where they overlap, like real pigment.' },
-  { id: 'hatch', dur: 3.2, num: '06', title: 'Hatching', body: 'Two passes of wobbly parallel lines shade the side away from the light, clipped to the head.' },
-  { id: 'ink', dur: 7, num: '07', title: 'Dip-pen ink', body: 'Lines are filled ribbons, not strokes. Perlin noise sets the pen pressure, the ends taper, a second off-register pass ghosts each line, and sometimes the nib runs dry.' },
-  { id: 'eyes', dur: 4.4, num: '08', title: 'Eyes stay live', body: "Pupils and lids aren't painted in. They're drawn fresh every frame, so faces glance around, follow your cursor and blink." },
-  { id: 'sheets', dur: 5, num: '09', title: 'Three sheets', body: '' },
-  { id: 'boil', dur: 5, num: '10', title: 'Line boil', body: 'Every face is inked three times with shifted noise, and the three sheets cycle eight times a second: the shimmer of hand-drawn animation. The head breathes and sways around its neck.' },
-  { id: 'outro', dur: 4.6, num: '', title: 'One list,\nevery format', body: '' },
+  { id: 'title', dur: 3.6, title: 'how a glorpie\ngets painted', body: 'a name goes in, an alien comes out. every frame here is drawn live, by the same code your app runs.', code: (f) => `<Glorpie name="${f.name}" />` },
+  { id: 'seed', dur: 4.2, title: 'a name becomes a number', body: 'the name is hashed to a seed, a number below 9 quadrillion, and the seed picks everything: palette, head, crown, eyes, mouth.', code: (f) => `seedOf("${f.name}") = ${f.seed}` },
+  { id: 'paper', dur: 2.6, title: 'paper', body: 'a cream sheet with tooth: 6,000 specks of pigment and a few fibres.', code: () => `{ k: "paper" }` },
+  { id: 'pencil', dur: 2.8, title: 'pencil guides', body: 'faint graphite for the head and the eye line. background={false} leaves them out.', code: () => `{ k: "ink", col: GRAPHITE } × 3` },
+  { id: 'glaze', dur: 10, title: 'one glaze', body: '', code: () => `{ k: "wash", layers: 30, alpha: 0.06 }` },
+  { id: 'glazes', dur: 3.8, title: 'more glazes', body: 'skin, crown, shadows and cheeks use the same recipe. glazes multiply, so overlaps darken like real pigment.', code: () => `ctx.globalCompositeOperation = "multiply"` },
+  { id: 'hatch', dur: 3.2, title: 'hatching', body: 'two passes of wobbly parallel lines shade the side away from the light, clipped to the head.', code: () => `{ k: "hatch", angle, gap }` },
+  { id: 'ink', dur: 7, title: 'dip-pen ink', body: 'lines are filled ribbons, not strokes: noise sets the pressure, the ends taper, a ghost pass doubles them, and sometimes the nib runs dry.', code: () => `{ k: "ink", taper: true, ghost: 1.8 }` },
+  { id: 'eyes', dur: 4.4, title: 'live eyes', body: 'pupils and lids are never painted in. they are drawn every frame, so a glorpie blinks and follows your cursor.', code: (f) => `mount(canvas, { name: "${f.name}" })` },
+  { id: 'sheets', dur: 5, title: 'three layers', body: '' },
+  { id: 'boil', dur: 5, title: 'line boil', body: 'the figure is inked three times with shifted noise, and the three sheets swap 8 times a second: the shimmer of hand-drawn animation.', code: () => `figures[floor(t × 8) % 3]` },
+  { id: 'outro', dur: 4.6, title: 'one list,\nevery format', body: '' },
 ];
+
+/** The steps that are numbered: everything but the title and the end. */
+const STEPS = SCENES.filter((s) => s.id !== 'title' && s.id !== 'outro');
 
 const STARTS = SCENES.reduce<number[]>((acc, s, i) => [...acc, (acc[i - 1] ?? 0) + (SCENES[i - 1]?.dur ?? 0)], []);
 export const DURATION = SCENES.reduce((s, c) => s + c.dur, 0);
@@ -125,10 +131,11 @@ class Progressive {
 
 export type Fonts = { display: string; text: string };
 
-export type Explainer = { draw: (ctx: Ctx, t: number) => void; seed: number };
+export type Explainer = { draw: (ctx: Ctx, t: number) => void; seed: number; setTheme: (theme: Theme) => void };
 
-/** Builds the face and pre-paints the stages. `k` is output pixels per layout pixel (1.5 → 1920×1080). */
-export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Fonts): Explainer {
+/** Builds the face for `name` and pre-paints the stages. `k` is output pixels per layout pixel (1.5 → 1920×1080). */
+export function prepareExplainer(name: string, E: Engine, k: number, fonts: Fonts, T: Theme): Explainer {
+  const seed = seedOf(name);
   const face = buildFace(seed, E);
   const pal = face.pal;
   const px = Math.round(FACE.s * k);
@@ -155,12 +162,13 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
 
   // ---- sort the display list into the order the story tells it
   const paperOp = face.back.find((o) => o.k === 'paper');
-  const pencilOps = face.back.filter((o) => o.k === 'ink');
+  const pencilOps = face.back.filter((o) => o.k === 'ink' && o.col === GRAPHITE);
+  const skyInks = face.back.filter((o) => o.k === 'ink' && o.col !== GRAPHITE);
   const washes = (ops: Op[]) => ops.filter((o): o is WashOp => o.k === 'wash');
   const figureWashes = washes(face.figure);
   const showWash = figureWashes.find((o) => o.col === pal.skin && o.layers === 30)
     ?? figureWashes.reduce((a, b) => (area(b.pts) > area(a.pts) ? b : a), figureWashes[0]!);
-  const glazeOps: Op[] = [...face.back.filter((o) => o.k === 'wash' || o.k === 'solid'), ...figureWashes.filter((o) => o !== showWash)];
+  const glazeOps: Op[] = [...face.back.filter((o) => o.k === 'wash' || o.k === 'solid'), ...skyInks, ...figureWashes.filter((o) => o !== showWash)];
   const hatchOps = face.figure.filter((o): o is HatchOp => o.k === 'hatch');
   const inkish = face.figure.filter((o) => o.k === 'ink' || o.k === 'solid');
   const figureInks = inkish.filter((o): o is InkOp => o.k === 'ink' && o.col !== 'paper');
@@ -205,14 +213,18 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
 
   // ---- page and card furniture
   const [bg, bgG] = canvas(VW * k, VH * k);
-  bgG.fillStyle = PAGE;
-  bgG.fillRect(0, 0, bg.width, bg.height);
-  const r = rng(seed);
-  for (let i = 0; i < 14000; i++) {
-    bgG.fillStyle = rgba(INK, 0.012 + r() * 0.03);
-    const s = (0.4 + r() * 1.1) * k;
-    bgG.fillRect(r() * bg.width, r() * bg.height, s, s);
-  }
+  // the page: its colour with a dust of ink, which reads as paper tooth by day and faint stars by night
+  const paintPage = () => {
+    bgG.fillStyle = T.page;
+    bgG.fillRect(0, 0, bg.width, bg.height);
+    const r = rng(seed);
+    for (let i = 0; i < 14000; i++) {
+      bgG.fillStyle = rgba(T.ink, 0.012 + r() * 0.03);
+      const s = (0.4 + r() * 1.1) * k;
+      bgG.fillRect(r() * bg.width, r() * bg.height, s, s);
+    }
+  };
+  paintPage();
   const dabs = swatches(pal, k, seed);
 
   const eyeCentre = face.eyes.length
@@ -409,21 +421,31 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
     return yy;
   }
 
-  function caption(ctx: Ctx, sc: Scene, local: number, top = 214): number {
+  /** The step's label, title and words, and its line of code under them like a prompt. Returns where the text ends. */
+  function caption(ctx: Ctx, sc: Scene, local: number, top = 214, withCode = true): number {
     const a = ease(prog(local, 0.1, 0.7)) * (1 - ease(prog(local, sc.dur - 0.45, sc.dur - 0.05)));
     const lift = (1 - ease(prog(local, 0.1, 0.8))) * 14;
     let y = top + lift;
-    if (sc.num) {
-      text(ctx, `${sc.num}`, COL.x, y, `600 13px ${fonts.text}`, CLAY, a);
+    const n = STEPS.findIndex((st) => st.id === sc.id);
+    if (n >= 0) {
+      text(ctx, `step ${String(n + 1).padStart(2, '0')} / ${String(STEPS.length).padStart(2, '0')}`, COL.x, y, `500 13px ${fonts.text}`, T.accent, a);
       layout(ctx);
-      ctx.fillStyle = rgba(CLAY, a * 0.5);
-      ctx.fillRect(COL.x + 26, y - 5, 28, 1.2);
-      y += 50;
+      ctx.fillStyle = rgba(T.ink, a * 0.18);
+      for (let x = COL.x + 112; x < COL.x + COL.w; x += 8) ctx.fillRect(x, y - 5, 4, 1);
+      y += 46;
     }
     const big = sc.id === 'title' || sc.id === 'outro';
-    y = text(ctx, sc.title, COL.x - 2, y, `500 ${big ? 60 : 44}px ${fonts.display}`, INK, a, COL.w + 40, big ? 64 : 50);
-    if (sc.body) y = text(ctx, sc.body, COL.x, y + 10, `400 18px ${fonts.text}`, INK_2, a, COL.w - 20, 28);
+    y = text(ctx, sc.title, COL.x - 2, y, `500 ${big ? 54 : 40}px ${fonts.display}`, T.ink, a, COL.w + 40, big ? 58 : 46);
+    if (sc.body) y = text(ctx, sc.body, COL.x, y + 8, `400 17px ${fonts.text}`, T.ink2, a, COL.w - 20, 27);
+    if (withCode && sc.code) y = prompt(ctx, sc.code({ name, seed }), y + 16, a * ease(prog(local, 0.5, 1.1)));
     return y;
+  }
+
+  /** A line of code as it would be typed: a prompt mark, then the code in the accent colour. */
+  function prompt(ctx: Ctx, code: string, y: number, a: number): number {
+    if (a <= 0) return y;
+    text(ctx, '❯', COL.x, y + 16, `500 15px ${fonts.text}`, T.accent, a);
+    return text(ctx, code, COL.x + 22, y + 16, `500 15px ${fonts.text}`, T.ink, a * 0.9, COL.w - 22, 22);
   }
 
   /** A small label under the sheet, like a note pinned beside a drawing. */
@@ -434,10 +456,10 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
     const w = ctx.measureText(s).width + 26;
     const x = FACE.x + FACE.s / 2 - w / 2, y = FACE.y + FACE.s + 22;
     ctx.globalAlpha = alpha;
-    ctx.fillStyle = rgba(INK, 0.86);
+    ctx.fillStyle = rgba(T.ink, 0.86);
     roundRect(ctx, x, y, w, 26, 13);
     ctx.fill();
-    ctx.fillStyle = PAGE;
+    ctx.fillStyle = T.page;
     ctx.textAlign = 'center';
     ctx.fillText(s, x + w / 2, y + 17.5);
     ctx.textAlign = 'left';
@@ -492,16 +514,19 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
         const g = gazeAt(t);
         liveFrame(ctx, pose(t, { move: 1, look: g.look, blink: g.blink, boil: true }), 1 - ease(prog(local, sc.dur - 0.7, sc.dur)));
         tape(ctx, 1);
-        const y = caption(ctx, sc, local, 250);
-        text(ctx, `seed ${seed}`, COL.x, y + 22, `500 14px ${fonts.text}`, CLAY, ease(prog(local, 0.6, 1.2)) * (1 - ease(prog(local, sc.dur - 0.45, sc.dur))));
+        caption(ctx, sc, local, 236);
         break;
       }
       case 'seed': {
         card(ctx, 1);
-        const y = caption(ctx, sc, local);
-        const settle = prog(local, 0.4, 1.6);
+        const y = caption(ctx, sc, local, 190, false);
+        // the hash running: digits flicker, then settle one by one into the seed
+        const settle = prog(local, 0.4, 1.8);
         const digits = String(seed).split('').map((d, i) => (settle >= (i + 1) / String(seed).length ? d : String(Math.floor(rng(Math.floor(t * 24) * 31 + i)() * 10))));
-        text(ctx, digits.join(''), COL.x, y + 46, `500 46px ${fonts.display}`, CLAY, ease(prog(local, 0.3, 0.8)) * (1 - ease(prog(local, sc.dur - 0.45, sc.dur))));
+        const da = ease(prog(local, 0.3, 0.8)) * (1 - ease(prog(local, sc.dur - 0.45, sc.dur)));
+        text(ctx, `"${name}"`, COL.x, y + 40, `500 22px ${fonts.text}`, T.ink2, da);
+        text(ctx, '↓ cyrb53', COL.x, y + 74, `500 14px ${fonts.text}`, T.accent, da);
+        text(ctx, digits.join(''), COL.x, y + 124, `500 40px ${fonts.display}`, T.accent, da);
         // the palette the seed picked, as dabs on the sheet
         const out = 1 - ease(prog(local, sc.dur - 0.5, sc.dur));
         dabs.forEach((d, i) => {
@@ -515,7 +540,7 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
           ctx.drawImage(d.canvas, cx - 48, cy - 48 + (1 - a) * 8, 96, 96);
           ctx.globalCompositeOperation = 'source-over';
           ctx.globalAlpha = 1;
-          text(ctx, d.name, cx, cy + 70, `500 12px ${fonts.text}`, INK_2, a, 120, 0, 'center');
+          text(ctx, d.name, cx, cy + 70, `500 12px ${fonts.text}`, S.ink2, a, 120, 0, 'center');
         });
         tape(ctx, 1);
         break;
@@ -583,12 +608,12 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
         const prev = levels[li]!, next = levels[Math.min(levels.length - 1, li + 1)]!;
         const shown = li === levels.length - 1 ? prev : next.map((q, j) => (j % 2 === 0 ? q : lerpPt(midpoint(prev, (j - 1) / 2), q, morph)));
         const lineA = (1 - ease(prog(local, 4.2, 5.4))) * ease(prog(local, 0, 0.4));
-        outline(ctx, [...shown, shown[0]!], INK, 0.75 * lineA, 1.2);
+        outline(ctx, [...shown, shown[0]!], S.ink, 0.75 * lineA, 1.2);
         if (shown.length <= 140) {
           withFace(ctx, () => {
             shown.forEach((q, j) => {
               const fresh = li < levels.length - 1 && j % 2 === 1;
-              ctx.fillStyle = rgba(fresh ? CLAY : INK, lineA * (fresh ? 0.95 : 0.7));
+              ctx.fillStyle = rgba(fresh ? S.accent : S.ink, lineA * (fresh ? 0.95 : 0.7));
               ctx.beginPath();
               ctx.arc(q.x, q.y, (fresh ? 3 : 2.2) * hair, 0, TAU);
               ctx.fill();
@@ -597,20 +622,21 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
         }
         // finishing touches, pointed out
         const finA = ease(prog(local, 7, 7.6)) * (1 - ease(prog(local, 9.2, 9.8)));
-        if (glazePlan.edge) outline(ctx, [...glazePlan.edge.pts, glazePlan.edge.pts[0]!], CLAY, finA * 0.85, 1.4, [5, 5]);
-        if (glazePlan.bloom) outline(ctx, [...glazePlan.bloom, glazePlan.bloom[0]!], CLAY, finA, 1.6, [3, 4]);
+        if (glazePlan.edge) outline(ctx, [...glazePlan.edge.pts, glazePlan.edge.pts[0]!], S.accent, finA * 0.85, 1.4, [5, 5]);
+        if (glazePlan.bloom) outline(ctx, [...glazePlan.bloom, glazePlan.bloom[0]!], S.accent, finA, 1.6, [3, 4]);
 
         const body =
           local < 3.6
-            ? 'It starts as a rough polygon. Every edge is split and its midpoint nudged by a Gaussian random, again and again, until the outline wobbles like wet paint.'
+            ? 'it starts as a rough polygon. every edge is split and its midpoint nudged by a gaussian random, again and again, until the outline wobbles like wet paint.'
             : local < 6.6
-              ? `Then ${showWash.layers} slightly different wobbles are stacked at ${Math.round(showWash.alpha * 100)}% opacity. The edges stay soft and the middle goes deep.`
-              : 'Last, specks of pigment are lifted for grain, a drop of water may push out a bloom, and the edge darkens where pigment pools.';
+              ? `then ${showWash.layers} slightly different wobbles are stacked at ${Math.round(showWash.alpha * 100)}% opacity. the edges stay soft and the middle goes deep.`
+              : 'last, specks of pigment are lifted for grain, a drop of water may push out a bloom, and the edge darkens where pigment pools.';
         const step = local < 3.6 ? 0 : local < 6.6 ? 1 : 2;
         const stepStart = [0, 3.6, 6.6][step]!, stepEnd = [3.6, 6.6, sc.dur][step]!;
-        const y = caption(ctx, { ...sc, body: '' }, local);
-        text(ctx, body, COL.x, y + 10 + (1 - ease(prog(local, stepStart + 0.05, stepStart + 0.6))) * 8, `400 18px ${fonts.text}`, INK_2,
-          ease(prog(local, stepStart + 0.05, stepStart + 0.6)) * (1 - ease(prog(local, stepEnd - 0.4, stepEnd - 0.05))), COL.w - 20, 28);
+        const y = caption(ctx, { ...sc, body: '' }, local, 214, false);
+        const yb = text(ctx, body, COL.x, y + 10 + (1 - ease(prog(local, stepStart + 0.05, stepStart + 0.6))) * 8, `400 18px ${fonts.text}`, T.ink2,
+          ease(prog(local, stepStart + 0.05, stepStart + 0.6)) * (1 - ease(prog(local, stepEnd - 0.4, stepEnd - 0.05))), COL.w - 20, 27);
+        prompt(ctx, sc.code!({ name, seed }), yb + 6, ease(prog(local, 0.5, 1.1)) * (1 - ease(prog(local, sc.dur - 0.45, sc.dur - 0.05))));
         const label =
           local < 3.6 ? `split + nudge · depth ${li} · ${shown.length} points`
             : local < 6.6 ? `layer ${nLayers} / ${glazePlan.layers.length} · ${Math.round(showWash.alpha * 100)}% each`
@@ -625,7 +651,7 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
         vignetteOver(ctx);
         tape(ctx, 1);
         caption(ctx, sc, local);
-        chip(ctx, `${glazeOps.length + 1} glazes, multiplied`, ease(prog(local, 0.4, 0.8)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))));
+        chip(ctx, `${glazeOps.length - skyInks.length + 1} glazes, multiplied`, ease(prog(local, 0.4, 0.8)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))));
         break;
       }
       case 'hatch': {
@@ -633,7 +659,7 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
         sequence(ctx, hatch, ease(prog(local, 0.5, sc.dur - 0.4)), partialOp(ctx, hatch));
         vignetteOver(ctx);
         const region = hatchOps[0]?.region;
-        if (region) outline(ctx, [...region, region[0]!], CLAY, ease(prog(local, 0, 0.4)) * (1 - ease(prog(local, 1.2, 1.9))) * 0.9, 1.5, [6, 5]);
+        if (region) outline(ctx, [...region, region[0]!], S.accent, ease(prog(local, 0, 0.4)) * (1 - ease(prog(local, 1.2, 1.9))) * 0.9, 1.5, [6, 5]);
         tape(ctx, 1);
         caption(ctx, sc, local);
         const lines = hatchOps.reduce((s, o) => s + (hatchLinesFor.get(o)?.length ?? 0), 0);
@@ -648,13 +674,13 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
           blit(ctx, afterHatch);
           vignetteOver(ctx);
           const path = resample(showInk.pts, 1.8);
-          outline(ctx, showInk.closed ? [...path, path[0]!] : path, CLAY, ease(prog(local, 0.1, 0.6)) * (1 - ease(prog(local, 2.6, 3.4))) * 0.9, 1.2, [2, 4]);
+          outline(ctx, showInk.closed ? [...path, path[0]!] : path, S.accent, ease(prog(local, 0.1, 0.6)) * (1 - ease(prog(local, 2.6, 3.4))) * 0.9, 1.2, [2, 4]);
           if (pen > 0) {
             inkPartial(ctx, showInk, ease(pen));
             const tip = nibAt(showInk, ease(pen));
             if (tip && pen < 1) {
               withFace(ctx, () => {
-                ctx.fillStyle = rgba(CLAY, 0.9);
+                ctx.fillStyle = rgba(S.accent, 0.9);
                 ctx.beginPath();
                 ctx.arc(tip.x, tip.y, 5 * hair, 0, TAU);
                 ctx.fill();
@@ -690,13 +716,13 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
           ctx.translate(COL.x, sy);
           ctx.scale(1.9, 1.9);
           for (const rb of inkRibbons(s, E, 0, ease(prog(local, 0.9 + i * 0.6, 3 + i * 0.6)))) {
-            ctx.fillStyle = rgba(pal.ink, rb.alpha * insetA);
+            ctx.fillStyle = rgba(T.ink, rb.alpha * insetA);
             ctx.beginPath();
             addPath(ctx, rb.pts);
             ctx.fill();
           }
           ctx.restore();
-          text(ctx, i ? 'dry nib: gaps where the noise runs high' : 'pressure from noise · tapered ends · ghost pass', COL.x, sy + 34, `500 12px ${fonts.text}`, INK_2, insetA, 400);
+          text(ctx, i ? 'dry nib: gaps where the noise runs high' : 'pressure from noise · tapered ends · ghost pass', COL.x, sy + 34, `500 12px ${fonts.text}`, T.ink2, insetA, 400);
         });
         chip(ctx, local < 3.4 ? 'one line: a ribbon whose width follows noise' : `${inkOps.length} lines and dots`, ease(prog(local, 0.4, 0.8)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))));
         break;
@@ -711,7 +737,7 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
         const ringA = ease(prog(local, 0.5, 1)) * (1 - ease(prog(local, 2.2, 2.8)));
         withFace(ctx, () => {
           for (const e of face.eyes) {
-            ctx.strokeStyle = rgba(CLAY, ringA * 0.9);
+            ctx.strokeStyle = rgba(S.accent, ringA * 0.9);
             ctx.lineWidth = 1.5 * hair;
             ctx.setLineDash([4 * hair, 4 * hair]);
             ctx.beginPath();
@@ -768,9 +794,9 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
 
         caption(ctx, sc, local, 120);
         const legend = [
-          ['Eyes', 'drawn fresh every frame'],
-          ['Figure', 'breathes and sways, multiplied on top'],
-          ['Backdrop', 'paper, glazes, vignette: painted once'],
+          ['eyes', 'drawn fresh every frame'],
+          ['figure', 'breathes and sways on top'],
+          ['backdrop', 'paper and glazes, painted once'],
         ] as const;
         legend.forEach(([name, what], i) => {
           const m = plates[2 - i]!;
@@ -778,10 +804,10 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
           const a = ease(prog(local, 1 + i * 0.25, 1.6 + i * 0.25)) * (1 - ease(prog(local, sc.dur - 1.5, sc.dur - 1)));
           if (a <= 0) return;
           const ly = corner.y;
-          text(ctx, name, COL.x, ly - 4, `500 26px ${fonts.display}`, INK, a, 300);
-          text(ctx, what, COL.x, ly + 20, `400 15px ${fonts.text}`, INK_2, a, 300);
+          text(ctx, name, COL.x, ly - 4, `500 26px ${fonts.display}`, T.ink, a, 300);
+          text(ctx, what, COL.x, ly + 20, `400 15px ${fonts.text}`, T.ink2, a, 330, 20);
           layout(ctx);
-          ctx.strokeStyle = rgba(CLAY, a * 0.7);
+          ctx.strokeStyle = rgba(T.accent, a * 0.7);
           ctx.lineWidth = 1;
           ctx.setLineDash([3, 4]);
           ctx.beginPath();
@@ -789,7 +815,7 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
           ctx.lineTo(corner.x - 10, corner.y);
           ctx.stroke();
           ctx.setLineDash([]);
-          ctx.fillStyle = rgba(CLAY, a);
+          ctx.fillStyle = rgba(T.accent, a);
           ctx.beginPath();
           ctx.arc(corner.x - 6, corner.y, 3, 0, TAU);
           ctx.fill();
@@ -816,11 +842,11 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
           ctx.globalCompositeOperation = 'multiply';
           ctx.drawImage(fig, src.x, src.y, src.s, src.s, x, ty, s, s);
           ctx.globalCompositeOperation = 'source-over';
-          ctx.strokeStyle = on ? CLAY : rgba(INK, 0.15);
+          ctx.strokeStyle = on ? T.accent : rgba(T.ink, 0.15);
           ctx.lineWidth = on ? 2.5 : 1;
           ctx.strokeRect(x, ty, s, s);
           ctx.globalAlpha = 1;
-          text(ctx, `sheet ${'ABC'[i]}`, x + s / 2, ty + s + 20, `500 12px ${fonts.text}`, on ? CLAY : INK_2, a, 120, 0, 'center');
+          text(ctx, `sheet ${'ABC'[i]}`, x + s / 2, ty + s + 20, `500 12px ${fonts.text}`, on ? T.accent : T.ink2, a, 120, 0, 'center');
         });
         chip(ctx, '3 inkings · 8 fps · breathing on its neck', ease(prog(local, 0.4, 0.8)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))));
         break;
@@ -832,7 +858,7 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
         tape(ctx, 1);
         const y = caption(ctx, sc, local, 230);
         const a = (k: number) => ease(prog(local, 0.6 + k * 0.35, 1.1 + k * 0.35)) * (1 - ease(prog(local, sc.dur - 0.5, sc.dur - 0.05)));
-        const row = [`seed ${seed}`, `${opCount} operations`];
+        const row = [`"${name}"`, `seed ${seed}`, `${opCount} ops`];
         let x = COL.x;
         layout(ctx);
         ctx.font = `500 14px ${fonts.text}`;
@@ -841,19 +867,19 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
           pill(ctx, x, y + 14, w, s, a(i), i === 0);
           x += w;
           if (i < row.length - 1) {
-            text(ctx, '→', x + 14, y + 33, `400 18px ${fonts.text}`, INK_2, a(i + 0.5), 40, 0, 'center');
+            text(ctx, '→', x + 14, y + 33, `400 18px ${fonts.text}`, T.ink2, a(i + 0.5), 40, 0, 'center');
             x += 28;
           }
         });
         let ox = COL.x;
-        ['canvas', 'PNG', 'SVG'].forEach((s, i) => {
+        ['canvas', 'png', 'svg', 'gif'].forEach((s, i) => {
           layout(ctx);
           ctx.font = `500 14px ${fonts.text}`;
           const w = ctx.measureText(s).width + 28;
           pill(ctx, ox, y + 64, w, s, a(2 + i * 0.4), false);
           ox += w + 10;
         });
-        text(ctx, 'The same list paints this screen, a 2K PNG, or an SVG with real vector ink.', COL.x, y + 142, `400 18px ${fonts.text}`, INK_2, a(3), COL.w - 20, 28);
+        text(ctx, 'the same list paints this screen, a 2K png, an svg with real vector ink, or a looping gif.', COL.x, y + 142, `400 18px ${fonts.text}`, T.ink2, a(3), COL.w - 20, 28);
         break;
       }
     }
@@ -863,10 +889,10 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
     if (a <= 0) return;
     layout(ctx);
     ctx.globalAlpha = a;
-    ctx.fillStyle = strong ? rgba(CLAY, 0.92) : rgba(INK, 0.07);
+    ctx.fillStyle = strong ? rgba(T.accent, 0.92) : rgba(T.ink, 0.07);
     roundRect(ctx, x, y + (1 - a) * 6, w, 30, 15);
     ctx.fill();
-    ctx.fillStyle = strong ? PAGE : INK;
+    ctx.fillStyle = strong ? T.page : T.ink;
     ctx.font = `500 14px ${fonts.text}`;
     ctx.textAlign = 'center';
     ctx.fillText(s, x + w / 2, y + 20 + (1 - a) * 6);
@@ -899,7 +925,7 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
   function plateEdge(ctx: Ctx, p: number) {
     if (p <= 0.02) return;
     ctx.save();
-    ctx.strokeStyle = rgba(INK, 0.35 * p);
+    ctx.strokeStyle = rgba(T.ink, 0.35 * p);
     ctx.lineWidth = 1.4 * hair;
     ctx.setLineDash([6 * hair, 5 * hair]);
     ctx.strokeRect(0, 0, W, W);
@@ -920,6 +946,10 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
 
   return {
     seed,
+    setTheme(next) {
+      T = next;
+      paintPage();
+    },
     draw(ctx, time) {
       const t = ((time % DURATION) + DURATION) % DURATION;
       let i = SCENES.length - 1;
@@ -933,9 +963,9 @@ export function prepareExplainer(seed: number, E: Engine, k: number, fonts: Font
       scene(ctx, sc, t - STARTS[i]!, t);
       // progress hairline along the bottom
       layout(ctx);
-      ctx.fillStyle = rgba(INK, 0.08);
+      ctx.fillStyle = rgba(T.ink, 0.08);
       ctx.fillRect(COL.x, VH - 34, COL.w, 2);
-      ctx.fillStyle = rgba(CLAY, 0.7);
+      ctx.fillStyle = rgba(T.accent, 0.7);
       ctx.fillRect(COL.x, VH - 34, COL.w * (t / DURATION), 2);
       ctx.restore();
     },

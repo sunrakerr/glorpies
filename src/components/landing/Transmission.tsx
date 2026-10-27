@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { alienLetter as glyph } from '@/lib/glyphs';
 
 /** What the headline says, one line at a time, forever. */
 const LINES = [
@@ -30,11 +31,6 @@ function lengths(n: number): Record<Phase, number> {
   return { type: n * TYPE, wait: WAIT, turn: (n - 1) * STAGGER + DITHER.length * STEP, hold: HOLD, erase: n * ERASE, gap: GAP };
 }
 
-/** The alien alphabet: Tifinagh, all dots, rings and strokes, even in weight like the pixel letters. */
-const TIFINAGH = 0x2d30, LETTERS = 0x2d67 - 0x2d30 + 1;
-
-/** Each letter's alien counterpart, the same one for the same letter every time, like a real alphabet. */
-const glyph = (ch: string) => String.fromCodePoint(TIFINAGH + ((ch.charCodeAt(0) * 7) % LETTERS));
 
 /** What a cell shows, and the letter it stands for (which holds its place, so every cell is a letter's size). */
 type Cell = { ch: string; kind: 'glyph' | 'dots' | 'letter'; en: string };

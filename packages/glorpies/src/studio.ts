@@ -9,7 +9,7 @@ import { unguided } from './face/bare';
 import { splitLayers } from './layers';
 import { expressed } from './expression';
 import { DEFAULT_LOOK, lookOf, renderLook, type LookId } from './looks';
-import { FACES, seedOf, type FaceName } from './seed';
+import { seedOf, type FaceName } from './seed';
 import { stillEyes, type FaceState } from './states';
 
 /** A Map that forgets whatever was used least recently once it holds `max` entries. */
@@ -52,10 +52,6 @@ export function faceFor(seed: number, E: Engine, state: FaceState = 'idle'): Fac
 export function forget(seed: number) {
   faces.delete(seed);
   for (const key of thumbs.keys()) if (key.startsWith(`${seed}:`)) thumbs.delete(key);
-}
-
-export function newSeed(): number {
-  return Math.floor(Math.random() * FACES);
 }
 
 /**

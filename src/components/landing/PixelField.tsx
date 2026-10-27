@@ -126,7 +126,7 @@ export function PixelField() {
     <canvas
       ref={ref}
       aria-hidden
-      className="pointer-events-none fixed inset-0 h-full w-full opacity-[0.07] [--field:var(--color-ink)] [image-rendering:pixelated] dark:opacity-[0.11] dark:[--field:var(--color-accent)] [mask-image:linear-gradient(to_right,black,black_calc(50%-560px),transparent_calc(50%-470px),transparent_calc(50%+470px),black_calc(50%+560px),black)]"
+      className="pointer-events-none fixed inset-0 h-full w-full opacity-[0.07] [--field:var(--color-ink)] [image-rendering:pixelated] dark:opacity-[0.11] dark:[--field:var(--color-accent)] [mask-image:linear-gradient(to_right,black,black_calc(50%-650px),transparent_calc(50%-560px),transparent_calc(50%+560px),black_calc(50%+650px),black)]"
     />
   );
 }

@@ -1,8 +1,8 @@
-// Usage: node frames.mjs <seed> <outDir> <times: "a,b,c" | "fps:30"> [format=jpeg]
+// Usage: node frames.mjs <name> <outDir> <times: "a,b,c" | "fps:30"> [format=jpeg]
 import { spawn } from 'node:child_process';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 
-const [seed, outDir, timesArg, format = 'jpeg'] = process.argv.slice(2);
+const [name, outDir, timesArg, format = 'jpeg'] = process.argv.slice(2);
 mkdirSync(outDir, { recursive: true });
 rmSync('/tmp/faces-e2e/frames-profile', { recursive: true, force: true });
 const chrome = spawn(process.env.CHROME ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', ['--headless=new', '--window-size=1400,1000', '--remote-debugging-port=9335', '--user-data-dir=/tmp/faces-e2e/frames-profile', 'about:blank'], { stdio: 'ignore' });
@@ -17,7 +17,7 @@ const send = (method, params = {}) => new Promise((r) => { const i = ++id; pendi
 const evaluate = async (expression) => { const r = await send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }); if (r.result?.exceptionDetails) throw new Error(JSON.stringify(r.result.exceptionDetails)); return r.result?.result?.value; };
 await send('Runtime.enable');
 ws.addEventListener('message', (e) => { const m = JSON.parse(e.data); if (m.method === 'Runtime.consoleAPICalled' && m.params.type === 'error') console.log('console.error', m.params.args.map((a) => a.value ?? a.description).join(' ')); if (m.method === 'Runtime.exceptionThrown') console.log('exception', m.params.exceptionDetails.exception?.description); });
-await send('Page.navigate', { url: `http://localhost:3417/how?seed=${seed}` });
+await send('Page.navigate', { url: `http://localhost:3417/how?name=${encodeURIComponent(name)}` });
 const t0 = Date.now();
 while (!(await evaluate('!!window.__explainer?.ready').catch(() => false))) { if (Date.now() - t0 > 60000) { console.log('timeout waiting for explainer'); process.exit(1); } await sleep(200); }
 console.log('ready in', Date.now() - t0, 'ms');
@@ -30,10 +30,10 @@ const mime = format === 'png' ? 'image/png' : 'image/jpeg';
 let slowest = 0;
 for (const [i, t] of times.entries()) {
   const s = Date.now();
-  const url = await evaluate(`(() => { const c = document.querySelector('canvas'); window.__explainer.draw(${t}); return c.toDataURL('${mime}', 0.93); })()`);
+  const url = await evaluate(`(() => { const c = document.querySelector('canvas[aria-label^="Animated explainer"]'); window.__explainer.draw(${t}); return c.toDataURL('${mime}', 0.93); })()`);
   slowest = Math.max(slowest, Date.now() - s);
-  const name = timesArg.startsWith('fps:') ? `f${String(i).padStart(5, '0')}` : `t${t.toFixed(2)}`;
-  writeFileSync(`${outDir}/${name}.${format === 'png' ? 'png' : 'jpg'}`, Buffer.from(url.split(',')[1], 'base64'));
+  const file = timesArg.startsWith('fps:') ? `f${String(i).padStart(5, '0')}` : `t${t.toFixed(2)}`;
+  writeFileSync(`${outDir}/${file}.${format === 'png' ? 'png' : 'jpg'}`, Buffer.from(url.split(',')[1], 'base64'));
   if (i % 150 === 0) console.log('frame', i, '/', times.length);
 }
 console.log('done', times.length, 'frames, duration', duration, 'slowest frame', slowest, 'ms');
