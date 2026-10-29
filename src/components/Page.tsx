@@ -56,6 +56,7 @@ export function Footer() {
       </span>
       <nav className="flex items-center gap-4">
         <Link href="/" className="transition hover:text-ink">./</Link>
+        <Link href="/docs" className="transition hover:text-ink">./docs</Link>
         <Link href="/gallery" className="transition hover:text-ink">./gallery</Link>
         <Link href="/how" className="transition hover:text-ink">./how</Link>
       </nav>

@@ -85,26 +85,3 @@ export const SNIPPET_FILES: Record<SnippetKind, { file: string; lang: Lang }> = 
   url: { file: 'index.html', lang: 'html' },
   cli: { file: 'zsh', lang: 'sh' },
 };
-
-/** The props reference: what each is for, what it takes, and what you get without it. */
-export const PROPS: { prop: string; type: string; fallback: string; note: string }[] = [
-  { prop: 'name', type: 'string | number', fallback: 'required', note: 'any id: a username, email, bot id or a seed. same name, same face.' },
-  { prop: 'look', type: '"auto" | look id', fallback: '"auto"', note: 'auto paints watercolour at 72px and up, the ink badge below.' },
-  { prop: 'size', type: 'number | css length', fallback: '48', note: 'pixels, or any css length like "100%". repaints sharp when it grows.' },
-  { prop: 'shape', type: '"circle" | "squircle" | "rounded" | "square"', fallback: '"circle"', note: 'the crop. without a background there is nothing to crop.' },
-  { prop: 'background', type: 'boolean', fallback: 'true', note: 'false keeps only the face: no backdrop, no pencil lines, no crop, transparent all around.' },
-  { prop: 'state', type: '"idle" | "thinking" | "working" | "waiting" | "blocked" | "done"', fallback: '"idle"', note: 'for agents: changes the expression, the motion and a mark by the head.' },
-  { prop: 'alive', type: 'boolean', fallback: 'true', note: 'breathing, blinking, glancing at the pointer. off when the reader prefers reduced motion.' },
-  { prop: 'pokeable', type: 'boolean', fallback: 'false', note: 'a tap makes it wobble.' },
-  { prop: 'label', type: 'string', fallback: '"Avatar"', note: 'accessible name.' },
-  { prop: 'priority', type: 'number', fallback: '1', note: 'paints sooner when many faces are waiting, e.g. the one in your header.' },
-];
-
-/** Where each piece lives. */
-export const ENTRIES: { path: string; what: string }[] = [
-  { path: 'glorpies/react', what: '<Glorpie>, plus <Avatar>, <AvatarImage> and <AvatarFallback> for a photo with a face behind it' },
-  { path: 'glorpies/element', what: '<glorpie-face>, a web component for html, vue, svelte, angular. the same attributes as the props' },
-  { path: 'glorpies', what: 'mount(canvas, options) for your own canvas, faceSVG(), faceColors(), seedOf(), LOOKS, STATES' },
-  { path: 'glorpies/server', what: 'faceRoute() for your own image route, createFaceHandler(), renderImage(): png, webp, jpeg, svg and gif' },
-  { path: 'npx glorpies', what: 'the command line: any name to an image file' },
-];

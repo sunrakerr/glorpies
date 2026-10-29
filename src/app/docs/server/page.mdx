@@ -1,0 +1,87 @@
+export const metadata = { title: 'server images' };
+
+# server images
+
+<Lead>Faces as image files, from a route in your own app: for emails, link previews, chat apps, and anything else that needs a URL instead of a component.</Lead>
+
+<Install packages="glorpies @napi-rs/canvas" />
+
+## a route
+
+In Next.js, a whole image API is two lines:
+
+<Code file="app/api/face/route.ts" lang="ts">{`
+import { faceRoute } from 'glorpies/server';
+
+export const { GET } = faceRoute();
+`}</Code>
+
+Anything that speaks `fetch` takes the same handler:
+
+```ts
+import { createFaceHandler } from 'glorpies/server';
+
+const faces = createFaceHandler();
+
+Bun.serve({ fetch: faces });                 // Bun
+Deno.serve(faces);                           // Deno
+app.get('/face', (c) => faces(c.req.raw));   // Hono
+```
+
+Then ask for faces by URL:
+
+```text
+/api/face?name=agent-47
+/api/face?name=agent-47&look=ink&size=128&shape=circle&format=webp
+/api/face?name=agent-47&state=thinking&format=gif
+```
+
+## query
+
+| parameter | values | default |
+| --- | --- | --- |
+| `name` | any string (required) | |
+| `look` | `auto` or a look id | `auto` |
+| `size` | 16 to 1024 pixels (up to 320 for gif) | `256` |
+| `shape` | `circle`, `squircle`, `rounded`, `square`; outside is transparent | `square` |
+| `state` | `idle`, `thinking`, `working`, `waiting`, `blocked`, `done` | `idle` |
+| `background` | `false` for only the face | `true` |
+| `format` | `png`, `webp`, `jpeg`, `svg`, `gif` | `png` |
+| `loop` | seconds a gif lasts before it repeats, 1 to 8 | `3` |
+| `fps` | gif frames per second, 4 to 30 | `15` |
+
+Unknown values fall back to the defaults, so a typo gets a face rather than an error.
+
+## options
+
+`faceRoute()` and `createFaceHandler()` take defaults for every query parameter, and three limits:
+
+```ts
+faceRoute({
+  look: 'ink',
+  size: 128,
+  cacheControl: 'public, max-age=86400',  // default: a year, immutable
+  maxSize: 512,                           // largest ?size= allowed (default 1024)
+  maxName: 128,                           // longest ?name= allowed (default 256)
+});
+```
+
+## caching and safety
+
+- The same request always gives the same image, so responses are cached for a year by default. Put the route behind your CDN and each face is painted once.
+- A name longer than `maxName` is refused with 414, and sizes are clamped, so no request can ask for an enormous image. A gif's frames are capped too.
+- SVG is sent with a Content-Security-Policy that runs no script and loads nothing, and every response has `X-Content-Type-Options: nosniff`.
+- When painting fails the details go to your server's log; the response says only that it failed.
+
+## without a route
+
+```ts
+import { faceGIF, renderImage } from 'glorpies/server';
+
+const { body, type } = await renderImage('agent-47', { look: 'sticker', size: 256, format: 'webp' });
+const gif = faceGIF('agent-47', { state: 'done', size: 128, loop: 3 });
+```
+
+A GIF loops seamlessly with a scripted pose, so the same name always loops the same way.
+
+<Note>This site answers the same URLs at `/api/face`, for trying things out. It's a demo, not a CDN for your app: host the route yourself for anything real.</Note>

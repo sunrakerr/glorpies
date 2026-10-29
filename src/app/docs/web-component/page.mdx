@@ -1,0 +1,67 @@
+export const metadata = { title: 'web component' };
+
+# web component
+
+<Lead>`<glorpie-face>` works anywhere HTML does: plain pages, Vue, Svelte, Angular, Astro, a CMS template. It takes the same options as the React component, as attributes.</Lead>
+
+## from a cdn
+
+```html
+<script type="module" src="https://unpkg.com/glorpies"></script>
+
+<glorpie-face name="ada@lovelace.dev" size="48"></glorpie-face>
+<glorpie-face name="agent-47" size="48" look="sticker" state="thinking"></glorpie-face>
+```
+
+## with a bundler
+
+Import the entry once, anywhere in your app, and the tag is registered:
+
+```ts
+import 'glorpies/element';
+```
+
+## attributes
+
+| attribute | values | default |
+| --- | --- | --- |
+| `name` | any string (required) | |
+| `look` | `auto` or a look id | `auto` |
+| `size` | pixels, or any CSS length | `48` |
+| `shape` | `circle`, `squircle`, `rounded`, `square` | `circle` |
+| `state` | `idle`, `thinking`, `working`, `waiting`, `blocked`, `done` | `idle` |
+| `background` | `false` for only the face | `true` |
+| `alive` | `false` to hold still | `true` |
+| `pokeable` | present to make a tap wobble the face | absent |
+| `label` | the accessible name | `Avatar` |
+
+Change an attribute and the face changes with it, repainting only if it has to.
+
+## frameworks
+
+**Vue.** Tell the compiler the tag is a custom element:
+
+```ts
+// vite.config.ts
+vue({ template: { compilerOptions: { isCustomElement: (tag) => tag.startsWith('glorpie-') } } });
+```
+
+```vue
+<glorpie-face :name="user.email" size="40" />
+```
+
+**Svelte** needs nothing:
+
+```svelte
+<glorpie-face name={user.email} size="40"></glorpie-face>
+```
+
+**Angular.** Allow custom elements in the component that uses it:
+
+```ts
+@Component({ schemas: [CUSTOM_ELEMENTS_SCHEMA], template: `<glorpie-face [attr.name]="user.email" size="40"></glorpie-face>` })
+```
+
+## styling
+
+The tag is an inline block, sized by `size`, so `margin`, `vertical-align` and the like work as on an image. Its canvas is exposed as `::part(canvas)`.

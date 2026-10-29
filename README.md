@@ -14,7 +14,7 @@
   <a href="https://glorpies.vercel.app"><b>./site</b></a> &nbsp;·&nbsp;
   <a href="https://glorpies.vercel.app/gallery">./gallery</a> &nbsp;·&nbsp;
   <a href="https://glorpies.vercel.app/how">./how</a> &nbsp;·&nbsp;
-  <a href="packages/glorpies/README.md">./docs</a>
+  <a href="https://glorpies.vercel.app/docs">./docs</a>
 </p>
 
 Ugly little alien avatars, hand-painted in watercolour and dip pen from any string. Antennae, extra eyes, horns, halos, too many teeth.
@@ -61,7 +61,56 @@ export const { GET } = faceRoute();
 npx -p glorpies -p @napi-rs/canvas glorpies ada@lovelace.dev --size 256 -o ada.png
 ```
 
-The full reference (every prop, look, state, query parameter and function) is in **[the docs](packages/glorpies/README.md)**.
+## ⵔ examples
+
+**A user avatar that's never blank.** Their photo if they have one; their face while it loads, if it fails, or if there isn't one.
+
+```tsx
+import { Avatar, AvatarFallback, AvatarImage } from 'glorpies/react';
+
+<Avatar size={40}>
+  <AvatarImage src={user.photoUrl} alt={user.name} />
+  <AvatarFallback name={user.email} />
+</Avatar>
+```
+
+**Agents that show their status.** The face changes with the state, so a sidebar reads at a glance.
+
+```tsx
+{agents.map((agent) => (
+  <Glorpie key={agent.id} name={agent.id} state={agent.status} size={32} label={agent.name} />
+))}
+```
+
+**Faces in emails and link previews**, where there's no JavaScript: an image from your own route.
+
+```html
+<img src="https://your.app/api/face?name=ada@lovelace.dev&size=96&shape=circle" width="48" height="48" alt="">
+```
+
+**A page themed to its face.** `faceColors` is the palette a face is painted in.
+
+```ts
+import { faceColors } from 'glorpies';
+
+const { bg, accent } = faceColors(user.email);
+header.style.background = bg;
+```
+
+**Vue, Svelte, Angular or plain HTML.** Import the element once, then use the tag anywhere.
+
+```ts
+import 'glorpies/element';
+// <glorpie-face name="ada@lovelace.dev" size="40" look="sticker"></glorpie-face>
+```
+
+**Avatars for a whole team, from a terminal.**
+
+```bash
+for name in ada grace linus; do npx glorpies "$name" --look sticker --size 256; done
+```
+
+Everything else (every prop, look, state, query parameter and function) is in **[the docs](https://glorpies.vercel.app/docs)**.
 
 ## ⵙ looks
 
@@ -88,7 +137,7 @@ Made for agents too: a face you can pick out of a crowded sidebar, with a status
 
 A name hashes to a 53-bit seed, and the seed drives a random stream (sfc32) and a noise field. From them comes the alien, as a list of drawing operations: watercolour glazes, hatching, pen lines and solid fills, plus the parts that move (pupils, lids). That list is painted once per "line boil" frame, so the pen wobbles like hand-drawn animation, and the eyes are drawn live on top. Only the blinks and glances are left to chance; the face depends on the name alone, so it comes out the same at any size, as a PNG, as SVG paths or as a looping GIF.
 
-[Watch it paint one](https://glorpies.vercel.app/how), step by step.
+[Watch it paint one](https://glorpies.vercel.app/how), step by step, or read [the faq](https://glorpies.vercel.app/docs/faq) on why the same name gives the same face everywhere.
 
 ## this repo
 

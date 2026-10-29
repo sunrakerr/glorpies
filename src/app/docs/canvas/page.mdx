@@ -1,0 +1,63 @@
+export const metadata = { title: 'canvas' };
+
+# canvas
+
+<Lead>Under the components is `mount()`, which brings a face to life on a canvas you own, plus functions for finished pictures: a canvas, SVG markup, or the colours a face is painted in.</Lead>
+
+## mount
+
+```ts
+import { mount } from 'glorpies';
+
+const face = mount(canvas, { name: 'agent-47', look: 'gouache', state: 'working' });
+
+face.update({ state: 'done' });
+face.poke();
+face.destroy();
+```
+
+Size the canvas with CSS; the face is painted at its displayed size times the device pixel ratio, painted again if it grows, and animated only while it's on screen.
+
+| option | | default |
+| --- | --- | --- |
+| `name` | any string or seed (required) | |
+| `look`, `state`, `background` | as on `<Glorpie>` | `auto`, `idle`, `true` |
+| `alive` | breathing, blinking, glancing | `true` |
+| `pokeable` | a tap wobbles the face | `false` |
+| `priority` | higher paints sooner | `1` |
+| `maxPx` | the most backing-store pixels a face may use | |
+| `beforePaint`, `onPaint` | called around each new painting; `first` is true for the first | |
+
+## still pictures
+
+```ts
+import { faceCanvas, faceSVG } from 'glorpies';
+
+const canvas = faceCanvas('agent-47', { look: 'ink', size: 256, shape: 'circle' });
+const svg = faceSVG('agent-47', { size: 256, state: 'thinking' });
+```
+
+Both take `look`, `size`, `state`, `shape` and `background`. A watercolour SVG is real vector paths, which scale but are large; other looks are embedded as an image inside the SVG.
+
+## colours
+
+`faceColors(name)` is the palette a face is painted in, for theming what sits around it: a profile header, a chat bubble, a card's border.
+
+```ts
+import { faceColors } from 'glorpies';
+
+const { bg, skin, ink, accent } = faceColors(user.email);
+```
+
+## seeds and names
+
+```ts
+import { FACES, randomName, seedOf } from 'glorpies';
+
+seedOf('ada@lovelace.dev'); // 816544292710256, the same forever
+seedOf(42);                 // 42: a whole number is its own seed
+randomName();               // 'soggy-glorp', for someone who hasn't picked a name
+FACES;                      // 9007199254740992
+```
+
+A name maps to a seed with a 53-bit hash, and that mapping never changes: it's what keeps every face the same across versions. To let people pick their face, store the seed they chose and pass it as `name`.

@@ -1,11 +1,13 @@
 'use client';
 
-import { ArrowDown, Copy, Dices, FileCode, ImageDown } from 'lucide-react';
+import { ArrowRight, Copy, Dices, FileCode, ImageDown } from 'lucide-react';
+import Link from 'next/link';
 import { useDeferredValue, useEffect, useState, type ReactNode } from 'react';
 import { FACES, FULL_LOOKS, lookOf, randomName, resolveLook, seedOf, SHAPES, SMALL_LOOKS, STATES, type FaceState, type LookChoice, type LookId } from 'glorpies';
 import { Glorpie } from 'glorpies/react';
 import { runAction, type ActionKind } from '../actions';
-import { CodePanel, CopyButton } from '../Code';
+import { CodePanel } from '../Code';
+import { Install } from '../Install';
 import { LookThumb } from '../LookPicker';
 import { Sheet } from '../Sheet';
 import { Page, Section } from '../Page';
@@ -14,7 +16,7 @@ import { IconButton, ToastView, useToast } from '../ui';
 import { MARKS } from '@/lib/glyphs';
 import { SITE_URL } from '@/lib/site';
 import { Transmission } from './Transmission';
-import { ENTRIES, PROPS, SNIPPET_FILES, SNIPPET_KINDS, SNIPPETS, START, type Choice, type SnippetKind } from './snippets';
+import { SNIPPET_FILES, SNIPPET_KINDS, SNIPPETS, START, type Choice, type SnippetKind } from './snippets';
 
 const SITE_HOST = new URL(SITE_URL).host;
 
@@ -29,12 +31,7 @@ const MOODS: Record<FaceState, string> = {
   done: 'sparkles and a hop',
 };
 
-/** The install command, in each package manager's own words. */
-const INSTALL = { npm: 'npm i glorpies', pnpm: 'pnpm add glorpies', yarn: 'yarn add glorpies', bun: 'bun add glorpies' } as const;
-type Manager = keyof typeof INSTALL;
-const MANAGERS = Object.keys(INSTALL) as Manager[];
-
-/** The library's front page: a playground whose code is always what you see, then the reference. */
+/** The library's front page: a playground whose code is always what you see. */
 export function Landing() {
   const [c, setC] = useState<Choice>(START);
   // typing repaints a face per keystroke otherwise; the deferred name lets the input stay ahead
@@ -55,9 +52,6 @@ export function Landing() {
       <Section title="code" mark={MARKS.code} className="mt-12">
         <Usage c={{ ...c, name }} />
       </Section>
-      <Section id="api" title="api" mark={MARKS.api} className="pt-12">
-        <Reference onLook={(look) => set({ look })} />
-      </Section>
     </Page>
   );
 }
@@ -70,36 +64,16 @@ function Hero() {
         <span className="text-ink">{FACES.toLocaleString('en-US')}</span> different hand-painted aliens: over a million for every person on earth. any string (a username, an email, a bot id) gets its own, and always the same one. react, a web component, a server route or a cli, with zero dependencies.
       </p>
       <div className="mt-6 flex flex-wrap items-center gap-5">
-        <a href="#api" className="inline-flex items-center gap-1.5 text-[12.5px] text-ink-2 transition hover:text-ink">
-          api reference <ArrowDown className="size-3.5" strokeWidth={1.8} />
-        </a>
+        <Link href="/docs" className="inline-flex items-center gap-1.5 rounded-md bg-ink px-3 py-2 text-[12.5px] text-paper transition hover:bg-accent hover:text-paper">
+          read the docs <ArrowRight className="size-3.5" strokeWidth={1.8} />
+        </Link>
+        <Link href="/gallery" className="text-[12.5px] text-ink-2 transition hover:text-ink">
+          <span className="text-ink-2/50">./</span>gallery
+        </Link>
       </div>
     </section>
   );
 }
-
-/** A little terminal with the install command, one tab per package manager. */
-function Install() {
-  const [manager, setManager] = useState<Manager>('npm');
-  return (
-    <div className="w-fit rounded-lg border border-term-fg/10 bg-term text-term-fg shadow-pill">
-      <div className="border-b border-term-fg/10 px-2 py-1.5">
-        <Tabs options={MANAGERS} value={manager} onChange={setManager} dark />
-      </div>
-      <div className="flex h-11 items-center gap-3 pl-4 pr-1.5">
-        <span className="text-[13.5px] text-term-accent">❯</span>
-        {/* every command is laid out, the others hidden, so the box is as wide as the longest and never jumps */}
-        <code className="grid text-[13.5px]">
-          {MANAGERS.map((m) => (
-            <span key={m} aria-hidden={m !== manager} className={`[grid-area:1/1] ${m === manager ? '' : 'invisible'}`}>{INSTALL[m]}</span>
-          ))}
-        </code>
-        <CopyButton text={INSTALL[manager]} />
-      </div>
-    </div>
-  );
-}
-
 
 function Playground({ c, name, set }: { c: Choice; name: string; set: (p: Partial<Choice>) => void }) {
   const seed = seedOf(name);
@@ -255,54 +229,3 @@ function Usage({ c }: { c: Choice }) {
     </>
   );
 }
-
-function Reference({ onLook }: { onLook: (l: LookId) => void }) {
-  return (
-    <>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] border-collapse text-left text-[12.5px]">
-          <thead>
-            <tr className="border-b border-ink/15 text-[11px] text-ink-2">
-              {['prop', 'takes', 'default', 'what it does'].map((h) => <th key={h} className="py-2 pr-4 font-normal">{h}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {PROPS.map((p) => (
-              <tr key={p.prop} className="border-b border-ink/8 align-top transition hover:bg-ink/[0.025]">
-                <td className="py-3 pr-4 text-ink">{p.prop}</td>
-                <td className="max-w-[15rem] py-3 pr-4 text-accent">{p.type}</td>
-                <td className="whitespace-nowrap py-3 pr-4 text-ink-2">{p.fallback}</td>
-                <td className="py-3 leading-relaxed text-ink-2">{p.note}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <h3 className="mt-10 text-[12px] text-ink-2">look ids</h3>
-      <div className="mt-3 space-y-4 text-[12px]">
-        {[{ label: 'paintings', looks: FULL_LOOKS }, { label: 'avatars', looks: SMALL_LOOKS }].map((g) => (
-          <div key={g.label} className="flex flex-wrap items-center gap-1.5">
-            <span className="mr-2 w-[68px] text-ink-2/70">{g.label}</span>
-            {g.looks.map((l) => (
-              <a key={l.id} href="#playground-title" title={`${l.name}: try it above`} onClick={() => onLook(l.id)} className="rounded-[3px] border border-ink/12 px-1.5 py-0.5 text-ink transition hover:border-accent hover:text-accent">
-                {l.id}
-              </a>
-            ))}
-          </div>
-        ))}
-      </div>
-
-      <h3 className="mt-10 text-[12px] text-ink-2">imports</h3>
-      <ul className="mt-3 divide-y divide-ink/8 border-y border-ink/8 text-[12.5px]">
-        {ENTRIES.map((e) => (
-          <li key={e.path} className="grid list-none gap-1 py-3 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-4">
-            <code className="text-accent">{e.path}</code>
-            <span className="leading-relaxed text-ink-2">{e.what}</span>
-          </li>
-        ))}
-      </ul>
-    </>
-  );
-}
-

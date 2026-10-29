@@ -1,0 +1,40 @@
+export const metadata = { title: { absolute: 'docs · glorpies' } };
+
+# introduction
+
+<Lead>glorpies paints an ugly little alien for any string: antennae, extra eyes, horns, halos, too many teeth, in watercolour and dip pen. The same name always gets the same face, on every device and every server, and the faces are alive: they breathe, blink and glance at you.</Lead>
+
+<Faces names={['ada@lovelace.dev', 'agent-47', 'soggy-glorp', 'grace@hopper.dev', 'bot-9000']} size={72} />
+
+## the idea
+
+Most apps show a grey silhouette, or two initials, until someone uploads a photo. glorpies gives every user, bot and agent a face of its own from the id you already have.
+
+- **Deterministic.** A name is hashed to one of 9,007,199,254,740,992 seeds, and the seed decides everything. There's nothing to store and no API to call.
+- **Anywhere.** A React component, a web component, your own canvas, image files from a server route, or the command line, all painting the same faces.
+- **Zero dependencies.** The library is plain TypeScript. Only the server entry and the CLI need a native canvas, to write image files.
+- **Alive, with moods.** Faces breathe and blink, and six states show what an agent is up to.
+
+## a face in a minute
+
+<Install />
+
+```tsx
+import { Glorpie } from 'glorpies/react';
+
+export function UserBadge({ user }) {
+  return <Glorpie name={user.email} size={40} />;
+}
+```
+
+Not using React? One script tag works in any page:
+
+```html
+<script type="module" src="https://unpkg.com/glorpies"></script>
+
+<glorpie-face name="ada@lovelace.dev" size="40"></glorpie-face>
+```
+
+## contents
+
+<Contents />

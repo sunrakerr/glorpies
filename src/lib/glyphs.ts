@@ -13,4 +13,4 @@ export const alienLetter = (ch: string) => (ch === ' ' ? ' ' : String.fromCodePo
 export const inAlien = (text: string) => [...text].map(alienLetter).join('');
 
 /** A letter of the alphabet to mark each section by. */
-export const MARKS = { playground: 'ⵙ', install: 'ⵣ', code: 'ⵅ', api: 'ⵥ', gallery: 'ⵀ', how: 'ⵚ' } as const;
+export const MARKS = { playground: 'ⵙ', install: 'ⵣ', code: 'ⵅ', gallery: 'ⵀ', how: 'ⵚ' } as const;

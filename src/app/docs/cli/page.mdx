@@ -1,0 +1,37 @@
+export const metadata = { title: 'cli' };
+
+# cli
+
+<Lead>Any name to an image file, from a terminal. The CLI paints with `@napi-rs/canvas`, so ask npx for both.</Lead>
+
+```sh
+npx -p glorpies -p @napi-rs/canvas glorpies agent-47 --look ink --size 128 --shape circle -o agent.png
+npx -p glorpies -p @napi-rs/canvas glorpies agent-47 --state thinking -f gif
+```
+
+In a project that has both installed, it's just `npx glorpies agent-47`.
+
+## options
+
+| flag | | default |
+| --- | --- | --- |
+| `-l`, `--look` | `auto` or a look id | `auto` |
+| `-s`, `--size` | pixels, 16 to 4096 | `256` |
+| `-f`, `--format` | `png`, `webp`, `jpeg`, `svg`, `gif` | from `--out`, else `png` |
+| `--shape` | `circle`, `squircle`, `rounded`, `square` | `square` |
+| `--state` | `idle`, `thinking`, `working`, `waiting`, `blocked`, `done` | `idle` |
+| `--background false` | only the face | |
+| `--loop` | seconds, for a gif | `3` |
+| `-o`, `--out` | the file to write, or `-` for stdout | `<name>.<format>` |
+| `-h`, `--help` | | |
+
+A name that starts with a dash goes after `--`, as in `glorpies -- -weird-name`.
+
+## in scripts
+
+Writing to stdout makes it easy to pipe:
+
+```sh
+npx glorpies agent-47 -f webp -o - > avatar.webp
+for name in ada grace linus; do npx glorpies "$name" --look sticker; done
+```

@@ -1,4 +1,4 @@
-export type Lang = 'tsx' | 'ts' | 'html' | 'sh';
+export type Lang = 'tsx' | 'ts' | 'html' | 'sh' | 'text';
 export type TokenKind = 'comment' | 'string' | 'keyword' | 'tag' | 'attr' | 'number' | 'flag' | 'command' | 'punct' | 'text';
 export type Token = { kind: TokenKind; text: string };
 
@@ -21,6 +21,7 @@ const RULES: [TokenKind, string][] = [
 const PATTERN = new RegExp(RULES.map(([, re]) => `(${re})`).join('|'), 'g');
 
 export function highlight(code: string, lang: Lang): Token[][] {
+  if (lang === 'text') return code.split('\n').map((line) => (line ? [{ kind: 'text', text: line }] : []));
   return code.split('\n').map((line) => {
     const out: Token[] = [];
     const push = (kind: TokenKind, text: string) => { if (text) out.push({ kind, text }); };

@@ -1,0 +1,30 @@
+export const metadata = { title: 'states' };
+
+# states
+
+<Lead>A face can show what its owner is up to, which suits AI agents: you can pick one out of a crowded sidebar, and read its status from its face rather than from a badge beside it.</Lead>
+
+<StatesTable />
+
+Each state changes the expression (mouth and brows, painted in the look's own hand), how the head moves, and adds a mark by the head that still reads at 32px.
+
+## an agent list
+
+<AgentList />
+
+```tsx
+{agents.map((agent) => (
+  <li key={agent.id}>
+    <Glorpie name={agent.id} state={agent.status} size={36} label={`${agent.name}: ${agent.status}`} />
+    {agent.name}
+  </li>
+))}
+```
+
+## in images
+
+States work in every entry: `state="thinking"` on the web component, `?state=thinking` on the image route, `--state thinking` in the CLI. As a GIF, a state's motion loops:
+
+```text
+/api/face?name=agent-47&state=working&format=gif
+```

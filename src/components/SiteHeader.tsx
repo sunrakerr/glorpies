@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { ThemeToggle } from './ThemeToggle';
 
 const LINKS = [
+  { href: '/docs', label: 'docs' },
   { href: '/gallery', label: 'gallery' },
   { href: '/how', label: 'how' },
 ];
@@ -31,7 +32,7 @@ export function SiteHeader({ className = '' }: { className?: string }) {
       </Link>
       <nav className="flex items-center gap-4 text-[12.5px] text-ink-2">
         {LINKS.map((l) => {
-          const here = path === l.href;
+          const here = path === l.href || path.startsWith(`${l.href}/`);
           return (
             <Link key={l.href} href={l.href} aria-current={here ? 'page' : undefined} className={`transition hover:text-ink ${here ? 'text-ink' : ''}`}>
               <span className={here ? 'text-accent' : 'text-ink-2/50'}>./</span>{l.label}

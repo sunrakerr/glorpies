@@ -6,6 +6,7 @@
 <p align="center">
   <a href="https://glorpies.vercel.app"><b>./site</b></a> &nbsp;·&nbsp;
   <a href="https://glorpies.vercel.app/gallery">./gallery</a> &nbsp;·&nbsp;
+  <a href="https://glorpies.vercel.app/docs">./docs</a> &nbsp;·&nbsp;
   <a href="https://glorpies.vercel.app/how">./how</a> &nbsp;·&nbsp;
   <a href="https://github.com/sunrakerr/glorpies">./source</a>
 </p>

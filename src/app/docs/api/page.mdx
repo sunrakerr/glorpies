@@ -1,0 +1,52 @@
+export const metadata = { title: 'api' };
+
+# api
+
+<Lead>Every export, by entry. Types are included; hover any of these in your editor for the details.</Lead>
+
+## glorpies
+
+| export | |
+| --- | --- |
+| `mount(canvas, options)` | brings a face to life on your canvas; returns `{ update, poke, destroy }` |
+| `faceCanvas(name, options)` | one finished picture as a canvas, in any look, state and shape |
+| `faceSVG(name, options)` | the same picture as SVG markup |
+| `faceColors(name)` | the palette a face is painted in: `bg`, `bg2`, `skin`, `shade`, `ink`, `accent`, … |
+| `seedOf(name)` | the seed behind a name, a whole number below `FACES` |
+| `randomName(random?)` | a made-up name like `soggy-glorp`; pass your own source of numbers to make it repeatable |
+| `resolveLook(look, size)` | the look `auto` picks at a size |
+| `isLook`, `isState`, `isShape` | type guards, for validating input |
+| `LOOKS`, `FULL_LOOKS`, `SMALL_LOOKS` | every look: `{ id, name, note, size }` and how it moves |
+| `STATES`, `SHAPES` | every state and shape |
+| `FACES` | 2<sup>53</sup>, how many faces there are |
+| `DEFAULT_LOOK`, `SMALL_BELOW` | `watercolour`, and the size (72) below which `auto` switches to `ink` |
+| `setCanvasFactory(factory)` | draw on canvases from anywhere; the server entry does this for you |
+
+## glorpies/react
+
+| export | |
+| --- | --- |
+| `<Glorpie>` | a living face; see [react](/docs/react) for its props |
+| `<Avatar>` | a photo avatar's frame: `size`, `shape`, `className`, `style` |
+| `<AvatarImage>` | the photo: an `<img>`, shown once it loads |
+| `<AvatarFallback>` | the face shown until then, or instead; every `<Glorpie>` prop but `size` and `shape` |
+
+## glorpies/element
+
+Importing it registers `<glorpie-face>`; see [web component](/docs/web-component). It also exports the element's class, `GlorpieElement`.
+
+## glorpies/server
+
+| export | |
+| --- | --- |
+| `faceRoute(options?)` | `{ GET }`, a Next.js route handler |
+| `createFaceHandler(options?)` | `(request: Request) => Promise<Response>`, for anything that speaks fetch |
+| `renderImage(name, options)` | `{ body, type }`: one image's bytes (or SVG text) and content type |
+| `faceGIF(name, options)` | a looping GIF's bytes |
+| `animationFrames(name, options)` | the raw RGBA frames of a loop, for your own encoder |
+| `useNativeCanvas()` | points every renderer at `@napi-rs/canvas`; called for you by `renderImage` |
+| `FORMATS`, `FRAME_BUDGET` | the formats, and the most pixels a loop's frames may hold together |
+
+## types
+
+`FaceName` (a string or a seed), `LookId`, `LookChoice` (a look or `auto`), `FaceState`, `Shape`, `Look`, `Palette`, `MountOptions`, `FaceHandle`, `StillOptions`, `GlorpieProps`, `ImageOptions`, `HandlerOptions`.
