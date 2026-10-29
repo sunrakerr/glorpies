@@ -14,14 +14,16 @@ import { animationFrames, createFaceHandler, faceGIF, FRAME_BUDGET, renderImage 
  * Recorded when names went to 53-bit seeds, one of 9 quadrillion faces each.
  */
 const KNOWN = {
-  'agent-47': [1179788404427480, 'f61af2b422eebfcf'],
-  'ada@lovelace.dev': [816544292710256, '33697e303fbeac9b'],
-  'research-bot': [4219008871287063, 'd49078467ee20b5d'],
-  '': [3338908027751811, '5505feb33658da6e'],
-  'ünïcödé 🙂': [7080240272725757, '7853891e54b6716f'],
+  'agent-47': [1179788404427480, '01a6e96049b4d386'],
+  'ada@lovelace.dev': [816544292710256, '1b9842e7193386e6'],
+  'research-bot': [4219008871287063, '51caaebee216032f'],
+  '': [3338908027751811, '005f49e0e720b9bc'],
+  'ünïcödé 🙂': [7080240272725757, 'd95fab99d8dd7d23'],
 };
 
-const fingerprint = ({ sketch, ...painting }) => createHash('sha256').update(JSON.stringify(painting)).digest('hex').slice(0, 16);
+// Math.sin, exp and friends differ in the last bits between arm64 and x64, so coordinates are compared to a millionth of a pixel.
+const toMillionths = (_, v) => (typeof v === 'number' ? Math.round(v * 1e6) / 1e6 : v);
+const fingerprint = ({ sketch, ...painting }) => createHash('sha256').update(JSON.stringify(painting, toMillionths)).digest('hex').slice(0, 16);
 
 test('a name always maps to the same seed', () => {
   for (const [name, [seed]] of Object.entries(KNOWN)) assert.equal(seedOf(name), seed, name);
