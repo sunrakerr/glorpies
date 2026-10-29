@@ -149,7 +149,7 @@ export function Studio() {
 
   return (
     <Page className="pb-16 pt-12">
-      <Heading as="h1" title="gallery" mark={MARKS.head} aside={names.length ? `${names.length} glorpies, each one named` : undefined} />
+      <Heading as="h1" title="gallery" mark={MARKS.gallery} aside={names.length ? `${names.length} glorpies, each one named` : undefined} />
       <ul className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 sm:gap-x-7 sm:gap-y-10 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-11">
         {names.length
           ? names.map((name, i) => (

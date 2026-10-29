@@ -1,43 +1,115 @@
-# glorpies
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner-dark.webp">
+  <img alt="glorpies: all hail the glorpies. a row of hand-painted alien faces" src=".github/assets/banner-light.webp" width="100%">
+</picture>
 
-Every name has a glorpie: an ugly little alien face, painted in watercolour and dip pen from any string. Antennae, extra eyes, horns, halos, too many teeth. There are 9,007,199,254,740,992 of them (about 9 quadrillion), the same name always gets the same one, and they're alive: they breathe, blink and glance at you.
+<p align="center">
+  <a href="https://www.npmjs.com/package/glorpies"><img alt="npm" src="https://img.shields.io/npm/v/glorpies?style=flat-square&label=npm&labelColor=0d0c13&color=b4ff5a"></a>
+  <img alt="zero dependencies" src="https://img.shields.io/badge/dependencies-0-b4ff5a?style=flat-square&labelColor=0d0c13">
+  <img alt="types included" src="https://img.shields.io/npm/types/glorpies?style=flat-square&labelColor=0d0c13&color=b4ff5a">
+  <a href="LICENSE"><img alt="MIT licence" src="https://img.shields.io/badge/licence-MIT-b4ff5a?style=flat-square&labelColor=0d0c13"></a>
+</p>
 
-This repo is the **[glorpies](packages/glorpies/README.md)** library and its site. The site also runs the library's image route at `/api/face`, as a demo of what `glorpies/server` gives your own app.
+<p align="center">
+  <a href="https://glorpies.vercel.app"><b>./site</b></a> &nbsp;·&nbsp;
+  <a href="https://glorpies.vercel.app/gallery">./gallery</a> &nbsp;·&nbsp;
+  <a href="https://glorpies.vercel.app/how">./how</a> &nbsp;·&nbsp;
+  <a href="packages/glorpies/README.md">./docs</a>
+</p>
+
+Ugly little alien avatars, hand-painted in watercolour and dip pen from any string. Antennae, extra eyes, horns, halos, too many teeth.
+
+There are **9,007,199,254,740,992** of them, over a million for every person on earth. A username, an email or a bot id gets its own, and always the same one: on every device, on every server, with nothing stored and no API to call. And they're alive: they breathe, blink and glance at you.
+
+## ⵣ install
+
+```bash
+npm i glorpies
+```
+
+## ⵅ use
+
+**React**
+
+```tsx
+import { Glorpie } from 'glorpies/react';
+
+<Glorpie name="ada@lovelace.dev" size={48} />
+```
+
+**Anywhere else: one tag** (plain HTML, Vue, Svelte, Astro…)
+
+```html
+<script type="module" src="https://unpkg.com/glorpies"></script>
+
+<glorpie-face name="ada@lovelace.dev" size="48"></glorpie-face>
+```
+
+**As images, from your own server** (for emails, OG images, anything that needs a URL)
+
+```ts
+// app/api/face/route.ts
+import { faceRoute } from 'glorpies/server';
+export const { GET } = faceRoute();
+
+// GET /api/face?name=ada@lovelace.dev&look=ink&size=128&format=png
+```
+
+**From a terminal**
+
+```bash
+npx -p glorpies -p @napi-rs/canvas glorpies ada@lovelace.dev --size 256 -o ada.png
+```
+
+The full reference (every prop, look, state, query parameter and function) is in **[the docs](packages/glorpies/README.md)**.
+
+## ⵙ looks
+
+29 of them: 21 paintings for faces shown large, and 8 avatar looks that still read at 16px. Every look works without its background too (`background={false}`): only the face, on nothing.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/looks-dark.webp">
+  <img alt="the same glorpie in 24 looks: watercolour, gouache, oil, sumi, charcoal, pointillism, linocut, warhol, stained glass, mosaic, neon, holo, atkinson, plotter, thermal, topo, and the avatar looks blob, ink, sticker, cutpaper, pixel icon, line icon, glow and wash" src=".github/assets/looks-light.webp" width="100%">
+</picture>
+
+## ⵀ moods
+
+Made for agents too: a face you can pick out of a crowded sidebar, with a status you read from the face itself. Each state changes the expression, how the head moves, and adds a mark that reads at 32px.
+
+| `idle` | `thinking` | `working` | `waiting` | `blocked` | `done` |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| <img src=".github/assets/state-idle.gif" width="96" alt="idle: breathing and blinking"> | <img src=".github/assets/state-thinking.gif" width="96" alt="thinking: eyes up, thought bubbles"> | <img src=".github/assets/state-working.gif" width="96" alt="working: eyes down, typing bubble"> | <img src=".github/assets/state-waiting.gif" width="96" alt="waiting: brows up, a question mark"> | <img src=".github/assets/state-blocked.gif" width="96" alt="blocked: a frown and a red exclamation mark"> | <img src=".github/assets/state-done.gif" width="96" alt="done: a big smile and sparkles"> |
+
+```tsx
+<Glorpie name="agent-47" state="thinking" />
+```
+
+## ⵚ how it's drawn
+
+A name hashes to a 53-bit seed, and the seed drives a random stream (sfc32) and a noise field. From them comes the alien, as a list of drawing operations: watercolour glazes, hatching, pen lines and solid fills, plus the parts that move (pupils, lids). That list is painted once per "line boil" frame, so the pen wobbles like hand-drawn animation, and the eyes are drawn live on top. Only the blinks and glances are left to chance; the face depends on the name alone, so it comes out the same at any size, as a PNG, as SVG paths or as a looping GIF.
+
+[Watch it paint one](https://glorpies.vercel.app/how), step by step.
+
+## this repo
+
+`packages/glorpies` is the library, with zero runtime dependencies. `src/` is the site, a Next.js app that also runs the library's image route at `/api/face` as a demo.
 
 ```bash
 pnpm install
 pnpm dev --port 3417     # http://localhost:3417
-pnpm build && pnpm start
+pnpm typecheck && pnpm test
 ```
 
-| Route | |
-| --- | --- |
-| `/` | Landing page: a playground whose code is always what you see, and the API reference |
-| `/gallery` | A wall of random glorpies. Open one to restyle it, export PNG or SVG, or get its code |
-| `/how` | An animated explainer of how a face is painted |
-| `/api/face` | The demo image route: `?name=soggy-glorp&look=ink&size=128&shape=circle&format=png` (png, webp, jpeg, svg, gif; `background=false` for only the face) |
+- `packages/glorpies/src/face/build.ts` turns a seed into an alien. `src/engine.ts` is the seeded randomness and noise.
+- `packages/glorpies/src/face/render.ts` paints and animates a face; `src/stage.ts` runs one animation loop for every face on a page. `src/styles.ts` and `src/small.ts` repaint faces in the other looks.
+- `scripts/` holds headless Chrome checks, and `readme-art.mjs`, which draws the pictures in this README and the site's link preview.
 
-## Layout
+See [CONTRIBUTING.md](CONTRIBUTING.md) before a pull request. There's one rule: an existing face must never change.
 
-- `packages/glorpies`: the library. Zero runtime dependencies. Entries are `glorpies`, `glorpies/react`, `glorpies/element`, `glorpies/server` and the `glorpies` CLI.
-  - `src/face/build.ts` turns a seed into an alien: a display list of glazes, ink, hatching and solids, plus the parts that move (pupils, lids).
-  - `src/engine.ts` is seeded randomness and noise, an exact port of p5's, so a face renders identically at any size, in the browser or on a server.
-  - `src/face/render.ts` paints the backdrop once and the figure once per line-boil phase, then composes frames with live eyes on top. `src/stage.ts` runs one animation loop for every face on a page.
-  - `src/small.ts` redraws faces from their sketch for avatar sizes; `src/styles.ts` re-renders them in the painted looks.
-- `src/`: the Next.js site. `src/app/api/face/route.ts` is the demo image route, two lines of `faceRoute()`.
-- `scripts/`: headless Chrome checks (`run.mjs` drives the gallery end to end, `shot.mjs` takes screenshots, `frames.mjs` renders the explainer as frames).
+## credits
 
-## Checks
+Made by **[sunrakerr](https://github.com/sunrakerr)**.
 
-```bash
-pnpm typecheck
-pnpm --filter glorpies build && pnpm --filter glorpies test
-```
+The API takes its lead from [facehash](https://facehash.dev). GIFs are encoded with [gifenc](https://github.com/mattdesl/gifenc).
 
-## Deploying
-
-The site deploys to Vercel as is: the library is compiled from source by Next (`transpilePackages`), and `@napi-rs/canvas` paints images on the server. Set `NEXT_PUBLIC_SITE_URL` for a custom domain; otherwise snippets point at the Vercel production domain.
-
-Publish the library with `pnpm publish` from `packages/glorpies`, which swaps the source exports for the built ones.
-
-MIT
+[MIT](LICENSE)

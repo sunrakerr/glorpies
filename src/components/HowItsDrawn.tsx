@@ -112,7 +112,7 @@ export function HowItsDrawn() {
 
   return (
     <Page className="pt-12">
-      <Heading as="h1" title="how it's drawn" mark={MARKS.sun} aside={name ? <>painting <span className="text-ink">{name}</span></> : undefined} />
+      <Heading as="h1" title="how it's drawn" mark={MARKS.how} aside={name ? <>painting <span className="text-ink">{name}</span></> : undefined} />
       <div className="relative">
         <canvas
           ref={ref}

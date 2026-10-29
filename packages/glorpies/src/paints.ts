@@ -1349,7 +1349,7 @@ const blueprint: Render = (face, E, px) => {
   g.font = `600 ${10 * u}px ui-monospace, Menlo, monospace`;
   g.fillText(`FACE No. ${face.seed.toString(36).toUpperCase()}`, 18 * u, 26 * u);
   g.font = `500 ${8.5 * u}px ui-monospace, Menlo, monospace`;
-  g.fillText('SCALE 1:1   DRN p5.js', 18 * u, 45 * u);
+  g.fillText('SCALE 1:1   DRN GLORPIES', 18 * u, 45 * u);
   return c;
 };
 

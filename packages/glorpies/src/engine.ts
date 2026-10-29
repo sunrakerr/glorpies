@@ -1,16 +1,19 @@
 /**
- * Seeded randomness and Perlin noise behind every face.
+ * Seeded randomness and smooth noise behind every face.
  *
  * Random numbers come from sfc32, whose 128 bits of state take a whole 53-bit
  * seed, so each of the 9 quadrillion seeds is a stream of its own. The noise is
- * p5.js 1.x's `noise`, ported exactly. Being plain arithmetic, both run
- * anywhere: browsers, workers, Node, Bun, Deno.
+ * value noise: a ring of 4096 random heights read as a lattice 16 wide, eased
+ * between with a cosine and summed over four octaves, each finer one half as
+ * strong. (The faces were first drawn with p5.js, and this gives exactly what
+ * its `noise` gave them.) Being plain arithmetic, both run anywhere: browsers,
+ * workers, Node, Bun, Deno.
  *
  * Determinism comes from discipline, not isolation: a face is built from one
  * random stream (seeded once), and every paint/ink operation reseeds before it
  * runs, so an operation can be rendered again later (at another size, as SVG,
- * or as a new "boil" frame) and come out identical. The noise table is shared,
- * so renderers call noiseSeed for their face before sampling.
+ * or as a new "boil" frame) and come out identical. The noise heights are
+ * shared, so renderers call noiseSeed for their face before sampling.
  */
 export type Engine = {
   seed(n: number): void;
@@ -22,27 +25,21 @@ export type Engine = {
 
 const TWO_32 = 4294967296;
 
-// Numerical Recipes' linear congruential generator, which fills p5's noise table
-const M = TWO_32;
-const A = 1664525;
-const C = 1013904223;
-
 /** A seed's two halves: the low 32 bits and the 21 above them. */
 const halves = (n: number): [number, number] => [n >>> 0, Math.floor(n / TWO_32) >>> 0];
 
-const PERLIN_YWRAPB = 4;
-const PERLIN_YWRAP = 1 << PERLIN_YWRAPB;
-const PERLIN_SIZE = 4095;
-const OCTAVES = 4;
-const FALLOFF = 0.5;
+/** The noise lattice: how many heights there are (a power of two), how many to a row, and how many octaves are summed. */
+const HEIGHTS = 4096, ROW = 16, OCTAVES = 4;
 
-const scaledCosine = (i: number) => 0.5 * (1 - Math.cos(i * Math.PI));
+/** Eases 0..1 into 0..1 along half a cosine, so the noise has no corners at lattice points. */
+const ease = (t: number) => 0.5 * (1 - Math.cos(t * Math.PI));
+const mix = (a: number, b: number, t: number) => a + t * (b - a);
 
 export function createEngine(): Engine {
   // sfc32: three words of state and a counter
   let a = 0, b = 0, c = 0, d = 1;
   let spare: number | null = null;
-  const perlin = new Float64Array(PERLIN_SIZE + 1);
+  const heights = new Float64Array(HEIGHTS);
   let noiseFor: number | null = null;
 
   const next = () => {
@@ -92,36 +89,29 @@ export function createEngine(): Engine {
     noiseSeed: (n) => {
       if (noiseFor === n) return;
       noiseFor = n;
+      // the heights are a plain linear congruential sequence (Numerical Recipes' constants) from the seed's two halves
       const [lo, hi] = halves(n);
       let z = (lo ^ Math.imul(hi, 0x9e3779b1)) >>> 0;
-      for (let i = 0; i <= PERLIN_SIZE; i++) {
-        z = (A * z + C) % M;
-        perlin[i] = z / M;
+      for (let i = 0; i < HEIGHTS; i++) {
+        z = (1664525 * z + 1013904223) % TWO_32;
+        heights[i] = z / TWO_32;
       }
     },
     noise: (x, y = 0) => {
       x = Math.abs(x);
       y = Math.abs(y);
-      let xi = Math.floor(x), yi = Math.floor(y);
-      let xf = x - xi, yf = y - yi;
-      let r = 0, ampl = 0.5;
-      for (let o = 0; o < OCTAVES; o++) {
-        const of = xi + (yi << PERLIN_YWRAPB);
-        const rxf = scaledCosine(xf), ryf = scaledCosine(yf);
-        let n1 = perlin[of & PERLIN_SIZE]!;
-        n1 += rxf * (perlin[(of + 1) & PERLIN_SIZE]! - n1);
-        let n2 = perlin[(of + PERLIN_YWRAP) & PERLIN_SIZE]!;
-        n2 += rxf * (perlin[(of + PERLIN_YWRAP + 1) & PERLIN_SIZE]! - n2);
-        // p5's noise is 3D; with z = 0 its third axis is interpolated with weight 0, so it is left out
-        n1 += ryf * (n2 - n1);
-        r += n1 * ampl;
-        ampl *= FALLOFF;
-        xi <<= 1; xf *= 2;
-        yi <<= 1; yf *= 2;
-        if (xf >= 1) { xi++; xf--; }
-        if (yf >= 1) { yi++; yf--; }
+      let sum = 0;
+      for (let octave = 0, scale = 1, weight = 0.5; octave < OCTAVES; octave++, scale *= 2, weight *= 0.5) {
+        // scaling by a power of two is exact, so every octave lands on the lattice the same way at any size
+        const px = x * scale, py = y * scale;
+        const col = Math.floor(px), row = Math.floor(py);
+        const u = ease(px - col), v = ease(py - row);
+        const at = col + row * ROW;
+        const top = mix(heights[at & (HEIGHTS - 1)]!, heights[(at + 1) & (HEIGHTS - 1)]!, u);
+        const bottom = mix(heights[(at + ROW) & (HEIGHTS - 1)]!, heights[(at + ROW + 1) & (HEIGHTS - 1)]!, u);
+        sum += mix(top, bottom, v) * weight;
       }
-      return r;
+      return sum;
     },
   };
 }

@@ -3,8 +3,16 @@
   "version": "0.1.0",
   "description": "Ugly little alien faces from any string: 9 quadrillion of them, hand-painted in watercolour and ink, alive. The same name always gets the same face. Zero dependencies, works anywhere.",
   "license": "MIT",
-  "author": "Aditya Shenoy",
+  "author": "Aditya Shenoy (https://github.com/sunrakerr)",
   "homepage": "https://glorpies.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sunrakerr/glorpies.git",
+    "directory": "packages/glorpies"
+  },
+  "bugs": {
+    "url": "https://github.com/sunrakerr/glorpies/issues"
+  },
   "type": "module",
   "engines": {
     "node": ">=20"
@@ -37,6 +45,7 @@
     "./package.json": "./package.json"
   },
   "publishConfig": {
+    "access": "public",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "exports": {
@@ -67,7 +76,9 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "CHANGELOG.md",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md"
   ],
   "scripts": {
     "build": "tsup",

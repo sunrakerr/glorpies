@@ -21,11 +21,11 @@ export function Page({ children, className = '' }: { children: ReactNode; classN
   );
 }
 
-/** A section's heading: its hieroglyph, its name and a dashed rule, with anything else (a count, a hint) at the end. */
+/** A section's heading: its alien letter, its name and a dashed rule, with anything else (a count, a hint) at the end. */
 export function Heading({ id, title, mark, aside, as: Tag = 'h2' }: { id?: string; title: string; mark: string; aside?: ReactNode; as?: 'h1' | 'h2' }) {
   return (
     <div className="mb-6 flex items-center gap-3">
-      <span aria-hidden className="font-glyph text-[18px] leading-none text-accent">{mark}</span>
+      <span aria-hidden className="font-alien text-[19px] leading-none text-accent">{mark}</span>
       <Tag id={id} className="scroll-mt-8 font-display text-[15px] leading-none">{title}</Tag>
       <span aria-hidden className="h-px flex-1 bg-[repeating-linear-gradient(90deg,currentColor_0_4px,transparent_4px_8px)] text-ink/20" />
       {aside && <span className="text-[11.5px] text-ink-2">{aside}</span>}
@@ -43,13 +43,16 @@ export function Section({ title, mark, id, aside, className = '', children }: { 
   );
 }
 
-/** The mark, the licence and the other pages, under a dashed rule like the sections'. */
+/** The mark, the licence, who made it and the other pages, under a dashed rule like the sections'. */
 export function Footer() {
   return (
-    <footer className="mb-10 mt-14 flex items-center justify-between gap-4 border-t border-dashed border-ink/20 pt-5 text-[11.5px] text-ink-2">
+    <footer className="mb-10 mt-14 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-t border-dashed border-ink/20 pt-5 text-[11.5px] text-ink-2">
       <span className="flex items-center gap-2">
         <Invader className="h-[10px] text-accent" />
-        <span className="text-ink">glorpies</span> · mit licence
+        <span className="text-ink">glorpies</span> · mit licence · made by{' '}
+        <a href="https://github.com/sunrakerr" target="_blank" rel="noopener noreferrer" className="text-ink underline decoration-ink/30 underline-offset-[3px] transition hover:text-accent hover:decoration-accent">
+          sunrakerr
+        </a>
       </span>
       <nav className="flex items-center gap-4">
         <Link href="/" className="transition hover:text-ink">./</Link>

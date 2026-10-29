@@ -1,3 +1,15 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/banner-dark.webp">
+  <img alt="glorpies: all hail the glorpies. a row of hand-painted alien faces" src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/banner-light.webp" width="100%">
+</picture>
+
+<p align="center">
+  <a href="https://glorpies.vercel.app"><b>./site</b></a> &nbsp;·&nbsp;
+  <a href="https://glorpies.vercel.app/gallery">./gallery</a> &nbsp;·&nbsp;
+  <a href="https://glorpies.vercel.app/how">./how</a> &nbsp;·&nbsp;
+  <a href="https://github.com/sunrakerr/glorpies">./source</a>
+</p>
+
 # glorpies
 
 Ugly little alien faces from any string. Antennae, extra eyes, horns, halos and too many teeth, painted in watercolour and dip pen. 9,007,199,254,740,992 of them (about 9 quadrillion), the same one for the same name every time, and alive: they breathe, blink and glance at you.
@@ -52,6 +64,11 @@ It renders on the server as a soft placeholder in the face's own background colo
 
 **Without a background.** Every look is painted twice, whole and bare, and kept only where the two differ, so `background={false}` works the same in every look: the face, its crown and tentacles, and the sparkles of a celestial one, on nothing. A few looks draw their background from the face itself (`mosaic`, `topo`, `thermal`, `holo`) and keep some of it.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/looks-dark.webp">
+  <img alt="the same glorpie in 24 of its looks" src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/looks-light.webp" width="100%">
+</picture>
+
 **States.** Made for agents: a face you can tell apart in a crowded sidebar, and a status you read from the face itself. Each state changes the expression (mouth and brows, painted in the look's own hand), how the head moves, and adds a hand-drawn mark that still reads at 32px:
 
 | state | mark | face |
@@ -61,6 +78,8 @@ It renders on the server as a soft placeholder in the face's own background colo
 | `waiting` | `?` | brows up, a hopeful smile, looking at you |
 | `blocked` | red `!` | knitted brows, a frown, slumped, shaking now and then |
 | `done` | sparkles | a big smile, a pleased squint, a little hop |
+
+<p><img src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/state-idle.gif" width="80" alt="idle"> <img src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/state-thinking.gif" width="80" alt="thinking"> <img src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/state-working.gif" width="80" alt="working"> <img src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/state-waiting.gif" width="80" alt="waiting"> <img src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/state-blocked.gif" width="80" alt="blocked"> <img src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/state-done.gif" width="80" alt="done"></p>
 
 ## Your own canvas
 
@@ -121,10 +140,6 @@ npx -p glorpies -p @napi-rs/canvas glorpies agent-47 --state thinking -f gif
 
 Installed in a project (`npm i glorpies @napi-rs/canvas`), it's just `npx glorpies agent-47`.
 
-## Publishing
-
-Publish with pnpm (`pnpm publish`), which swaps the workspace's source `exports` for the built ones in `publishConfig`. `prepublishOnly` builds and runs the tests first.
-
 ## API
 
 | | |
@@ -137,5 +152,9 @@ Publish with pnpm (`pnpm publish`), which swaps the workspace's source `exports`
 | `randomName()` | a made-up name for a face nobody has named yet, like `soggy-glorp` |
 | `LOOKS`, `STATES`, `SHAPES` | everything there is to choose from |
 | `setCanvasFactory(f)` | draw on canvases from anywhere (the server entry does this for you) |
+
+## Credits
+
+Made by [sunrakerr](https://github.com/sunrakerr). GIFs are encoded with [gifenc](https://github.com/mattdesl/gifenc) (MIT, bundled; see THIRD-PARTY-NOTICES.md).
 
 MIT

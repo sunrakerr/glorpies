@@ -46,16 +46,16 @@ export function Landing() {
   return (
     <Page>
       <Hero />
-      <Section title="playground" mark={MARKS.eye}>
+      <Section title="playground" mark={MARKS.playground}>
         <Playground c={c} name={name} set={set} />
       </Section>
-      <Section title="install" mark={MARKS.scarab} className="mt-12">
+      <Section title="install" mark={MARKS.install} className="mt-12">
         <Install />
       </Section>
-      <Section title="code" mark={MARKS.scribe} className="mt-12">
+      <Section title="code" mark={MARKS.code} className="mt-12">
         <Usage c={{ ...c, name }} />
       </Section>
-      <Section id="api" title="api" mark={MARKS.ankh} className="pt-12">
+      <Section id="api" title="api" mark={MARKS.api} className="pt-12">
         <Reference onLook={(look) => set({ look })} />
       </Section>
     </Page>
