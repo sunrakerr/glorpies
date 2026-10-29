@@ -15,26 +15,18 @@ import type { Face, Sketch } from './face/types';
  * recognised by at a glance.
  */
 
-export type SmallId =
-  | 'blob' | 'ink' | 'sticker' | 'cutpaper' | 'pixel-icon' | 'line-icon'
-  | 'orb' | 'clay' | 'stamp' | 'glow' | 'wash';
-
-export const SMALL_STYLES: { id: SmallId; name: string; note: string }[] = [
+export const SMALL_STYLES = [
   { id: 'blob', name: 'Soft blob', note: 'flat shapes, big eyes, nothing else' },
   { id: 'ink', name: 'Ink badge', note: 'the house style: flat colour under one bold wobbly pen line' },
   { id: 'sticker', name: 'Sticker', note: 'die-cut white border and a lifted shadow' },
   { id: 'cutpaper', name: 'Cut paper', note: 'three layers of card' },
   { id: 'pixel-icon', name: 'Pixel icon', note: '20 × 20, outlined, favicon-ready' },
   { id: 'line-icon', name: 'Line icon', note: 'one pen, one weight, no fills' },
-  { id: 'orb', name: 'Gradient', note: 'soft gradients and a sheen' },
-  { id: 'clay', name: 'Clay', note: 'rounded, lit like modelling clay, bead eyes' },
-  { id: 'stamp', name: 'Stamp', note: 'two colours: an ink silhouette with the eyes cut out' },
   { id: 'glow', name: 'Neon glow', note: 'glowing tubes on black' },
-  { id: 'wash', name: 'Watercolour, cropped', note: 'the original, only framed tighter, for comparison' },
-];
+  { id: 'wash', name: 'Watercolour, cropped', note: 'the original, framed tighter' },
+] as const;
 
-/** The ones approved in the lab for the library's small mode, in catalogue order. */
-export const SMALL_APPROVED = ['blob', 'ink', 'sticker', 'cutpaper', 'pixel-icon', 'line-icon', 'glow', 'wash'] as const satisfies readonly SmallId[];
+export type SmallId = (typeof SMALL_STYLES)[number]['id'];
 
 const MOUTH_DARK = '#5b1a26';
 
@@ -404,92 +396,6 @@ function line(face: Face, E: Engine, px: number, bare: boolean) {
   return c;
 }
 
-function orb(face: Face, E: Engine, px: number, bare: boolean) {
-  const [c, g, f] = sheet(face, px);
-  const p = face.pal, k = face.sketch;
-  const bg = g.createLinearGradient(0, 0, px, px);
-  bg.addColorStop(0, mix(p.bg, '#ffffff', 0.2));
-  bg.addColorStop(1, p.bg2);
-  backdrop(g, bg);
-  if (bare) return c;
-  const lx = k.centre.x + k.light * k.rx * 0.4, ly = k.centre.y - k.ry * 0.5;
-  const shade = (a: string, b: string) => {
-    const gr = g.createRadialGradient(lx, ly, k.rx * 0.1, lx, ly, k.rx * 2.2);
-    gr.addColorStop(0, mix(a, '#ffffff', 0.25));
-    gr.addColorStop(1, b);
-    return gr;
-  };
-  drawBody(g, face, (pts, role, own) => {
-    const col = roleCol(face, role, own);
-    fillPts(g, pts, shade(col, own ? mix(own, '#000000', 0.25) : role === 'hair' || role === 'back' ? p.hair2 : p.shade));
-  });
-  // a sheen across the forehead
-  g.save();
-  polyline(g, k.head, true);
-  g.clip();
-  const sheen = g.createRadialGradient(lx, ly, 0, lx, ly, k.rx * 0.7);
-  sheen.addColorStop(0, 'rgba(255,255,255,0.35)');
-  sheen.addColorStop(1, 'rgba(255,255,255,0)');
-  g.fillStyle = sheen;
-  g.fillRect(lx - k.rx, ly - k.rx, k.rx * 2, k.rx * 2);
-  g.restore();
-  features(g, face, f, { ink: p.ink, eyeK: 1.5, brows: 2.2, mouth: 2.6, blush: 0.45, eyes: { white: '#ffffff', pupil: p.ink, shine: '#ffffff' } });
-  return c;
-}
-
-function clay(face: Face, E: Engine, px: number, bare: boolean) {
-  const [c, g, f] = sheet(face, px, 0.76);
-  const p = face.pal, k = face.sketch;
-  backdrop(g, mix(p.bg, '#ffffff', 0.35));
-  if (bare) return c;
-  const lx = k.centre.x + k.light * k.rx * 0.5, ly = k.centre.y - k.ry * 0.6;
-  const lump = (pts: Pt[], col: string) => {
-    const b = bbox(pts), r = Math.max(b.x1 - b.x0, b.y1 - b.y0);
-    // lit from above on one side, falling off into the colour's own shadow
-    const gr = g.createRadialGradient(lx, ly, r * 0.05, (b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2, r * 0.75);
-    gr.addColorStop(0, mix(col, '#ffffff', 0.35));
-    gr.addColorStop(0.6, col);
-    gr.addColorStop(1, mix(col, '#000000', 0.25));
-    g.save();
-    g.shadowColor = 'rgba(40,25,15,0.3)';
-    g.shadowBlur = 3 * f.u * f.s;
-    g.shadowOffsetY = 1.5 * f.u * f.s;
-    fillPts(g, pts, gr);
-    g.restore();
-  };
-  drawBody(g, face, (pts, role, col) => lump(pts, roleCol(face, role, col)));
-  for (const b of k.blush) fillPts(g, b, rgba(p.blush, 0.5));
-  // bead eyes: solid, glossy, no whites
-  const eyes = bigEyes(face, 1.5);
-  for (const e of eyes) {
-    const r = e.r * 0.8;
-    const gr = g.createRadialGradient(e.x - r * 0.3, e.y - r * 0.35, r * 0.1, e.x, e.y, r);
-    gr.addColorStop(0, mix(p.ink, '#ffffff', 0.25));
-    gr.addColorStop(1, p.ink);
-    g.fillStyle = gr;
-    ellipse(g, e.x + e.dx * 0.25, e.y + e.dy * 0.25, r, r * (e.open < 0.9 ? 0.6 : 1.05));
-    g.fill();
-    fillCircle(g, e.x + e.dx * 0.25 - r * 0.32, e.y + e.dy * 0.25 - r * 0.38, r * 0.24, 'rgba(255,255,255,0.9)');
-  }
-  for (const b of liftedBrows(face, eyes)) strokePts(g, b, 2.6 * f.u, mix(p.hair2, '#000000', 0.2));
-  drawMouth(g, k, 3 * f.u, mix(p.ink, MOUTH_DARK, 0.5));
-  return c;
-}
-
-function stamp(face: Face, E: Engine, px: number, bare: boolean) {
-  const [c, g, f] = sheet(face, px);
-  const p = face.pal;
-  backdrop(g, p.accent);
-  if (bare) return c;
-  drawBody(g, face, (pts) => {
-    fillPts(g, pts, p.ink);
-    strokePts(g, pts, 0.6 * f.u, p.ink, true);
-  });
-  drawEyes(g, bigEyes(face, 1.6), { white: p.paper, pupil: p.ink, pupilK: 0.48 });
-  drawMouth(g, face.sketch, 3.2 * f.u, p.paper, p.paper);
-  return c;
-}
-
 function neon(face: Face, E: Engine, px: number, bare: boolean) {
   const [c, g, f] = sheet(face, px);
   const p = face.pal;
@@ -537,7 +443,7 @@ function wash(face: Face, E: Engine, px: number, bare: boolean) {
 }
 
 const RENDER: Record<SmallId, (face: Face, E: Engine, px: number, bare: boolean) => HTMLCanvasElement> = {
-  blob, ink, sticker, cutpaper, 'pixel-icon': pixel, 'line-icon': line, orb, clay, stamp, glow: neon, wash,
+  blob, ink, sticker, cutpaper, 'pixel-icon': pixel, 'line-icon': line, glow: neon, wash,
 };
 
 /**

@@ -1,6 +1,6 @@
 import { makeCanvas } from './canvas';
 import type { Engine } from './engine';
-import { addPath, bbox, ribbon, TAU, type Pt } from './geometry';
+import { addPath, bbox, ribbon, type Pt } from './geometry';
 import { rgba } from './palettes';
 import { eyeState } from './face/eyes';
 import { applyClip, renderStill, resolveColor } from './face/render';
@@ -18,18 +18,12 @@ import { W } from './face/types';
 type Ctx = CanvasRenderingContext2D;
 type RGB = [number, number, number];
 
-export type StyleId =
-  | 'watercolour' | 'atkinson' | 'bayer' | 'pixel' | 'stitch' | 'ascii' | 'ascii-colour' | 'riso' | 'plotter' | 'cutout' | 'neon';
+export type StyleId = 'watercolour' | 'atkinson' | 'bayer' | 'plotter' | 'cutout' | 'neon';
 
 export const STYLES: { id: StyleId; name: string; note: string }[] = [
   { id: 'watercolour', name: 'Watercolour & dip pen', note: 'the original' },
   { id: 'atkinson', name: '1-bit, Atkinson', note: 'error diffusion, classic Mac' },
   { id: 'bayer', name: '1-bit, ordered', note: '8×8 Bayer threshold' },
-  { id: 'pixel', name: 'Pixel art', note: '64 × 64, palette-locked' },
-  { id: 'stitch', name: 'Cross-stitch', note: '44 × 44 on aida cloth' },
-  { id: 'ascii', name: 'ASCII', note: 'density ramp + line glyphs' },
-  { id: 'ascii-colour', name: 'ASCII, terminal', note: 'coloured glyphs on black' },
-  { id: 'riso', name: 'Risograph', note: 'three-ink halftone, misregistered' },
   { id: 'plotter', name: 'Pen plotter', note: 'multi-pen hatching' },
   { id: 'cutout', name: 'Paper cut-out', note: 'layered card with shadows' },
   { id: 'neon', name: 'Neon sign', note: 'glowing tubes' },
@@ -215,38 +209,6 @@ export function nearest(p: RGB[], r: number, g: number, b: number): RGB {
   return best;
 }
 
-/** The face at n×n with every pixel on the palette and pen lines as hard 1px runs. */
-export function pixelGrid(face: Face, E: Engine, n: number) {
-  const [fill, fg] = faceSpace(n);
-  drawFlat(fg, face, E, { ink: null });
-  const [ink, ig] = faceSpace(n);
-  drawFlat(ig, face, E, { ink: (W / n) * 0.95, inkCol: '#000000', eyes: false, fills: false });
-  const pal = paletteOf(face);
-  const inkRGB = rgb(face.pal.ink);
-  const fd = fg.getImageData(0, 0, n, n), id = ig.getImageData(0, 0, n, n);
-  const cells: RGB[] = [];
-  const paper: boolean[] = [];
-  const paperRGB = rgb(face.pal.paper);
-  for (let i = 0; i < n * n; i++) {
-    const j = i * 4;
-    const isInk = id.data[j + 3]! > 150;
-    const c = isInk ? inkRGB : nearest(pal, fd.data[j]!, fd.data[j + 1]!, fd.data[j + 2]!);
-    cells.push(c);
-    paper.push(c === paperRGB || (c[0] === paperRGB[0] && c[1] === paperRGB[1] && c[2] === paperRGB[2]));
-  }
-  // the pupils are tiny at this size; stamp them so every face keeps its eyes
-  for (const e of face.eyes) {
-    const st = eyeState(e, face.gaze, 1);
-    const b = bbox(e.pupil);
-    const x = Math.round((((b.x0 + b.x1) / 2 + st.dx) / W) * n - 0.5), y = Math.round((((b.y0 + b.y1) / 2 + st.dy) / W) * n - 0.5);
-    for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]] as const) {
-      const k = (y + dy) * n + x + dx;
-      if (k >= 0 && k < cells.length) { cells[k] = inkRGB; paper[k] = false; }
-    }
-  }
-  return { n, cells, paper };
-}
-
 // ================= styles =================
 
 function watercolour(face: Face, E: Engine, px: number) {
@@ -320,196 +282,9 @@ function bayer(face: Face, E: Engine, px: number) {
   return oneBit(n, (i) => L[i]! < BAYER8[Math.floor(i / n) % 8]![(i % n) % 8]!, '#1f2347', '#ece6d4', px);
 }
 
-function pixel(face: Face, E: Engine, px: number) {
-  const { n, cells } = pixelGrid(face, E, 64);
-  const [c, g] = canvas(n);
-  const img = g.createImageData(n, n);
-  cells.forEach((p, i) => img.data.set([p[0], p[1], p[2], 255], i * 4));
-  g.putImageData(img, 0, 0);
-  return upscale(c, px);
-}
-
-function stitch(face: Face, E: Engine, px: number) {
-  const { n, cells, paper } = pixelGrid(face, E, 44);
-  const [c, g] = canvas(px);
-  const s = px / n;
-  const r = rng(face.seed);
-  g.fillStyle = '#eee6d3';
-  g.fillRect(0, 0, px, px);
-  // aida weave: holes at every cell corner
-  g.fillStyle = 'rgba(120,100,70,0.22)';
-  for (let y = 0; y <= n; y++) for (let x = 0; x <= n; x++) g.fillRect(x * s - 1, y * s - 1, 2, 2);
-  g.lineCap = 'round';
-  cells.forEach((p, i) => {
-    if (paper[i]) return;
-    const x = (i % n) * s, y = Math.floor(i / n) * s, m = s * 0.16;
-    const col = `rgb(${p[0]},${p[1]},${p[2]})`;
-    const dark = `rgba(${p[0] * 0.55},${p[1] * 0.55},${p[2] * 0.55},0.55)`;
-    const lite = `rgba(255,255,255,${0.2 + r() * 0.12})`;
-    for (const [ax, ay, bx, by] of [[x + m, y + m, x + s - m, y + s - m], [x + s - m, y + m, x + m, y + s - m]] as const) {
-      const j = () => (r() - 0.5) * s * 0.06;
-      g.strokeStyle = dark;
-      g.lineWidth = s * 0.34;
-      g.beginPath(); g.moveTo(ax + j(), ay + 1 + j()); g.lineTo(bx + j(), by + 1 + j()); g.stroke();
-      g.strokeStyle = col;
-      g.lineWidth = s * 0.27;
-      g.beginPath(); g.moveTo(ax, ay); g.lineTo(bx, by); g.stroke();
-      g.strokeStyle = lite;
-      g.lineWidth = s * 0.07;
-      g.beginPath(); g.moveTo(ax + s * 0.04, ay - s * 0.03); g.lineTo(bx + s * 0.04, by - s * 0.03); g.stroke();
-    }
-  });
-  return c;
-}
-
 // ---- ASCII
 
-const RAMP = ' .,:;irsXA253hMHGS#9B&@';
-
-type Cell = { ch: string; col: RGB; line: boolean };
-
-/** Each character cell gets a density glyph, or a line glyph that follows the pen stroke through it. */
-function asciiCells(face: Face, E: Engine, px: number, cols: number, rows: number): Cell[] {
-  const still = renderStill(face, E, px);
-  const sd = still.getContext('2d')!.getImageData(0, 0, px, px).data;
-  const [, mg] = faceSpace(px);
-  drawFlat(mg, face, E, { ink: 2.6, inkCol: '#000000', eyes: false, fills: false });
-  const md = mg.getImageData(0, 0, px, px).data;
-  // ink mask: 1 where the pen line is
-  const M = new Float32Array(px * px);
-  for (let i = 0; i < px * px; i++) M[i] = md[i * 4 + 3]! > 120 ? 1 : 0;
-  const cw = px / cols, ch = px / rows;
-  const cells: Cell[] = [];
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const x0 = Math.floor(c * cw), x1 = Math.floor((c + 1) * cw), y0 = Math.floor(r * ch), y1 = Math.floor((r + 1) * ch);
-      let sr = 0, sg = 0, sb = 0, cov = 0, jxx = 0, jyy = 0, jxy = 0, count = 0;
-      for (let y = y0; y < y1; y++) {
-        for (let x = x0; x < x1; x++) {
-          const i = y * px + x;
-          sr += sd[i * 4]!; sg += sd[i * 4 + 1]!; sb += sd[i * 4 + 2]!;
-          cov += M[i]!;
-          count++;
-          if (x > 0 && y > 0 && x < px - 1 && y < px - 1) {
-            const gx = M[i + 1]! - M[i - 1]!, gy = M[i + px]! - M[i - px]!;
-            jxx += gx * gx; jyy += gy * gy; jxy += gx * gy;
-          }
-        }
-      }
-      const col: RGB = [sr / count, sg / count, sb / count];
-      const coverage = cov / count;
-      if (coverage > 0.13 && jxx + jyy > 0) {
-        // structure tensor: the dominant gradient direction, turned 90° to run along the line
-        const tangent = (0.5 * Math.atan2(2 * jxy, jxx - jyy) + Math.PI / 2 + Math.PI) % Math.PI;
-        const deg = (tangent * 180) / Math.PI;
-        const glyph = coverage > 0.6 ? '@' : deg < 22.5 || deg >= 157.5 ? '-' : deg < 67.5 ? '\\' : deg < 112.5 ? '|' : '/';
-        cells.push({ ch: glyph, col, line: true });
-        continue;
-      }
-      const l = clamp01((lum(col[0], col[1], col[2]) - 0.12) / 0.78);
-      const d = 1 - l;
-      cells.push({ ch: RAMP[Math.min(RAMP.length - 1, Math.floor(d ** 1.2 * RAMP.length * 1.1))]!, col, line: false });
-    }
-  }
-  return cells;
-}
-
-function drawGlyphs(g: Ctx, cells: Cell[], cols: number, rows: number, px: number, paint: (c: Cell) => string, weight: (c: Cell) => string) {
-  const cw = px / cols, ch = px / rows;
-  g.textAlign = 'center';
-  g.textBaseline = 'middle';
-  const family = 'ui-monospace, "SF Mono", Menlo, monospace';
-  g.font = `600 ${ch}px ${family}`;
-  const scale = cw / g.measureText('M').width;
-  cells.forEach((c, i) => {
-    if (c.ch === ' ') return;
-    g.font = `${weight(c)} ${Math.min(ch * 1.05, ch * scale * 1.05)}px ${family}`;
-    g.fillStyle = paint(c);
-    g.fillText(c.ch, (i % cols) * cw + cw / 2, Math.floor(i / cols) * ch + ch / 2 + 1);
-  });
-}
-
-function ascii(face: Face, E: Engine, px: number) {
-  const cols = 50, rows = 31;
-  const cells = asciiCells(face, E, px, cols, rows);
-  const [c, g] = canvas(px);
-  g.fillStyle = '#f3eee3';
-  g.fillRect(0, 0, px, px);
-  drawGlyphs(g, cells, cols, rows, px, (cl) => (cl.line ? '#1d1915' : 'rgba(40,33,27,0.82)'), (cl) => (cl.line ? '800' : '500'));
-  return c;
-}
-
-function asciiColour(face: Face, E: Engine, px: number) {
-  const cols = 50, rows = 31;
-  const cells = asciiCells(face, E, px, cols, rows);
-  const [c, g] = canvas(px);
-  g.fillStyle = '#100e0d';
-  g.fillRect(0, 0, px, px);
-  drawGlyphs(g, cells, cols, rows, px, (cl) => {
-    if (cl.line) return '#f6ead2';
-    // dark pigments would vanish on black, so every colour is lifted to at least mid brightness
-    const [r, gg, b] = cl.col, m = Math.max(r, gg, b, 1), k = Math.max(1, 200 / m);
-    return `rgb(${Math.min(255, r * k)},${Math.min(255, gg * k)},${Math.min(255, b * k)})`;
-  }, (cl) => (cl.line ? '800' : '600'));
-  return c;
-}
-
 // ---- print and paper
-
-function riso(face: Face, E: Engine, px: number) {
-  const still = renderStill(face, E, px);
-  const sd = still.getContext('2d')!.getImageData(0, 0, px, px).data;
-  const sample = (x: number, y: number): RGB => {
-    const xi = Math.min(px - 1, Math.max(0, Math.round(x))), yi = Math.min(px - 1, Math.max(0, Math.round(y)));
-    const i = (yi * px + xi) * 4;
-    return [sd[i]! / 255, sd[i + 1]! / 255, sd[i + 2]! / 255];
-  };
-  const [c, g] = canvas(px);
-  g.fillStyle = '#f7f2e7';
-  g.fillRect(0, 0, px, px);
-  const cell = px / 86;
-  // riso Yellow, Fluorescent Pink and Blue standing in for Y, M and C, each a little off-register
-  const inks = [
-    { col: '#ffe800', angle: 0, off: { x: -1.5, y: 2 }, amount: (p: RGB) => 1 - p[2] },
-    { col: '#ff48b0', angle: (75 * Math.PI) / 180, off: { x: 2, y: -1 }, amount: (p: RGB) => 1 - p[1] },
-    { col: '#0078bf', angle: (15 * Math.PI) / 180, off: { x: 0, y: 0 }, amount: (p: RGB) => 1 - p[0] },
-  ];
-  g.globalCompositeOperation = 'multiply';
-  for (const ink of inks) {
-    g.fillStyle = ink.col;
-    const ca = Math.cos(ink.angle), sa = Math.sin(ink.angle);
-    const reach = px * 0.75;
-    for (let v = -reach; v < reach; v += cell) {
-      for (let u = -reach; u < reach; u += cell) {
-        const x = px / 2 + u * ca - v * sa, y = px / 2 + u * sa + v * ca;
-        if (x < -cell || y < -cell || x > px + cell || y > px + cell) continue;
-        const a = clamp01((ink.amount(sample(x, y)) - 0.06) * 1.25);
-        if (a < 0.02) continue;
-        g.beginPath();
-        g.arc(x + ink.off.x, y + ink.off.y, cell * 0.72 * Math.sqrt(a), 0, TAU);
-        g.fill();
-      }
-    }
-  }
-  // the key drawing printed solid in blue
-  const [lines, lg] = faceSpace(px);
-  drawFlat(lg, face, E, { ink: 2.2, inkCol: '#000000', eyes: false, fills: false });
-  const ld = lg.getImageData(0, 0, px, px);
-  const blue = rgb('#0b4f9c');
-  for (let i = 0; i < px * px; i++) {
-    const j = i * 4;
-    const k = ld.data[j + 3]! > 120;
-    ld.data.set(k ? [blue[0], blue[1], blue[2], 235] : [0, 0, 0, 0], j);
-  }
-  lg.putImageData(ld, 0, 0);
-  g.drawImage(lines, 0, 0);
-  // drum grain: specks where the ink didn't take
-  g.globalCompositeOperation = 'source-over';
-  const r = rng(face.seed);
-  g.fillStyle = 'rgba(247,242,231,0.55)';
-  for (let i = 0; i < px * px * 0.02; i++) g.fillRect(r() * px, r() * px, 1 + r(), 1 + r());
-  return c;
-}
 
 function plotter(face: Face, E: Engine, px: number) {
   const [c, g] = faceSpace(px);
@@ -674,7 +449,7 @@ function neon(face: Face, E: Engine, px: number) {
 }
 
 const RENDER: Record<StyleId, (face: Face, E: Engine, px: number) => HTMLCanvasElement> = {
-  watercolour, atkinson, bayer, pixel, stitch, ascii, 'ascii-colour': asciiColour, riso, plotter, cutout, neon,
+  watercolour, atkinson, bayer, plotter, cutout, neon,
 };
 
 export function renderStyle(style: StyleId, face: Face, E: Engine, px: number): HTMLCanvasElement {

@@ -10,7 +10,7 @@ import { faceMask } from './layers';
  */
 
 /** Keeps only what lies under `mask`'s alpha, in place. */
-export function keepMasked(c: HTMLCanvasElement, mask: HTMLCanvasElement): HTMLCanvasElement {
+function keepMasked(c: HTMLCanvasElement, mask: HTMLCanvasElement): HTMLCanvasElement {
   const g = c.getContext('2d')!;
   g.save();
   g.setTransform(1, 0, 0, 1, 0, 0);

@@ -4,13 +4,12 @@ import { rgba } from './palettes';
 import { eyeState, type EyeState } from './face/eyes';
 import { applyClip, renderStill, resolveColor } from './face/render';
 import { inkRibbons } from './face/strokes';
-import type { EyeSpec, Face, InkOp } from './face/types';
+import type { EyeSpec, Face } from './face/types';
 import { W } from './face/types';
-import { drawFlat, drawFlatEyes, nearest, opsOf, paletteOf, pixelGrid } from './styles';
-import { voxelArt } from './pixels';
+import { drawFlatEyes, nearest, opsOf, paletteOf } from './styles';
 import {
   at, blur, canvas, clamp01, css, faceSpace, figureInks, figureMask, flat, flowField, fract, fromHsl, grain, hash01, hex, imageFrom, imgOf, inkMask, lum, lumField, mixRGB, pillow, polyline, pupils, rng, toHsl,
-  type Ctx, type Img, type RGB,
+  type RGB,
 } from './raster';
 
 
@@ -213,54 +212,6 @@ const sumi: Render = (face, E, px) => {
   return c;
 };
 
-const pastel: Render = (face, E, px) => {
-  const src = imgOf(flat(face, E, px));
-  const paperRGB = hex(face.pal.paper);
-  const [layer, lg] = canvas(px);
-  const r = rng(face.seed + 11);
-  const k = px / 480;
-  lg.lineCap = 'round';
-  for (let n = 0; n < (px * px) / 9; n++) {
-    const x = r() * px, y = r() * px;
-    const col = at(src, x, y);
-    if (Math.abs(col[0] - paperRGB[0]) + Math.abs(col[1] - paperRGB[1]) + Math.abs(col[2] - paperRGB[2]) < 18) continue;
-    const a = 1.0 + (r() - 0.5) * 0.4, len = (5 + r() * 8) * k;
-    const j = 1 + (r() - 0.5) * 0.16;
-    lg.strokeStyle = css([col[0] * j, col[1] * j, col[2] * j], 0.55 + r() * 0.35);
-    lg.lineWidth = (1.8 + r() * 1.4) * k;
-    lg.beginPath();
-    lg.moveTo(x - Math.cos(a) * len, y - Math.sin(a) * len);
-    lg.lineTo(x + Math.cos(a) * len, y + Math.sin(a) * len);
-    lg.stroke();
-  }
-  lg.save();
-  lg.scale(px / W, px / W);
-  for (const op of figureInks(face)) {
-    for (let p = 0; p < 2; p++) {
-      lg.save();
-      applyClip(lg, op.clip);
-      lg.translate((r() - 0.5) * 1.4, (r() - 0.5) * 1.4);
-      lg.strokeStyle = rgba(face.pal.ink, 0.55);
-      lg.lineWidth = Math.max(1.4, op.w * 0.45);
-      lg.lineCap = lg.lineJoin = 'round';
-      polyline(lg, op.pts, op.closed);
-      lg.stroke();
-      lg.restore();
-    }
-  }
-  pupils(lg, face, face.pal.ink);
-  lg.restore();
-  // paper tooth: the chalk skips the pits of the paper
-  lg.globalCompositeOperation = 'destination-out';
-  grain(lg, px, face.seed + 2, 0.09, 'rgba(0,0,0,0.55)', 1.4 * k);
-  const [c, g] = canvas(px);
-  g.fillStyle = '#2f3b4a';
-  g.fillRect(0, 0, px, px);
-  grain(g, px, face.seed + 4, 0.03, 'rgba(255,255,255,0.05)');
-  g.drawImage(layer, 0, 0);
-  return c;
-};
-
 const charcoal: Render = (face, E, px) => {
   const still = imgOf(renderStill(face, E, px));
   const L = lumField(still);
@@ -350,134 +301,7 @@ const pointillism: Render = (face, E, px) => {
   return c;
 };
 
-const fresco: Render = (face, E, px) => {
-  const plaster: RGB = [222, 205, 172];
-  const base = imgOf(flat(face, E, px, (col) => {
-    const [h, s, l] = toHsl(hex(col));
-    return css(mixRGB(fromHsl([h, s * 0.55, l]), plaster, 0.28));
-  }));
-  const [c, g] = canvas(px);
-  const img = imageFrom(px, (i) => [base.d[i * 4]!, base.d[i * 4 + 1]!, base.d[i * 4 + 2]!]);
-  g.filter = `blur(${px / 400}px)`;
-  g.drawImage(img, 0, 0);
-  g.filter = 'none';
-  const r = rng(face.seed + 19);
-  // mottled lime plaster
-  for (let n = 0; n < 60; n++) {
-    const x = r() * px, y = r() * px, rad = px * (0.03 + r() * 0.1);
-    const grd = g.createRadialGradient(x, y, 0, x, y, rad);
-    grd.addColorStop(0, r() < 0.5 ? 'rgba(255,248,230,0.12)' : 'rgba(120,90,60,0.08)');
-    grd.addColorStop(1, 'rgba(0,0,0,0)');
-    g.fillStyle = grd;
-    g.fillRect(x - rad, y - rad, rad * 2, rad * 2);
-  }
-  grain(g, px, face.seed + 3, 0.05, 'rgba(90,70,50,0.08)');
-  g.save();
-  g.scale(px / W, px / W);
-  for (const op of figureInks(face)) {
-    g.save();
-    applyClip(g, op.clip);
-    g.strokeStyle = 'rgba(122,48,32,0.78)';
-    g.lineWidth = Math.max(1.2, op.w * 0.4);
-    g.lineCap = g.lineJoin = 'round';
-    polyline(g, op.pts, op.closed);
-    g.stroke();
-    g.restore();
-  }
-  pupils(g, face, '#4a2418');
-  g.restore();
-  // flaked plaster and hairline cracks
-  for (let n = 0; n < 5; n++) {
-    const x = r() * px, y = r() < 0.5 ? r() * px * 0.2 : px - r() * px * 0.2, rad = px * (0.02 + r() * 0.05);
-    g.fillStyle = 'rgba(236,226,206,0.85)';
-    g.beginPath();
-    for (let a = 0; a < 12; a++) {
-      const t = (a / 12) * TAU, rr = rad * (0.6 + r() * 0.6);
-      if (a) g.lineTo(x + Math.cos(t) * rr, y + Math.sin(t) * rr); else g.moveTo(x + Math.cos(t) * rr, y + Math.sin(t) * rr);
-    }
-    g.fill();
-  }
-  g.strokeStyle = 'rgba(70,50,35,0.4)';
-  g.lineWidth = 0.8;
-  for (let n = 0; n < 6; n++) {
-    let x = r() * px, y = r() * px, a = r() * TAU;
-    g.beginPath();
-    g.moveTo(x, y);
-    for (let s = 0; s < 30; s++) {
-      a += (r() - 0.5) * 0.9;
-      x += Math.cos(a) * px * 0.012;
-      y += Math.sin(a) * px * 0.012;
-      g.lineTo(x, y);
-    }
-    g.stroke();
-  }
-  return c;
-};
-
 // ================= prints and graphic =================
-
-const UKIYO = ['#1f3a5f', '#2f5d8a', '#d24b2a', '#d9a441', '#7aa58c', '#d97a7f', '#e9c9a3', '#3a2a22', '#8a9a6a'].map(hex);
-
-const ukiyoe: Render = (face, E, px) => {
-  const pale = mixRGB(hex(face.pal.skin), [246, 232, 210], 0.6);
-  const [c, g] = faceSpace(px);
-  g.fillStyle = '#f1e5cc';
-  g.fillRect(0, 0, W, W);
-  drawFlat(g, face, E, {
-    ink: null,
-    map: (col) => {
-      const rgb = hex(col);
-      if (col === face.pal.paper) return '#f1e5cc';
-      // faces are pale in woodblock prints; everything else moves onto the printer's few blocks
-      if (col === face.pal.skin) return css(pale);
-      if (col === face.pal.shade) return css(mixRGB(pale, [150, 110, 90], 0.22));
-      return css(mixRGB(nearest(UKIYO, ...rgb), rgb, 0.25));
-    },
-  });
-  for (const op of figureInks(face)) {
-    g.save();
-    applyClip(g, op.clip);
-    g.strokeStyle = '#1b1a19';
-    g.lineWidth = Math.max(1.1, op.w * 0.32);
-    g.lineCap = g.lineJoin = 'round';
-    polyline(g, op.pts, op.closed);
-    g.stroke();
-    g.restore();
-  }
-  drawFlatEyes(g, face, 1.3, '#1b1a19');
-  g.setTransform(1, 0, 0, 1, 0, 0);
-  // bokashi: indigo wiped onto the block so it fades down the sky
-  const sky = g.createLinearGradient(0, 0, 0, px * 0.42);
-  sky.addColorStop(0, 'rgba(31,58,95,0.85)');
-  sky.addColorStop(1, 'rgba(31,58,95,0)');
-  g.globalCompositeOperation = 'multiply';
-  g.fillStyle = sky;
-  g.fillRect(0, 0, px, px * 0.42);
-  // wood grain pressed into the flat colour
-  const r = rng(face.seed + 23);
-  g.strokeStyle = 'rgba(90,70,50,0.07)';
-  g.lineWidth = 1;
-  for (let y = 0; y < px; y += 3 + r() * 4) {
-    g.beginPath();
-    g.moveTo(0, y);
-    for (let x = 0; x <= px; x += px / 16) g.lineTo(x, y + Math.sin(x * 0.02 + y) * 1.5);
-    g.stroke();
-  }
-  g.globalCompositeOperation = 'source-over';
-  grain(g, px, face.seed, 0.03, 'rgba(255,250,235,0.25)');
-  // title cartouche and seal
-  const u = px / 480;
-  g.fillStyle = '#efe2c4';
-  g.strokeStyle = '#1b1a19';
-  g.lineWidth = 1.5 * u;
-  g.fillRect(px - 52 * u, 16 * u, 30 * u, 110 * u);
-  g.strokeRect(px - 52 * u, 16 * u, 30 * u, 110 * u);
-  g.fillStyle = '#1b1a19';
-  for (let k = 0; k < 5; k++) g.fillRect(px - 42 * u, (28 + k * 19) * u, 10 * u, 9 * u);
-  g.fillStyle = '#c0362c';
-  g.fillRect(px - 48 * u, 132 * u, 22 * u, 22 * u);
-  return c;
-};
 
 /** Carving and engraving: lines that bow over the dome of the head, thick where it's dark. */
 function cutLines(face: Face, E: Engine, px: number, period: number) {
@@ -517,43 +341,6 @@ const linocut: Render = (face, E, px) => {
     if (bg && fract((y + 4 * Math.sin(x * 0.05)) / (px / 60)) > 0.28 && chip(i) > 0.03) return block;
     return paper;
   });
-};
-
-const engraving: Render = (face, E, px) => {
-  const { L, mask, phase } = cutLines(face, E, px, px / 110);
-  const ink = inkMask(face, E, px, 1.4);
-  const inkCol: RGB = [31, 51, 38], paper: RGB = [239, 233, 216];
-  const cx = px / 2, cy = px * 0.52, rx = px * 0.4, ry = px * 0.45;
-  const c = imageFrom(px, (i, x, y) => {
-    const inside = ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 < 1;
-    if (!inside) return paper;
-    if (ink[i]) return inkCol;
-    const dark = mask[i] ? clamp01((0.92 - L[i]!) / 0.8) : 0.18 + 0.1 * (y / px);
-    const f = Math.abs(fract(mask[i] ? phase[i]! : y / (px / 110)) - 0.5) * 2;
-    let on = f < dark ** 0.85;
-    // cross-hatching for the deepest shadows
-    if (!on && dark > 0.55) on = Math.abs(fract((x - y) / (px / 120)) - 0.5) * 2 < (dark - 0.55) * 1.7;
-    return on ? inkCol : paper;
-  });
-  // a guilloché border around the oval, like a banknote portrait
-  const g = c.getContext('2d')!;
-  g.strokeStyle = 'rgba(31,51,38,0.75)';
-  g.lineWidth = 0.7;
-  for (let k = 0; k < 18; k++) {
-    g.beginPath();
-    for (let s = 0; s <= 720; s++) {
-      const t = (s / 720) * TAU;
-      const wob = 1 + 0.035 * Math.sin(t * 36 + (k * TAU) / 18);
-      const x = cx + Math.cos(t) * (rx + px * 0.02) * wob, y = cy + Math.sin(t) * (ry + px * 0.02) * wob;
-      if (s) g.lineTo(x, y); else g.moveTo(x, y);
-    }
-    g.stroke();
-  }
-  g.lineWidth = 1.6;
-  g.beginPath();
-  g.ellipse(cx, cy, rx, ry, 0, 0, TAU);
-  g.stroke();
-  return c;
 };
 
 const WARHOL: [string, string, string, string][] = [
@@ -596,70 +383,6 @@ const warhol: Render = (face, E, px) => {
     g.drawImage(keyLayer, ox + q * 0.012, oy + q * 0.008);
     g.restore();
   });
-  return c;
-};
-
-const POP = { red: hex('#e2231a'), yellow: hex('#ffd400'), blue: hex('#1f5fbf'), black: hex('#121212'), white: hex('#ffffff') };
-
-const popart: Render = (face, E, px) => {
-  const src = imgOf(flat(face, E, px));
-  const L = lumField(imgOf(renderStill(face, E, px)));
-  const ink = inkMask(face, E, px, 3.6);
-  const pal = face.pal;
-  const roles: [string, string][] = [[pal.paper, 'bg'], [pal.bg, 'bg'], [pal.bg2, 'bg'], [pal.skin, 'skin'], [pal.shade, 'shade'], [pal.blush, 'red'], [pal.hair, 'hair'], [pal.hair2, 'hair'], [pal.accent, 'acc'], [pal.accent2, 'acc'], [pal.ink, 'black'], ['#5b1a26', 'red']];
-  const ref = roles.map(([c]) => hex(c));
-  const primary = (c: RGB): RGB => {
-    const [h, s, l] = toHsl(c);
-    if (l < 0.28) return POP.black;
-    if (s < 0.18) return l > 0.7 ? POP.white : POP.black;
-    return h < 25 || h > 320 ? POP.red : h < 75 ? POP.yellow : POP.blue;
-  };
-  const cell = px / 80;
-  const dot = (x: number, y: number, rad: number) => {
-    const u = x / cell, v = (y + ((Math.floor(u) % 2) * cell) / 2) / cell;
-    return Math.hypot(fract(u) - 0.5, fract(v) - 0.5) < rad;
-  };
-  const hairCol = primary(hex(pal.hair));
-  const c = imageFrom(px, (i, x, y) => {
-    if (ink[i]) return POP.black;
-    const p: RGB = [src.d[i * 4]!, src.d[i * 4 + 1]!, src.d[i * 4 + 2]!];
-    const role = roles[ref.indexOf(nearest(ref, ...p))]![1];
-    if (role === 'bg') return dot(x, y, 0.36) ? POP.blue : [104, 170, 240];
-    if (role === 'skin' || role === 'shade') {
-      // Ben-Day dots: red on white reads as pink, bigger dots in shadow
-      const rad = role === 'shade' || L[i]! < 0.55 ? 0.42 : 0.28;
-      return dot(x, y, rad) ? POP.red : POP.white;
-    }
-    if (role === 'hair') return hairCol;
-    if (role === 'red') return POP.red;
-    if (role === 'black') return POP.black;
-    if (lum(p) > 0.85) return POP.white;
-    return primary(p);
-  });
-  const g = c.getContext('2d')!;
-  // a speech balloon
-  const u = px / 480;
-  g.fillStyle = '#fff';
-  g.strokeStyle = '#111';
-  g.lineWidth = 4 * u;
-  g.beginPath();
-  g.ellipse(px * 0.79, px * 0.13, 70 * u, 40 * u, -0.08, 0, TAU);
-  g.moveTo(px * 0.72, px * 0.19);
-  g.fill();
-  g.stroke();
-  g.beginPath();
-  g.moveTo(px * 0.71, px * 0.18);
-  g.lineTo(px * 0.66, px * 0.3);
-  g.lineTo(px * 0.77, px * 0.2);
-  g.fill();
-  g.stroke();
-  g.fillStyle = '#fff';
-  g.fillRect(px * 0.705, px * 0.165, 50 * u, 12 * u);
-  g.fillStyle = '#111';
-  g.font = `italic 900 ${34 * u}px "Arial Black", Impact, sans-serif`;
-  g.textAlign = 'center';
-  g.textBaseline = 'middle';
-  g.fillText('HI!', px * 0.79, px * 0.135);
   return c;
 };
 
@@ -825,42 +548,6 @@ const mosaic: Render = (face, E, px) => {
   return c;
 };
 
-const knit: Render = (face, E, px) => {
-  const { n, cells } = pixelGrid(face, E, 40);
-  const [c, g] = canvas(px);
-  const s = px / n;
-  g.fillStyle = '#2b2522';
-  g.fillRect(0, 0, px, px);
-  const r = rng(face.seed + 43);
-  cells.forEach((p, i) => {
-    const x = (i % n) * s, y = Math.floor(i / n) * s;
-    // a knit stitch is a V: two plump loops leaning in
-    for (const side of [-1, 1]) {
-      g.save();
-      g.translate(x + s / 2 + side * s * 0.2, y + s * 0.52);
-      g.rotate(side * 0.55);
-      const grd = g.createLinearGradient(0, -s * 0.5, 0, s * 0.5);
-      const j = 1 + (r() - 0.5) * 0.08;
-      grd.addColorStop(0, css([p[0] * 1.12 * j, p[1] * 1.12 * j, p[2] * 1.12 * j]));
-      grd.addColorStop(1, css([p[0] * 0.7, p[1] * 0.7, p[2] * 0.7]));
-      g.fillStyle = grd;
-      g.beginPath();
-      g.ellipse(0, 0, s * 0.26, s * 0.56, 0, 0, TAU);
-      g.fill();
-      g.strokeStyle = 'rgba(255,255,255,0.12)';
-      g.lineWidth = s * 0.05;
-      for (let k = -1; k <= 1; k++) {
-        g.beginPath();
-        g.moveTo(k * s * 0.08, -s * 0.4);
-        g.lineTo(k * s * 0.08 + s * 0.04, s * 0.4);
-        g.stroke();
-      }
-      g.restore();
-    }
-  });
-  return c;
-};
-
 const felt: Render = (face, E, px) => {
   const [c, g] = faceSpace(px);
   const r = rng(face.seed + 47);
@@ -994,38 +681,6 @@ const felt: Render = (face, E, px) => {
     g.restore();
     if (st.lid) feltLid(e, st);
   }
-  return c;
-};
-
-const LEGO = ['#f4f4f4', '#1b1b1b', '#c91a09', '#0055bf', '#f2cd37', '#237841', '#e4cd9e', '#958a73', '#582a12', '#6c6e68', '#a0a5a9', '#fe8a18', '#c870a0', '#36aebf', '#bbe90b', '#720e0f', '#0a3463', '#a0bcac', '#aa7d55', '#f6d7b3', '#d09168', '#352100', '#e1d5ed', '#ff698f', '#fc97ac', '#078bc9', '#9b9a5a'].map(hex);
-
-const lego: Render = (face, E, px) => {
-  const { n, cells } = pixelGrid(face, E, 36);
-  const [c, g] = canvas(px);
-  const s = px / n;
-  cells.forEach((p, i) => {
-    const col = nearest(LEGO, ...p);
-    const x = (i % n) * s, y = Math.floor(i / n) * s;
-    g.fillStyle = css(col);
-    g.fillRect(x, y, s, s);
-    g.strokeStyle = css(mixRGB(col, [0, 0, 0], 0.25));
-    g.lineWidth = 1;
-    g.strokeRect(x + 0.5, y + 0.5, s - 1, s - 1);
-    // the stud: a shadowed cylinder with a lit rim
-    g.fillStyle = css(mixRGB(col, [0, 0, 0], 0.3));
-    g.beginPath();
-    g.arc(x + s / 2 + s * 0.05, y + s / 2 + s * 0.07, s * 0.31, 0, TAU);
-    g.fill();
-    g.fillStyle = css(col);
-    g.beginPath();
-    g.arc(x + s / 2, y + s / 2, s * 0.3, 0, TAU);
-    g.fill();
-    g.strokeStyle = css(mixRGB(col, [255, 255, 255], 0.45), 0.8);
-    g.lineWidth = s * 0.06;
-    g.beginPath();
-    g.arc(x + s / 2, y + s / 2, s * 0.24, Math.PI * 0.95, Math.PI * 1.6);
-    g.stroke();
-  });
   return c;
 };
 
@@ -1200,216 +855,30 @@ const holo: Render = (face, E, px) => {
   return c;
 };
 
-const vapor: Render = (face, E, px) => {
-  const still = imgOf(renderStill(face, E, px));
-  const L = lumField(still);
-  const fig = figureMask(face, E, px);
-  const ink = inkMask(face, E, px, 2.2);
-  const [c, g] = canvas(px);
-  const horizon = px * 0.68;
-  const sky = g.createLinearGradient(0, 0, 0, horizon);
-  sky.addColorStop(0, '#190a3a');
-  sky.addColorStop(0.55, '#7a1f86');
-  sky.addColorStop(1, '#ff7aa8');
-  g.fillStyle = sky;
-  g.fillRect(0, 0, px, horizon);
-  // a striped sun
-  const sun = g.createLinearGradient(0, px * 0.18, 0, horizon);
-  sun.addColorStop(0, '#ffe46b');
-  sun.addColorStop(1, '#ff4f9a');
-  g.save();
-  g.beginPath();
-  g.arc(px / 2, horizon - px * 0.04, px * 0.36, Math.PI, 0);
-  g.clip();
-  g.fillStyle = sun;
-  g.fillRect(0, 0, px, horizon);
-  g.fillStyle = sky;
-  for (let k = 0; k < 7; k++) g.fillRect(0, horizon - px * 0.05 - k * k * px * 0.006 - k * px * 0.012, px, px * 0.006 + k * px * 0.0015);
-  g.restore();
-  g.fillStyle = '#12062a';
-  g.fillRect(0, horizon, px, px - horizon);
-  g.strokeStyle = '#ff3fd2';
-  g.lineWidth = 1.2;
-  for (let k = -12; k <= 12; k++) { g.beginPath(); g.moveTo(px / 2 + k * px * 0.02, horizon); g.lineTo(px / 2 + k * px * 0.16, px); g.stroke(); }
-  for (let k = 1; k < 9; k++) { const y = horizon + (px - horizon) * (k / 9) ** 1.8; g.beginPath(); g.moveTo(0, y); g.lineTo(px, y); g.stroke(); }
-  // the face as a pink-to-cyan duotone, with its lines split into colour channels
-  const duo = [hex('#2b0f5c'), hex('#01cdfe'), hex('#ff71ce'), hex('#fff1fb')];
-  const face2 = imageFrom(px, (i) => {
-    const v = clamp01((L[i]! - 0.15) / 0.75) * (duo.length - 1), k = Math.floor(v);
-    return mixRGB(duo[k]!, duo[Math.min(duo.length - 1, k + 1)]!, v - k);
-  });
-  const fd = face2.getContext('2d')!.getImageData(0, 0, px, px);
-  for (let i = 0; i < px * px; i++) fd.data[i * 4 + 3] = fig[i] ? 255 : 0;
-  face2.getContext('2d')!.putImageData(fd, 0, 0);
-  g.drawImage(face2, 0, 0);
-  const lines = (col: RGB) => {
-    const im = imageFrom(px, () => col);
-    const d = im.getContext('2d')!.getImageData(0, 0, px, px);
-    for (let i = 0; i < px * px; i++) d.data[i * 4 + 3] = ink[i] ? 255 : 0;
-    im.getContext('2d')!.putImageData(d, 0, 0);
-    return im;
-  };
-  g.globalCompositeOperation = 'screen';
-  g.drawImage(lines([0, 230, 255]), px * 0.006, 0);
-  g.drawImage(lines([255, 40, 160]), -px * 0.006, 0);
-  g.globalCompositeOperation = 'source-over';
-  g.globalAlpha = 0.85;
-  g.drawImage(lines([30, 10, 60]), 0, 0);
-  g.globalAlpha = 1;
-  g.fillStyle = 'rgba(0,0,0,0.16)';
-  for (let y = 0; y < px; y += 3) g.fillRect(0, y, px, 1);
-  return c;
-};
-
-const blueprint: Render = (face, E, px) => {
-  const [c, g] = canvas(px);
-  const bg = g.createRadialGradient(px / 2, px / 2, px * 0.1, px / 2, px / 2, px * 0.8);
-  bg.addColorStop(0, '#2463a8');
-  bg.addColorStop(1, '#173f73');
-  g.fillStyle = bg;
-  g.fillRect(0, 0, px, px);
-  const gs = px / 40;
-  for (let k = 0; k <= 40; k++) {
-    g.strokeStyle = `rgba(255,255,255,${k % 5 === 0 ? 0.2 : 0.08})`;
-    g.lineWidth = 1;
-    g.beginPath(); g.moveTo(k * gs, 0); g.lineTo(k * gs, px); g.moveTo(0, k * gs); g.lineTo(px, k * gs); g.stroke();
-  }
-  g.save();
-  g.scale(px / W, px / W);
-  const white = 'rgba(240,248,255,0.95)';
-  // glaze shapes as dashed construction lines
-  for (const op of face.figure) {
-    if (op.k !== 'wash' || op.layers < 14) continue;
-    g.strokeStyle = 'rgba(240,248,255,0.4)';
-    g.lineWidth = 0.6;
-    g.setLineDash([4, 3]);
-    polyline(g, op.pts, true);
-    g.stroke();
-  }
-  g.setLineDash([]);
-  for (const op of figureInks(face)) {
-    g.save();
-    applyClip(g, op.clip);
-    g.strokeStyle = white;
-    g.lineWidth = 1.1;
-    g.lineJoin = g.lineCap = 'round';
-    polyline(g, op.pts, op.closed);
-    g.stroke();
-    g.restore();
-  }
-  for (const e of face.eyes) {
-    g.strokeStyle = white;
-    g.lineWidth = 0.8;
-    g.beginPath(); g.arc(e.x, e.y, e.r * 0.45, 0, TAU); g.stroke();
-    g.beginPath(); g.moveTo(e.x - e.r * 0.7, e.y); g.lineTo(e.x + e.r * 0.7, e.y); g.moveTo(e.x, e.y - e.r * 0.7); g.lineTo(e.x, e.y + e.r * 0.7); g.stroke();
-  }
-  // centre lines and dimensions
-  const fig = face.figure.filter((o) => o.k === 'wash').flatMap((o) => (o.k === 'wash' ? o.pts : []));
-  const b = bbox(fig);
-  const ex = face.eyes.length ? face.eyes.reduce((s, e) => s + e.y, 0) / face.eyes.length : W / 2;
-  g.strokeStyle = 'rgba(240,248,255,0.55)';
-  g.lineWidth = 0.6;
-  g.setLineDash([10, 3, 2, 3]);
-  g.beginPath(); g.moveTo((b.x0 + b.x1) / 2, b.y0 - 12); g.lineTo((b.x0 + b.x1) / 2, b.y1 + 12); g.moveTo(b.x0 - 12, ex); g.lineTo(b.x1 + 12, ex); g.stroke();
-  g.setLineDash([]);
-  const arrow = (x0: number, y0: number, x1: number, y1: number, label: string) => {
-    g.strokeStyle = white;
-    g.fillStyle = white;
-    g.lineWidth = 0.7;
-    g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke();
-    const a = Math.atan2(y1 - y0, x1 - x0);
-    for (const [x, y, d] of [[x0, y0, 1], [x1, y1, -1]] as const) {
-      g.beginPath();
-      g.moveTo(x, y);
-      g.lineTo(x + d * 6 * Math.cos(a) - 2.5 * Math.sin(a), y + d * 6 * Math.sin(a) + 2.5 * Math.cos(a));
-      g.lineTo(x + d * 6 * Math.cos(a) + 2.5 * Math.sin(a), y + d * 6 * Math.sin(a) - 2.5 * Math.cos(a));
-      g.fill();
-    }
-    g.save();
-    g.translate((x0 + x1) / 2, (y0 + y1) / 2);
-    g.rotate(Math.abs(a) > 1 ? -Math.PI / 2 : 0);
-    g.font = '600 9px ui-monospace, Menlo, monospace';
-    g.textAlign = 'center';
-    g.fillStyle = '#1d4f8c';
-    g.fillRect(-18, -6, 36, 11);
-    g.fillStyle = white;
-    g.fillText(label, 0, 3);
-    g.restore();
-  };
-  arrow(b.x0, Math.min(W - 24, b.y1 + 16), b.x1, Math.min(W - 24, b.y1 + 16), `${Math.round(b.x1 - b.x0)}`);
-  arrow(Math.min(W - 16, b.x1 + 16), b.y0, Math.min(W - 16, b.x1 + 16), b.y1, `${Math.round(b.y1 - b.y0)}`);
-  g.restore();
-  // title block, top left where the dimensions don't reach
-  const u = px / 480;
-  g.strokeStyle = 'rgba(240,248,255,0.85)';
-  g.lineWidth = 1.2 * u;
-  g.strokeRect(12 * u, 12 * u, 138 * u, 40 * u);
-  g.beginPath(); g.moveTo(12 * u, 32 * u); g.lineTo(150 * u, 32 * u); g.stroke();
-  g.fillStyle = 'rgba(240,248,255,0.95)';
-  g.font = `600 ${10 * u}px ui-monospace, Menlo, monospace`;
-  g.fillText(`FACE No. ${face.seed.toString(36).toUpperCase()}`, 18 * u, 26 * u);
-  g.font = `500 ${8.5 * u}px ui-monospace, Menlo, monospace`;
-  g.fillText('SCALE 1:1   DRN GLORPIES', 18 * u, 45 * u);
-  return c;
-};
-
 // ================= registry =================
 
-export type PaintGroup = { group: string; items: { id: string; name: string; note: string; render: Render }[] };
-
-export const PAINTS: PaintGroup[] = [
-  {
-    group: 'Traditional paint',
-    items: [
-      { id: 'gouache', name: 'Gouache', note: 'flat matte colour with dry-brush streaks', render: gouache },
-      { id: 'oil', name: 'Oil impasto', note: 'strokes follow the form, with raised ridges', render: oil },
-      { id: 'sumi', name: 'Sumi-e', note: 'ink brush lines, grey washes, red seal', render: sumi },
-      { id: 'pastel', name: 'Pastel', note: 'chalk strokes on blue-grey paper', render: pastel },
-      { id: 'charcoal', name: 'Charcoal', note: 'smudged tone, eraser highlights', render: charcoal },
-      { id: 'pointillism', name: 'Pointillism', note: 'pure-colour dots mixed by the eye', render: pointillism },
-      { id: 'fresco', name: 'Fresco', note: 'muted lime plaster, sinopia lines, cracks', render: fresco },
-    ],
-  },
-  {
-    group: 'Prints & graphic',
-    items: [
-      { id: 'ukiyoe', name: 'Ukiyo-e', note: 'woodblock colours, bokashi sky, cartouche', render: ukiyoe },
-      { id: 'linocut', name: 'Linocut', note: 'carved lines over the form, two blocks', render: linocut },
-      { id: 'engraving', name: 'Engraving', note: 'banknote line work and guilloché', render: engraving },
-      { id: 'warhol', name: 'Warhol screen print', note: 'four colourways, off-register black', render: warhol },
-      { id: 'popart', name: 'Pop art', note: 'Ben-Day dots, primaries, speech balloon', render: popart },
-      { id: 'stencil', name: 'Stencil graffiti', note: 'three sprayed layers, overspray, drips', render: stencil },
-    ],
-  },
-  {
-    group: 'Craft',
-    items: [
-      { id: 'stained', name: 'Stained glass', note: 'panes cut along colour, leaded', render: stainedGlass },
-      { id: 'mosaic', name: 'Mosaic', note: 'tesserae laid along the form', render: mosaic },
-      { id: 'knit', name: 'Knitted', note: '40 × 40 stitches', render: knit },
-      { id: 'felt', name: 'Felt', note: 'cut felt, running stitch, button eyes', render: felt },
-      { id: 'lego', name: 'Brick mosaic', note: '36 × 36 studs, toy-brick palette', render: lego },
-    ],
-  },
-  {
-    group: 'Digital',
-    items: [
-      { id: 'voxel', name: 'Voxel', note: 'a lit relief of cubes, seen from above and to one side', render: voxelArt },
-      { id: 'lowpoly', name: 'Low-poly', note: 'Delaunay facets, denser along the lines', render: lowpoly },
-      { id: 'topo', name: 'Topographic', note: 'contours over the head, rivers for lines', render: topo },
-      { id: 'thermal', name: 'Thermal camera', note: 'iron palette with a HUD', render: thermal },
-      { id: 'holo', name: 'Holographic foil', note: 'hue shifts with tone and tilt', render: holo },
-      { id: 'vapor', name: 'Vaporwave', note: 'striped sun, grid, split channels, scanlines', render: vapor },
-      { id: 'blueprint', name: 'Blueprint', note: 'white line drawing with dimensions', render: blueprint },
-    ],
-  },
+export const PAINTS: { id: string; name: string; note: string; render: Render }[] = [
+  { id: 'gouache', name: 'Gouache', note: 'flat matte colour with dry-brush streaks', render: gouache },
+  { id: 'oil', name: 'Oil impasto', note: 'strokes follow the form, with raised ridges', render: oil },
+  { id: 'sumi', name: 'Sumi-e', note: 'ink brush lines, grey washes, red seal', render: sumi },
+  { id: 'charcoal', name: 'Charcoal', note: 'smudged tone, eraser highlights', render: charcoal },
+  { id: 'pointillism', name: 'Pointillism', note: 'pure-colour dots mixed by the eye', render: pointillism },
+  { id: 'linocut', name: 'Linocut', note: 'carved lines over the form, two blocks', render: linocut },
+  { id: 'warhol', name: 'Warhol screen print', note: 'four colourways, off-register black', render: warhol },
+  { id: 'stencil', name: 'Stencil graffiti', note: 'three sprayed layers, overspray, drips', render: stencil },
+  { id: 'stained', name: 'Stained glass', note: 'panes cut along colour, leaded', render: stainedGlass },
+  { id: 'mosaic', name: 'Mosaic', note: 'tesserae laid along the form', render: mosaic },
+  { id: 'felt', name: 'Felt', note: 'cut felt, running stitch, button eyes', render: felt },
+  { id: 'lowpoly', name: 'Low-poly', note: 'Delaunay facets, denser along the lines', render: lowpoly },
+  { id: 'topo', name: 'Topographic', note: 'contours over the head, rivers for lines', render: topo },
+  { id: 'thermal', name: 'Thermal camera', note: 'iron palette with a HUD', render: thermal },
+  { id: 'holo', name: 'Holographic foil', note: 'hue shifts with tone and tilt', render: holo },
 ];
 
 export function renderPaint(id: string, face: Face, E: Engine, px: number): HTMLCanvasElement | null {
-  for (const g of PAINTS) for (const s of g.items) if (s.id === id) {
-    E.noiseSeed(face.seed);
-    return s.render(face, E, px);
-  }
-  return null;
+  const paint = PAINTS.find((p) => p.id === id);
+  if (!paint) return null;
+  E.noiseSeed(face.seed);
+  return paint.render(face, E, px);
 }
 

@@ -38,7 +38,7 @@ export function bbox(pts: readonly Pt[]): Box {
   return { x0, y0, x1, y1 };
 }
 
-export function centroid(pts: readonly Pt[]): Pt {
+function centroid(pts: readonly Pt[]): Pt {
   return pts.reduce((a, q) => ({ x: a.x + q.x / pts.length, y: a.y + q.y / pts.length }), { x: 0, y: 0 });
 }
 

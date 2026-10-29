@@ -96,9 +96,6 @@ export function eyePatch(rest: Uint8ClampedArray, posedStill: HTMLCanvasElement,
 }
 
 
-/** The share of a picture a patch repaints, for measuring styles in the lab. */
-export const coverage = (p: EyePatch, px: number) => p.runs.reduce((sum, r) => sum + r.w * r.h, 0) / (px * px);
-
 function tileDiffers(a: Uint8ClampedArray, b: Uint8ClampedArray, w: number, x: number, y: number, tw: number, th: number): boolean {
   for (let j = y; j < y + th; j++) {
     for (let i = (j * w + x) * 4, end = i + tw * 4; i < end; i++) {

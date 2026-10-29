@@ -5,14 +5,10 @@ import { renderStill } from './face/render';
 import type { Face } from './face/types';
 import { PAINTS, renderPaint } from './paints';
 import { markFrame, type MarkFrame } from './marks';
-import { avatarMap, renderSmall, SMALL_APPROVED, SMALL_STYLES, type SmallId } from './small';
+import { avatarMap, renderSmall, SMALL_STYLES, type SmallId } from './small';
 import { renderStyle, STYLES, type StyleId } from './styles';
 
-/**
- * Every style a face can be shown in: the 21 full styles approved in the lab,
- * then the 8 small ones meant for avatars. Names and notes come from the lab
- * registries so the two never drift apart.
- */
+/** The paintings, in the order they're listed; the avatar looks follow, in theirs. */
 const FULL = [
   'watercolour', 'atkinson', 'bayer', 'plotter', 'cutout', 'neon',
   'gouache', 'oil', 'sumi', 'charcoal', 'pointillism',
@@ -21,29 +17,21 @@ const FULL = [
   'lowpoly', 'topo', 'thermal', 'holo',
 ] as const;
 
-/**
- * Styles built from hard pixels or hard edges. Turning or scaling them by a
- * fraction of a pixel makes their dots and edges crawl, so they move only in
- * whole-pixel steps.
- */
+/** Looks of hard pixels or edges, whose dots crawl if turned or scaled by a fraction of a pixel, so they move in whole pixels. */
 const CRISP = new Set<string>(['atkinson', 'bayer', 'linocut', 'warhol', 'stencil', 'stained', 'mosaic', 'lowpoly', 'topo', 'thermal', 'holo', 'pixel-icon']);
 
-/**
- * Styles of flat colour and clean outlines. A half-faded eye there shows two
- * pupils and a grey lid at once, so their eyes switch pose outright, like a
- * cartoon's, instead of crossfading. Crisp styles do the same.
- */
+/** Looks of flat colour, where a half-faded eye would show two pupils at once, so eyes switch pose outright. */
 const FLAT = new Set<string>(['cutout', 'blob', 'ink', 'sticker', 'cutpaper', 'line-icon', 'glow']);
 
 const DARK = new Set<string>(['neon', 'thermal', 'glow']);
 
-export type LookId = (typeof FULL)[number] | (typeof SMALL_APPROVED)[number];
+export type LookId = (typeof FULL)[number] | SmallId;
 
-export type Look = {
+export type Look = Readonly<{
   id: LookId;
   name: string;
   note: string;
-  /** Full styles are for faces shown large; small ones still read at 16px. */
+  /** Full looks are for faces shown large; small ones still read at 16px. */
   size: 'full' | 'small';
   /** `snap` moves in whole pixels with no turn or squash; `sway` breathes freely. */
   motion: 'sway' | 'snap';
@@ -53,28 +41,32 @@ export type Look = {
   tiles: number;
   /** Painted on a dark ground, so marks drawn beside the face are drawn in light ink. */
   dark: boolean;
-};
+}>;
 
 export const DEFAULT_LOOK: LookId = 'watercolour';
 
-const CATALOGUE = [...STYLES, ...PAINTS.flatMap((g) => g.items)];
+const PAINTINGS = [...STYLES, ...PAINTS];
 
-export const LOOKS: Look[] = [
-  ...FULL.map((id): Look => {
-    const entry = CATALOGUE.find((s) => s.id === id);
-    if (!entry) throw new Error(`approved style ${id} is missing from the lab`);
-    return { id, name: entry.name, note: entry.note, size: 'full', motion: CRISP.has(id) ? 'snap' : 'sway', eyes: CRISP.has(id) || FLAT.has(id) ? 'snap' : 'blend', tiles: id === 'warhol' ? 2 : 1, dark: DARK.has(id) };
-  }),
-  ...SMALL_APPROVED.map((id): Look => {
-    const entry = SMALL_STYLES.find((s) => s.id === id)!;
-    return { id, name: entry.name, note: entry.note, size: 'small', motion: CRISP.has(id) ? 'snap' : 'sway', eyes: CRISP.has(id) || FLAT.has(id) ? 'snap' : 'blend', tiles: 1, dark: DARK.has(id) };
-  }),
-];
+const describe = (id: LookId, size: Look['size']): Look => {
+  const entry = (size === 'full' ? PAINTINGS : SMALL_STYLES).find((s) => s.id === id);
+  if (!entry) throw new Error(`glorpies: no renderer for the look "${id}"`);
+  const crisp = CRISP.has(id);
+  return Object.freeze({
+    id, name: entry.name, note: entry.note, size,
+    motion: crisp ? 'snap' : 'sway', eyes: crisp || FLAT.has(id) ? 'snap' : 'blend',
+    tiles: id === 'warhol' ? 2 : 1, dark: DARK.has(id),
+  });
+};
+
+export const LOOKS: readonly Look[] = Object.freeze([
+  ...FULL.map((id) => describe(id, 'full')),
+  ...SMALL_STYLES.map((s) => describe(s.id, 'small')),
+]);
 
 const BY_ID = new Map(LOOKS.map((l) => [l.id, l]));
 
-export const FULL_LOOKS = LOOKS.filter((l) => l.size === 'full');
-export const SMALL_LOOKS = LOOKS.filter((l) => l.size === 'small');
+export const FULL_LOOKS: readonly Look[] = Object.freeze(LOOKS.filter((l) => l.size === 'full'));
+export const SMALL_LOOKS: readonly Look[] = Object.freeze(LOOKS.filter((l) => l.size === 'small'));
 
 export const isLook = (id: unknown): id is LookId => typeof id === 'string' && BY_ID.has(id as LookId);
 
@@ -95,7 +87,7 @@ export function resolveLook(look: LookChoice | undefined, cssSize: number): Look
 const MIN_PAINT = 200;
 
 const isStyle = (id: string): id is StyleId => STYLES.some((s) => s.id === id);
-const isSmall = (id: string): id is SmallId => (SMALL_APPROVED as readonly string[]).includes(id);
+const isSmall = (id: string): id is SmallId => SMALL_STYLES.some((s) => s.id === id);
 
 /**
  * One face in one style, as a finished still. Every style reseeds itself, so

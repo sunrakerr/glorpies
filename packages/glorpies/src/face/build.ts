@@ -188,7 +188,8 @@ export function buildFace(seed: number, E: Engine): Face {
   const lowEye = faceEyes.length ? Math.max(...faceEyes.map((e) => e.y + e.r)) : eyeY;
   const noseY = Math.max(eyeY + hry * R(0.26, 0.38), lowEye + 8);
   const mouthY = Math.min(noseY + hry * R(0.18, 0.28), headBottom - hry * 0.2);
-  const sy = headBottom + R(10, 30);
+  // a measurement no longer used; its draw stays, because every draw after it depends on it
+  R(10, 30);
 
   // ---- what grows out of the top
   const crown: HairKind = eyePlan === 'stalks' ? 'stalks'
