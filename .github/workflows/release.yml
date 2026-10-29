@@ -1,0 +1,36 @@
+# Publishes the library to npm when a version tag is pushed (git tag v0.2.0 && git push --tags).
+# Uses npm's trusted publishing, so there is no token to keep: once the package exists, add this
+# repository and workflow as a trusted publisher in the package's settings on npmjs.com.
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      - name: the tag matches the package version
+        run: test "v$(node -p "require('./packages/glorpies/package.json').version")" = "$GITHUB_REF_NAME"
+      - run: pnpm typecheck && pnpm test
+      # pnpm packs (swapping in the built exports from publishConfig); npm publishes, with provenance
+      - working-directory: packages/glorpies
+        run: |
+          pnpm pack
+          npm install -g npm@latest
+          npm publish glorpies-*.tgz --provenance --access public

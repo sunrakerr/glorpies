@@ -1,0 +1,33 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: typecheck the site and the library
+        run: pnpm typecheck && pnpm --filter glorpies typecheck
+      - name: build and test the library
+        run: pnpm test
+      - name: lint the package as npm will see it
+        working-directory: packages/glorpies
+        run: |
+          pnpm pack
+          npx -y publint@latest glorpies-*.tgz
+          npx -y @arethetypeswrong/cli@latest glorpies-*.tgz --profile esm-only
