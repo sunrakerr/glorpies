@@ -27,6 +27,7 @@ Size the canvas with CSS; the face is painted at its displayed size times the de
 | `priority` | higher paints sooner | `1` |
 | `maxPx` | the most backing-store pixels a face may use | |
 | `beforePaint`, `onPaint` | called around each new painting; `first` is true for the first | |
+| `onError` | called if a painting fails | logs the error |
 
 ## still pictures
 
@@ -37,7 +38,7 @@ const canvas = faceCanvas('agent-47', { look: 'ink', size: 256, shape: 'circle' 
 const svg = faceSVG('agent-47', { size: 256, state: 'thinking' });
 ```
 
-Both take `look`, `size`, `state`, `shape` and `background`. A watercolour SVG is real vector paths, which scale but are large; other looks are embedded as an image inside the SVG.
+Both take `look`, `size`, `state`, `shape` and `background`, and throw a `TypeError` for a look, state or shape they don't know. A watercolour SVG is real vector paths, which scale but are large; other looks are embedded as an image inside the SVG.
 
 ## colours
 

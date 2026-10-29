@@ -60,7 +60,7 @@ Unknown values fall back to the defaults, so a typo gets a face rather than an e
 faceRoute({
   look: 'ink',
   size: 128,
-  cacheControl: 'public, max-age=86400',  // default: a year, immutable
+  cacheControl: 'public, max-age=86400',  // default: a year, for browsers and CDNs, immutable
   maxSize: 512,                           // largest ?size= allowed (default 1024)
   maxName: 128,                           // longest ?name= allowed (default 256)
 });
@@ -79,9 +79,11 @@ faceRoute({
 import { faceGIF, renderImage } from 'glorpies/server';
 
 const { body, type } = await renderImage('agent-47', { look: 'sticker', size: 256, format: 'webp' });
-const gif = faceGIF('agent-47', { state: 'done', size: 128, loop: 3 });
+const gif = await faceGIF('agent-47', { state: 'done', size: 128, loop: 3 });
 ```
 
-A GIF loops seamlessly with a scripted pose, so the same name always loops the same way.
+Everything in `glorpies/server` sets up the native canvas itself. A GIF loops seamlessly with a scripted pose, so the same name always loops the same way.
+
+To draw with `faceCanvas()` or `faceSVG()` from `glorpies` on a server, call `await useNativeCanvas()` once first.
 
 <Note>This site answers the same URLs at `/api/face`, for trying things out. It's a demo, not a CDN for your app: host the route yourself for anything real.</Note>

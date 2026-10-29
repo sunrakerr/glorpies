@@ -1,4 +1,4 @@
-import type { FaceState, LookChoice, Shape } from 'glorpies';
+import { resolveLook, type FaceState, type LookChoice, type Shape } from 'glorpies';
 import type { Lang } from '@/lib/highlight';
 
 /** What a face is set to; every snippet is written from it. */
@@ -29,10 +29,9 @@ function props(c: Choice, jsx: boolean) {
   return out.join(' ');
 }
 
-/** The image's address on your own route (see the server snippet). */
+/** The image's address on your own route (see the server snippet): twice the size for sharp screens, in the look shown at the size itself. */
 function query(c: Choice, format?: string) {
-  const p = new URLSearchParams({ name: c.name, size: String(c.size * 2) });
-  if (c.look !== 'auto') p.set('look', c.look);
+  const p = new URLSearchParams({ name: c.name, size: String(c.size * 2), look: resolveLook(c.look, c.size) });
   if (c.background) p.set('shape', c.shape);
   else p.set('background', 'false');
   if (c.state !== 'idle') p.set('state', c.state);

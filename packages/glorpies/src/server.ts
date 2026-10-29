@@ -1,4 +1,4 @@
-import { faceGIF, type AnimationOptions } from './animate';
+import { animationFrames as frames, faceGIF as gif, type AnimationOptions } from './animate';
 import { setCanvasFactory } from './canvas';
 import { isLook, type LookChoice } from './looks';
 import { isState } from './states';
@@ -47,7 +47,7 @@ export async function renderImage(name: FaceName, o: ImageOptions = {}): Promise
   await useNativeCanvas();
   const format = o.format ?? 'png';
   if (format === 'svg') return { body: faceSVG(name, o), type: TYPES.svg };
-  if (format === 'gif') return { body: faceGIF(name, o), type: TYPES.gif };
+  if (format === 'gif') return { body: gif(name, o), type: TYPES.gif };
   // jpeg has no transparency to crop or cut with, so it is always square and on its paper
   const c = faceCanvas(name, format === 'jpeg' ? { ...o, shape: 'square', background: true } : o) as unknown as NativeCanvas;
   return { body: await c.encode(format, o.quality ?? 90), type: TYPES[format] };
@@ -77,15 +77,17 @@ const SVG_CSP = "default-src 'none'; img-src data:; style-src 'unsafe-inline'";
  * (seconds), fps.
  */
 export function createFaceHandler(defaults: HandlerOptions = {}): (request: Request) => Promise<Response> {
-  const { cacheControl = 'public, max-age=31536000, immutable', maxSize = 1024, maxName = 256, ...base } = defaults;
+  const { cacheControl = 'public, max-age=31536000, s-maxage=31536000, immutable', maxSize = 1024, maxName = 256, ...base } = defaults;
+  if (!(maxSize >= 16)) throw new RangeError(`glorpies: maxSize must be at least 16, not ${maxSize}`);
+  if (!(maxName >= 1)) throw new RangeError(`glorpies: maxName must be at least 1, not ${maxName}`);
   return async (request) => {
     const q = new URL(request.url).searchParams;
     const name = q.get('name');
     if (!name) return new Response('Missing ?name=', { status: 400 });
     if (name.length > maxName) return new Response(`?name= is longer than ${maxName} characters`, { status: 414 });
     const num = (k: string, fallback: number, lo: number, hi: number) => {
-      const v = Number(q.get(k));
-      return q.has(k) && Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : fallback;
+      const v = q.has(k) ? Number(q.get(k)) : NaN;
+      return Math.min(hi, Math.max(lo, Number.isFinite(v) ? v : fallback));
     };
     const look = q.get('look'), shape = q.get('shape'), state = q.get('state'), format = q.get('format'), background = q.get('background');
     const o: ImageOptions = {
@@ -120,5 +122,17 @@ export function faceRoute(defaults?: HandlerOptions) {
   return { GET: createFaceHandler(defaults) };
 }
 
-export { faceCanvas, faceSVG } from './still';
-export { animationFrames, faceGIF, FRAME_BUDGET } from './animate';
+/** A looping GIF's bytes. */
+export async function faceGIF(name: FaceName, o: AnimationOptions = {}): Promise<Uint8Array> {
+  await useNativeCanvas();
+  return gif(name, o);
+}
+
+/** Every frame of a loop as RGBA pixels, for an encoder of your own. */
+export async function animationFrames(name: FaceName, o: AnimationOptions = {}): Promise<ReturnType<typeof frames>> {
+  await useNativeCanvas();
+  return frames(name, o);
+}
+
+export { FRAME_BUDGET } from './animate';
+export type { AnimationOptions } from './animate';

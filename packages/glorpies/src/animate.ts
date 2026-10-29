@@ -9,7 +9,7 @@ import { splitLayers } from './layers';
 import { lookOf, marksFor, renderLook, resolveLook } from './looks';
 import { drawMarks } from './marks';
 import { scriptedPose, type FaceState } from './states';
-import { faceOf, shapePath, sizeOf, type StillOptions } from './still';
+import { checked, faceOf, shapePath, sizeOf, type StillOptions } from './still';
 import type { FaceName } from './seed';
 
 export type AnimationOptions = StillOptions & {
@@ -47,7 +47,8 @@ function timing(o: AnimationOptions) {
  * into still background and moving face with all six eye poses, driven by a
  * scripted pose with no randomness, so the same name always loops the same way.
  */
-export function animationFrames(name: FaceName, o: AnimationOptions = {}): { frames: Uint8ClampedArray[]; size: number; fps: number; loop: number } {
+export function animationFrames(name: FaceName, options: AnimationOptions = {}): { frames: Uint8ClampedArray[]; size: number; fps: number; loop: number } {
+  const o = checked(options);
   const { size, loop, count } = timing(o);
   const state: FaceState = o.state ?? 'idle';
   const look = resolveLook(o.look, size);

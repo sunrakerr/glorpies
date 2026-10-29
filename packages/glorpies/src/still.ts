@@ -7,11 +7,11 @@ import { renderStill } from './face/render';
 import { faceToSVG } from './face/svg';
 import { faceMask } from './layers';
 import type { Face } from './face/types';
-import { marksFor, renderLook, resolveLook, type LookChoice, type LookId } from './looks';
+import { isLook, marksFor, renderLook, resolveLook, type LookChoice, type LookId } from './looks';
 import { drawMarks } from './marks';
 import type { Palette } from './palettes';
 import { seedOf, type FaceName } from './seed';
-import { stillEyes, type FaceState } from './states';
+import { isState, stillEyes, type FaceState } from './states';
 import { faceFor } from './studio';
 
 /** How a still is cropped. Anything outside the shape is transparent. */
@@ -41,6 +41,20 @@ export function sizeOf(size: number | undefined, fallback = 256): number {
   return px;
 }
 
+/** The options, refused if any is unknown: they end up in markup, so nothing unchecked gets through. */
+export function checked<T extends StillOptions>(o: T): T {
+  if (o.look !== undefined && o.look !== 'auto' && !isLook(o.look)) throw new TypeError(`glorpies: unknown look "${String(o.look)}"`);
+  if (o.state !== undefined && !isState(o.state)) throw new TypeError(`glorpies: unknown state "${String(o.state)}"`);
+  if (o.shape !== undefined && !isShape(o.shape)) throw new TypeError(`glorpies: unknown shape "${String(o.shape)}"`);
+  return o;
+}
+
+/** Ids for an SVG's definitions: the same for the same picture and different for any other, so faces can sit inline side by side. */
+function svgIds(name: FaceName, o: StillOptions, size: number): string {
+  const variant = seedOf(JSON.stringify([o.look ?? 'auto', o.state ?? 'idle', o.shape ?? 'square', o.background !== false, size]));
+  return `glorpie-${seedOf(name).toString(36)}-${variant.toString(36).slice(0, 6)}`;
+}
+
 /** The face for a name, built once and cached. */
 export function faceOf(name: FaceName, state?: FaceState): Face {
   return faceFor(seedOf(name), getEngine(), state);
@@ -53,7 +67,8 @@ function inState(name: FaceName, state: FaceState | undefined): Face {
 }
 
 /** One face as a finished picture, on a canvas (a DOM canvas, or a native one on a server). */
-export function faceCanvas(name: FaceName, o: StillOptions = {}): HTMLCanvasElement {
+export function faceCanvas(name: FaceName, options: StillOptions = {}): HTMLCanvasElement {
+  const o = checked(options);
   const size = sizeOf(o.size);
   const look = resolveLook(o.look, size);
   const face = paintedFace(name, o);
@@ -76,14 +91,16 @@ export function faceCanvas(name: FaceName, o: StillOptions = {}): HTMLCanvasElem
  * lines, hatching, shapes) with its glazes embedded; every other style is built
  * from pixels, dots and tiles, so its SVG wraps the picture.
  */
-export function faceSVG(name: FaceName, o: StillOptions = {}): string {
+export function faceSVG(name: FaceName, options: StillOptions = {}): string {
+  const o = checked(options);
   const size = sizeOf(o.size);
   const look = resolveLook(o.look, size);
+  const ids = svgIds(name, o, size);
   const inner = look === 'watercolour'
-    ? watercolourSVG(paintedFace(name, o), size, o.state, o.background !== false)
+    ? watercolourSVG(paintedFace(name, o), size, o.state, o.background !== false, ids)
     : `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><image width="${size}" height="${size}" href="${faceCanvas(name, { ...o, shape: 'square' }).toDataURL('image/png')}"/></svg>`;
   if (o.background === false || !o.shape || o.shape === 'square') return inner;
-  const id = `glorpie-${seedOf(name).toString(36)}-${o.shape}`;
+  const id = `${ids}-shape`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><defs><clipPath id="${id}"><path d="${shapeD(o.shape, size)}"/></clipPath></defs><g clip-path="url(#${id})">${inner}</g></svg>`;
 }
 
@@ -108,9 +125,9 @@ const SVG_CUT_PX = 512;
  * paths stay vector under a soft mask of the face, painted white so it reads
  * the same as an alpha or a luminance mask.
  */
-function watercolourSVG(face: Face, size: number, state: FaceState | undefined, background: boolean): string {
+function watercolourSVG(face: Face, size: number, state: FaceState | undefined, background: boolean, ids: string): string {
   const E = getEngine();
-  let svg = faceToSVG(face, E, size);
+  let svg = faceToSVG(face, E, size, ids);
   if (!background) {
     const m = Math.min(size, SVG_CUT_PX);
     const cut = faceMask(renderStill(face, E, m), renderStill(bareFace(face), E, m), true);
@@ -119,7 +136,7 @@ function watercolourSVG(face: Face, size: number, state: FaceState | undefined, 
       g.globalCompositeOperation = 'source-in';
       g.fillStyle = '#ffffff';
       g.fillRect(0, 0, m, m);
-      const id = `glorpie-cut-${face.seed.toString(36)}`;
+      const id = `${ids}-cut`;
       svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><defs><mask id="${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="${size}" height="${size}"><image width="${size}" height="${size}" href="${cut.mask.toDataURL('image/png')}"/></mask></defs><g mask="url(#${id})">${svg}</g></svg>`;
     }
   }

@@ -23,6 +23,7 @@ In a project that has both installed, it's just `npx glorpies agent-47`.
 | `--background false` | only the face | |
 | `--loop` | seconds, for a gif | `3` |
 | `-o`, `--out` | the file to write, or `-` for stdout | `<name>.<format>` |
+| `--force` | overwrite the file if it's there already | |
 | `-h`, `--help` | | |
 
 A name that starts with a dash goes after `--`, as in `glorpies -- -weird-name`.
@@ -34,4 +35,10 @@ Writing to stdout makes it easy to pipe:
 ```sh
 npx glorpies agent-47 -f webp -o - > avatar.webp
 for name in ada grace linus; do npx glorpies "$name" --look sticker; done
+```
+
+An existing file is never overwritten without `--force`.
+
+```sh
+npx glorpies agent-47 --force
 ```

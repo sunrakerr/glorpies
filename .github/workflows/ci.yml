@@ -9,25 +9,48 @@ permissions:
   contents: read
 
 jobs:
-  check:
+  library:
+    name: library on node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter glorpies typecheck
+      - name: build and test
+        run: pnpm test
+      - name: lint the package as npm will see it
+        run: pnpm --filter glorpies lint:package
+      - name: install the packed package the way a user would, and use it
+        run: |
+          app="$RUNNER_TEMP/app" && mkdir -p "$app" && cd "$app"
+          npm init -y > /dev/null
+          npm install "$GITHUB_WORKSPACE"/packages/glorpies/.pack/glorpies-*.tgz @napi-rs/canvas react
+          node --input-type=module -e "
+            import { renderImage } from 'glorpies/server';
+            import { Glorpie } from 'glorpies/react';
+            const { body } = await renderImage('agent-47', { size: 64 });
+            if (body[0] !== 0x89 || typeof Glorpie !== 'function') process.exit(1);
+          "
+          npx glorpies agent-47 --size 64 -o face.png && test -s face.png
+
+  site:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with:
-          version: 12
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: typecheck the site and the library
-        run: pnpm typecheck && pnpm --filter glorpies typecheck
-      - name: build and test the library
-        run: pnpm test
-      - name: lint the package as npm will see it
-        working-directory: packages/glorpies
-        run: |
-          pnpm pack
-          npx -y publint@latest glorpies-*.tgz
-          npx -y @arethetypeswrong/cli@latest glorpies-*.tgz --profile esm-only
+      - run: pnpm typecheck
+      - run: pnpm build

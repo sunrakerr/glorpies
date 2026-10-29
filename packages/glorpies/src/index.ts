@@ -14,10 +14,7 @@ export {
   type Look, type LookChoice, type LookId,
 } from './looks';
 export { isState, STATES, type FaceState } from './states';
-export { faceCanvas, faceColors, faceOf, faceSVG, isShape, shapePath, SHAPES, type Shape, type StillOptions } from './still';
+export { faceCanvas, faceColors, faceSVG, isShape, SHAPES, type Shape, type StillOptions } from './still';
 export { mount, type FaceHandle, type MountOptions } from './mount';
-export { getStage } from './stage';
 export { setCanvasFactory, type CanvasFactory } from './canvas';
 export type { Palette } from './palettes';
-export type { Face } from './face/types';
-export type { Pt } from './geometry';

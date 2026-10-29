@@ -3,7 +3,7 @@ import { defineConfig } from 'tsup';
 export default defineConfig([
   {
     // built together so every entry shares one copy of the engine (one animation loop, one face cache)
-    entry: { index: 'src/index.ts', element: 'src/element.ts', react: 'src/react.tsx', server: 'src/server.ts' },
+    entry: { index: 'src/index.ts', element: 'src/element.ts', react: 'src/react.tsx', server: 'src/server.ts', testing: 'src/testing.ts' },
     format: ['esm'],
     target: 'es2022',
     dts: true,

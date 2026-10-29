@@ -84,7 +84,8 @@
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "node --test test/*.test.mjs",
-    "prepublishOnly": "pnpm build && pnpm test"
+    "prepublishOnly": "pnpm build && pnpm test",
+    "lint:package": "rm -rf .pack && pnpm pack --pack-destination .pack && publint .pack/glorpies-*.tgz && attw .pack/glorpies-*.tgz --profile esm-only"
   },
   "peerDependencies": {
     "@napi-rs/canvas": ">=0.1.60",
@@ -99,10 +100,12 @@
     }
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
     "@napi-rs/canvas": "^1.0.13",
     "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",
     "gifenc": "^1.0.3",
+    "publint": "^0.3.25",
     "react": "^19.3.1",
     "tsup": "^9.0.0",
     "typescript": "^5.9.3"

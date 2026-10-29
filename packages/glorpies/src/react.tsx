@@ -30,6 +30,8 @@ export type GlorpieProps = {
   label?: string;
   /** Higher paints sooner when many faces are waiting, e.g. the one in your header. */
   priority?: number;
+  /** Called if the face can't be painted; without it the error is logged. */
+  onError?: (error: unknown) => void;
   className?: string;
   style?: CSSProperties;
 };
@@ -42,14 +44,22 @@ const length = (size: number | string) => (typeof size === 'number' ? `${size}px
  * A living face. It renders on the server as a softly coloured placeholder in
  * the face's own background colour, then paints on the client.
  */
-export function Glorpie({ name, look = 'auto', size = 48, shape = 'circle', state = 'idle', background = true, alive, pokeable = false, label = 'Avatar', priority, className, style }: GlorpieProps) {
+export function Glorpie({ name, look = 'auto', size = 48, shape = 'circle', state = 'idle', background = true, alive, pokeable = false, label = 'Avatar', priority, onError, className, style }: GlorpieProps) {
   const ref = useRef<HTMLCanvasElement>(null);
   const handle = useRef<FaceHandle | null>(null);
   const [ready, setReady] = useState(false);
   const wash = useMemo(() => faceColors(name).bg, [name]);
+  const reportError = useRef(onError);
+  useEffect(() => {
+    reportError.current = onError;
+  });
 
   useEffect(() => {
-    const h = mount(ref.current!, { name, look, state, background, alive, pokeable, priority, onPaint: () => setReady(true) });
+    const h = mount(ref.current!, {
+      name, look, state, background, alive, pokeable, priority,
+      onPaint: () => setReady(true),
+      onError: (error) => (reportError.current ? reportError.current(error) : console.error('glorpies: could not paint', name, error)),
+    });
     handle.current = h;
     return () => {
       h.destroy();
@@ -101,7 +111,11 @@ function useAvatar(part: string) {
  *     <AvatarFallback name={user.email} />
  *   </Avatar>
  */
-export function Avatar({ children, size = 48, shape = 'circle', className, style }: { children: ReactNode; size?: number | string; shape?: Shape; className?: string; style?: CSSProperties }) {
+export type AvatarProps = { children: ReactNode; size?: number | string; shape?: Shape; className?: string; style?: CSSProperties };
+
+export type AvatarFallbackProps = Omit<GlorpieProps, 'size' | 'shape'>;
+
+export function Avatar({ children, size = 48, shape = 'circle', className, style }: AvatarProps) {
   const [status, setStatus] = useState<Status>('loading');
   const value = useMemo(() => ({ status, setStatus }), [status]);
   return (
@@ -116,30 +130,38 @@ export function Avatar({ children, size = 48, shape = 'circle', className, style
   );
 }
 
-export function AvatarImage({ src, alt = '', style, ...rest }: ImgHTMLAttributes<HTMLImageElement>) {
+export function AvatarImage({ src, srcSet, alt = '', style, onLoad, onError, ...rest }: ImgHTMLAttributes<HTMLImageElement>) {
   const { status, setStatus } = useAvatar('AvatarImage');
   const img = useRef<HTMLImageElement>(null);
+  const hasPhoto = Boolean(src || srcSet);
   // a photo already in the cache can finish loading before React is listening, so look at it directly too
   useEffect(() => {
     const el = img.current;
-    setStatus(!src ? 'error' : el?.complete && el.naturalWidth ? 'loaded' : 'loading');
-  }, [src, setStatus]);
-  if (!src || status === 'error') return null;
+    setStatus(!hasPhoto ? 'error' : el?.complete && el.naturalWidth ? 'loaded' : 'loading');
+  }, [hasPhoto, src, srcSet, setStatus]);
+  if (!hasPhoto || status === 'error') return null;
   return (
     <img
       {...rest}
       ref={img}
       src={src}
+      srcSet={srcSet}
       alt={alt}
-      onLoad={() => setStatus('loaded')}
-      onError={() => setStatus('error')}
+      onLoad={(e) => {
+        setStatus('loaded');
+        onLoad?.(e);
+      }}
+      onError={(e) => {
+        setStatus('error');
+        onError?.(e);
+      }}
       style={{ gridArea: '1 / 1', width: '100%', height: '100%', objectFit: 'cover', opacity: status === 'loaded' ? 1 : 0, transition: 'opacity .3s ease', ...style }}
     />
   );
 }
 
 /** The face shown while the photo loads, or instead of it. Takes every `Glorpie` prop except size and shape, which come from `Avatar`. */
-export function AvatarFallback(props: Omit<GlorpieProps, 'size' | 'shape'>) {
+export function AvatarFallback(props: AvatarFallbackProps) {
   const { status } = useAvatar('AvatarFallback');
   if (status === 'loaded') return null;
   return <Glorpie {...props} size="100%" shape="square" style={{ gridArea: '1 / 1', ...props.style }} />;

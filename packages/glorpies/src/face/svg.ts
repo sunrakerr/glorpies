@@ -25,14 +25,14 @@ const attr = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
  * a vector path; watercolour glazes and the paper are embedded images placed
  * with the same clips and multiply blending.
  */
-export function faceToSVG(face: Face, E: Engine, sizePx = 1024): string {
+export function faceToSVG(face: Face, E: Engine, sizePx = 1024, prefix = 'glorpie'): string {
   E.noiseSeed(face.seed);
   const glaze = rasterScale(sizePx, GLAZE_SCALE), paper = rasterScale(sizePx, PAPER_SCALE);
   const defs: string[] = [];
   let ids = 0;
 
   const clipId = (pts: Pt[], evenodd: boolean) => {
-    const id = `c${ids++}`;
+    const id = `${prefix}-c${ids++}`;
     const d = evenodd ? `M${-W} ${-W}H${2 * W}V${2 * W}H${-W}Z${pathData(pts)}` : pathData(pts);
     defs.push(`<clipPath id="${id}" clipPathUnits="userSpaceOnUse"><path d="${d}"${evenodd ? ' clip-rule="evenodd"' : ''}/></clipPath>`);
     return id;
@@ -104,7 +104,7 @@ export function faceToSVG(face: Face, E: Engine, sizePx = 1024): string {
   }).join('');
 
   defs.push(
-    `<radialGradient id="vignette" gradientUnits="userSpaceOnUse" cx="${W / 2}" cy="${W / 2}" r="${W * VIGNETTE.outer}">` +
+    `<radialGradient id="${prefix}-vignette" gradientUnits="userSpaceOnUse" cx="${W / 2}" cy="${W / 2}" r="${W * VIGNETTE.outer}">` +
       `<stop offset="${VIGNETTE.inner / VIGNETTE.outer}" stop-color="#ffffff" stop-opacity="0"/>` +
       `<stop offset="1" stop-color="${VIGNETTE.color}" stop-opacity="${VIGNETTE.alpha}"/></radialGradient>`,
   );
@@ -113,10 +113,10 @@ export function faceToSVG(face: Face, E: Engine, sizePx = 1024): string {
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${W}" width="${sizePx}" height="${sizePx}">`,
     `<title>${attr(`Face ${face.seed.toString(36)}`)}</title>`,
     `<defs>${defs.join('')}</defs>`,
-    `<g id="backdrop">${backdrop}</g>`,
-    `<g id="figure" style="isolation:isolate;mix-blend-mode:multiply">${figure}</g>`,
-    `<g id="eyes">${eyes}</g>`,
-    `<rect width="${W}" height="${W}" fill="url(#vignette)" style="mix-blend-mode:multiply"/>`,
+    `<g>${backdrop}</g>`,
+    `<g style="isolation:isolate;mix-blend-mode:multiply">${figure}</g>`,
+    `<g>${eyes}</g>`,
+    `<rect width="${W}" height="${W}" fill="url(#${prefix}-vignette)" style="mix-blend-mode:multiply"/>`,
     `</svg>`,
   ].join('');
 }

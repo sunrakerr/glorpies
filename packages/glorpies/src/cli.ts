@@ -17,6 +17,7 @@ const HELP = `glorpies: paint a face from any name
       --background false  only the face: no backdrop, no pencil lines
       --loop    seconds, for gif (default 3)
   -o, --out     file to write (default <name>.<format>; "-" for stdout)
+      --force   overwrite the file if it exists
   -h, --help
 
   npx glorpies agent-47 --look ink --size 128 --shape circle -o agent.png
@@ -34,6 +35,7 @@ async function main() {
       loop: { type: 'string' },
       background: { type: 'string' },
       out: { type: 'string', short: 'o' },
+      force: { type: 'boolean' },
       help: { type: 'boolean', short: 'h' },
     },
   });
@@ -70,7 +72,12 @@ async function main() {
   const out = values.out ?? `${name.replace(/[^\w.-]+/g, '-')}.${format}`;
   if (out === '-') process.stdout.write(body);
   else {
-    await writeFile(out, body);
+    try {
+      await writeFile(out, body, { flag: values.force ? 'w' : 'wx' });
+    } catch (e) {
+      if ((e as NodeJS.ErrnoException).code === 'EEXIST') fail(`${out} already exists; pass --force to overwrite it`);
+      throw e;
+    }
     console.error(`painted ${out}`);
   }
 }

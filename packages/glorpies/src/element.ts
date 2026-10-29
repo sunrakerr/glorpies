@@ -20,11 +20,11 @@ import { faceColors, isShape } from './still';
  */
 const CSS = `
 :host{display:inline-block;position:relative;inline-size:var(--size);block-size:var(--size);overflow:hidden;vertical-align:middle;border-radius:50%;background:var(--wash);contain:layout paint}
-:host([shape=square]),:host([background=false]){border-radius:0}
-:host([background=false]){background:none}
+:host([shape=square]){border-radius:0}
 :host([shape=rounded]){border-radius:16%}
 :host([shape=squircle]){border-radius:30%}
 @supports (corner-shape:squircle){:host([shape=squircle]){border-radius:50%;corner-shape:squircle}}
+:host([background=false]){border-radius:0;corner-shape:round;background:none}
 canvas{position:absolute;inset:0;inline-size:100%;block-size:100%;display:block;opacity:0;transition:opacity .45s ease}
 :host([data-ready]) canvas{opacity:1}
 :host(:not([data-ready]))::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);background-size:220% 100%;animation:sheen 1.4s ease-in-out infinite}

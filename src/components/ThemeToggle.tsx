@@ -2,6 +2,7 @@
 
 import { Moon, Sun } from 'lucide-react';
 import { useEffect, useSyncExternalStore } from 'react';
+import { readPref, writePref } from '@/lib/prefs';
 import { THEME_KEY, type Theme } from '@/lib/theme';
 
 const root = () => document.documentElement;
@@ -21,14 +22,14 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
 
   useEffect(() => {
     const system = matchMedia('(prefers-color-scheme: dark)');
-    const follow = () => { if (!localStorage.getItem(THEME_KEY)) apply(system.matches ? 'dark' : 'light'); };
+    const follow = () => { if (!readPref(THEME_KEY)) apply(system.matches ? 'dark' : 'light'); };
     system.addEventListener('change', follow);
     return () => system.removeEventListener('change', follow);
   }, []);
 
   const pick = () => {
     apply(next);
-    try { localStorage.setItem(THEME_KEY, next); } catch { /* still switches, just isn't remembered */ }
+    writePref(THEME_KEY, next);
   };
 
   return (

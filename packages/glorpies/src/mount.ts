@@ -21,6 +21,8 @@ export type MountOptions = {
   /** Called just before a finished painting replaces what's on the canvas, and just after; `first` is true for the very first. */
   beforePaint?: (first: boolean) => void;
   onPaint?: (first: boolean) => void;
+  /** Called if a painting fails; without it the error is logged. */
+  onError?: (error: unknown) => void;
 };
 
 export type FaceHandle = {
@@ -97,7 +99,11 @@ export function mount(canvas: HTMLCanvasElement, options: MountOptions): FaceHan
       apply();
       stage.drawNow(actor);
       o.onPaint?.(first);
-    }, () => {});
+    }, (error: unknown) => {
+      if (disposed || job !== j || (error instanceof Error && error.name === 'AbortError')) return;
+      if (o.onError) o.onError(error);
+      else console.error('glorpies: could not paint', o.name, error);
+    });
   };
 
   const resize = typeof ResizeObserver === 'function' ? new ResizeObserver(() => paint()) : null;

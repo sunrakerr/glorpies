@@ -33,7 +33,7 @@ export const metadata = { title: 'api' };
 
 ## glorpies/element
 
-Importing it registers `<glorpie-face>`; see [web component](/docs/web-component). It also exports the element's class, `GlorpieElement`.
+Importing it registers `<glorpie-face>`; see [web component](/docs/web-component). `defineGlorpie(tag)` registers it under another name too, and `GlorpieElement` is its class.
 
 ## glorpies/server
 
@@ -42,11 +42,11 @@ Importing it registers `<glorpie-face>`; see [web component](/docs/web-component
 | `faceRoute(options?)` | `{ GET }`, a Next.js route handler |
 | `createFaceHandler(options?)` | `(request: Request) => Promise<Response>`, for anything that speaks fetch |
 | `renderImage(name, options)` | `{ body, type }`: one image's bytes (or SVG text) and content type |
-| `faceGIF(name, options)` | a looping GIF's bytes |
-| `animationFrames(name, options)` | the raw RGBA frames of a loop, for your own encoder |
-| `useNativeCanvas()` | points every renderer at `@napi-rs/canvas`; called for you by `renderImage` |
+| `faceGIF(name, options)` | a promise of a looping GIF's bytes |
+| `animationFrames(name, options)` | a promise of a loop's raw RGBA frames, for your own encoder |
+| `useNativeCanvas()` | points every renderer at `@napi-rs/canvas`; the server functions call it for you |
 | `FORMATS`, `FRAME_BUDGET` | the formats, and the most pixels a loop's frames may hold together |
 
 ## types
 
-`FaceName` (a string or a seed), `LookId`, `LookChoice` (a look or `auto`), `FaceState`, `Shape`, `Look`, `Palette`, `MountOptions`, `FaceHandle`, `StillOptions`, `GlorpieProps`, `ImageOptions`, `HandlerOptions`.
+`FaceName` (a string or a seed), `LookId`, `LookChoice` (a look or `auto`), `FaceState`, `Shape`, `Look`, `Palette`, `MountOptions`, `FaceHandle`, `StillOptions`, `GlorpieProps`, `AvatarProps`, `AvatarFallbackProps`, `ImageOptions`, `AnimationOptions`, `HandlerOptions`.

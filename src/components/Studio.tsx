@@ -1,7 +1,7 @@
 'use client';
 
 import { Plus, Shuffle } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { randomName, seedOf } from 'glorpies';
 import { DEFAULT_LOOK, isLook, type LookId } from 'glorpies/internal/looks';
 import { getStage } from 'glorpies/internal/stage';
@@ -11,6 +11,7 @@ import { runAction, type ActionKind } from './actions';
 import { FaceCard } from './FaceCard';
 import { StylePicker } from './LookPicker';
 import { MARKS } from '@/lib/glyphs';
+import { readPref, writePref } from '@/lib/prefs';
 import { Heading, Page } from './Page';
 import { IconButton, Pill, ToastView, useToast } from './ui';
 import { Viewer } from './Viewer';
@@ -59,14 +60,17 @@ export function Studio() {
   useEffect(() => {
     wall.current = newWall();
     setNames(freshBatch());
-    const saved = localStorage.getItem(ALIVE_KEY);
+    const saved = readPref(ALIVE_KEY);
     setAlive(saved ? saved === '1' : !matchMedia('(prefers-reduced-motion: reduce)').matches);
-    const savedLook = localStorage.getItem(LOOK_KEY);
+    const savedLook = readPref(LOOK_KEY);
     if (isLook(savedLook)) setLook(savedLook);
   }, []);
 
+  // holding the gallery still holds every face on the page, so leaving it lets them all move again
   useEffect(() => {
-    getStage().setAlive(alive);
+    const stage = getStage();
+    stage.setAlive(alive);
+    return () => stage.setAlive(true);
   }, [alive]);
 
   // an open face is a step in history, holding which face: back closes the viewer, forward opens it again
@@ -90,15 +94,13 @@ export function Studio() {
   const closeFace = () => (viewerIn(history.state, wall.current, names.length) !== null ? history.back() : setOpen(null));
 
   const toggleAlive = () => {
-    setAlive((v) => {
-      localStorage.setItem(ALIVE_KEY, v ? '0' : '1');
-      return !v;
-    });
+    setAlive(!alive);
+    writePref(ALIVE_KEY, alive ? '0' : '1');
   };
 
   const chooseLook = (next: LookId) => {
     setLook(next);
-    localStorage.setItem(LOOK_KEY, next);
+    writePref(LOOK_KEY, next);
     // faces already in the new style rejoin the gallery
     setOverrides((m) => ([...m.values()].includes(next) ? new Map([...m].filter(([, l]) => l !== next)) : m));
   };
@@ -123,24 +125,19 @@ export function Studio() {
       return out;
     });
 
-  const repaint = useCallback((i: number) => {
-    setNames((s) => {
-      const old = s[i];
-      if (old !== undefined) {
-        forget(seedOf(old));
-        dropOverride(old);
-      }
-      const next = freshName(new Set(s));
-      return s.map((v, j) => (j === i ? next : v));
-    });
-  }, []);
+  const repaint = (i: number) => {
+    const old = names[i];
+    if (old === undefined) return;
+    forget(seedOf(old));
+    dropOverride(old);
+    const next = freshName(new Set(names));
+    setNames((s) => s.map((v, j) => (j === i ? next : v)));
+  };
 
   const shuffleAll = () => {
     wall.current = newWall();
-    setNames((s) => {
-      for (const name of s) forget(seedOf(name));
-      return freshBatch(s);
-    });
+    for (const name of names) forget(seedOf(name));
+    setNames(freshBatch(names));
     setOverrides(new Map());
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -181,7 +178,7 @@ export function Studio() {
           <IconButton label="New faces" onClick={shuffleAll}>
             <Shuffle className="size-[17px]" strokeWidth={1.8} />
           </IconButton>
-          <IconButton label="Twelve more" onClick={() => setNames((s) => [...s, ...freshBatch(s)])}>
+          <IconButton label="Twelve more" onClick={() => setNames([...names, ...freshBatch(names)])}>
             <Plus className="size-[18px]" strokeWidth={1.8} />
           </IconButton>
         </Pill>

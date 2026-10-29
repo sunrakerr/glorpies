@@ -128,6 +128,7 @@ Or directly:
 ```ts
 import { renderImage, faceGIF } from 'glorpies/server';
 const { body, type } = await renderImage('agent-47', { look: 'sticker', size: 256, format: 'webp' });
+const gif = await faceGIF('agent-47', { state: 'done', size: 128 });
 ```
 
 ## CLI
