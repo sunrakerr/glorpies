@@ -2,13 +2,12 @@
 // Run the site first (pnpm dev --port 3417), then: node scripts/readme-art.mjs [base-url]
 // Writes .github/assets/: banner-{dark,light}.webp, looks-{dark,light}.webp and one GIF per state,
 // and the site's link preview, src/app/opengraph-image.png.
-import { spawn } from 'node:child_process';
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { BASE_URL, withChrome } from './lib/chrome.mjs';
 
-const base = process.argv[2] ?? 'http://localhost:3417';
+const base = process.argv[2] ?? BASE_URL;
 const out = new URL('../.github/assets/', import.meta.url);
 mkdirSync(out, { recursive: true });
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const face = (name, o = {}) => `${base}/api/face?${new URLSearchParams({ name, format: 'png', ...o })}`;
 
 /** The headline mid-transmission: English, then letters coming into focus as braille dots, then still alien. */
@@ -65,35 +64,25 @@ const looks = () => `
   </div>
 </div>`;
 
-rmSync('/tmp/glorpies-readme-art', { recursive: true, force: true });
-const chrome = spawn(process.env.CHROME ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', ['--headless=new', '--window-size=1400,1400', '--remote-debugging-port=9338', '--user-data-dir=/tmp/glorpies-readme-art', 'about:blank'], { stdio: 'ignore' });
-let targets;
-for (let i = 0; i < 50 && !targets?.length; i++) {
-  try { targets = await (await fetch('http://127.0.0.1:9338/json')).json(); } catch {}
-  await sleep(200);
+async function shoot(page, file, theme, html, options = {}) {
+  // a running dev server can reload the page under us, after a file of its own was written; that's one more try
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await shootOnce(page, file, theme, html, options);
+    } catch (error) {
+      if (attempt === 3) throw error;
+      await page.goto(`${base}/how`);
+    }
+  }
 }
-const ws = new WebSocket(targets.find((t) => t.type === 'page').webSocketDebuggerUrl);
-await new Promise((r) => ws.addEventListener('open', r));
-let id = 0;
-const pending = new Map();
-ws.addEventListener('message', (e) => {
-  const m = JSON.parse(e.data);
-  pending.get(m.id)?.(m);
-  pending.delete(m.id);
-});
-const send = (method, params = {}) => new Promise((r) => { const i = ++id; pending.set(i, r); ws.send(JSON.stringify({ id: i, method, params })); });
-const evaluate = async (expression) => (await send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true })).result?.result?.value;
 
-await send('Emulation.setDefaultBackgroundColorOverride', { color: { r: 0, g: 0, b: 0, a: 0 } });
-await send('Emulation.setDeviceMetricsOverride', { width: 1400, height: 1400, deviceScaleFactor: 2, mobile: false });
-await send('Page.navigate', { url: `${base}/how` });
-await sleep(2500);
-
-async function shoot(file, theme, html, { square = false, scale = 1, to = out } = {}) {
-  await evaluate(`(async () => {
+async function shootOnce({ send, evaluate }, file, theme, html, { square = false, scale = 1, to = out }) {
+  const box = await evaluate(`(async () => {
     document.documentElement.dataset.theme = ${JSON.stringify(theme)};
     document.body.innerHTML = ${JSON.stringify(html)};
     document.body.style.margin = '0';
+    // held still, so the stars are caught the same way every time
+    document.head.insertAdjacentHTML('beforeend', '<style>*,*::before,*::after{animation:none!important;transition:none!important}</style>');
     // a transparent page: the banner's rounded corners and the contact sheet show whatever is behind them
     for (const el of [document.documentElement, document.body]) el.style.background = 'transparent';
     // the page's grain (and stars and glow, by night) are layers over the whole page; they're moved inside the banner, and left off the contact sheet
@@ -114,24 +103,29 @@ async function shoot(file, theme, html, { square = false, scale = 1, to = out } 
     await Promise.all(['500 68px var(--font-pixel)', '400 19px var(--font-geist-mono)', '400 60px var(--font-tifinagh)', '400 60px var(--font-braille-dots)']
       .map((f) => document.fonts.load(f.replace(/var\\((--[^)]+)\\)/, (_, v) => getComputedStyle(document.documentElement).getPropertyValue(v)))));
     await Promise.all([...document.images].map((i) => i.decode().catch(() => {})));
+    await new Promise((r) => setTimeout(r, 300));
+    const r = art.getBoundingClientRect();
+    return { x: r.x, y: r.y, width: r.width, height: r.height };
   })()`);
-  await sleep(300);
-  const box = await evaluate(`(() => { const r = document.getElementById('art').getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; })()`);
+  if (!(await evaluate(`!!document.getElementById('art')`))) throw new Error('the page reloaded before the capture');
   const format = file.endsWith('.png') ? 'png' : 'webp';
   const shot = await send('Page.captureScreenshot', { format, quality: format === 'webp' ? 90 : undefined, clip: { ...box, scale } });
-  writeFileSync(new URL(file, to), Buffer.from(shot.result.data, 'base64'));
+  writeFileSync(new URL(file, to), Buffer.from(shot.data, 'base64'));
   console.log('wrote', file);
 }
 
-for (const theme of ['dark', 'light']) {
-  await shoot(`banner-${theme}.webp`, theme, banner());
-  await shoot(`looks-${theme}.webp`, theme, looks());
-}
-// the link preview for the site: the dark banner, square, at the 1280 × 640 previews are drawn at
-// (last: a new file in src/app makes a running dev server reload the page)
-await shoot('opengraph-image.png', 'dark', banner(), { square: true, scale: 0.5, to: new URL('../src/app/', import.meta.url) });
-ws.close();
-chrome.kill();
+await withChrome(async (page) => {
+  await page.send('Emulation.setDefaultBackgroundColorOverride', { color: { r: 0, g: 0, b: 0, a: 0 } });
+  await page.send('Emulation.setDeviceMetricsOverride', { width: 1400, height: 1400, deviceScaleFactor: 2, mobile: false });
+  await page.goto(`${base}/how`);
+  for (const theme of ['dark', 'light']) {
+    await shoot(page, `banner-${theme}.webp`, theme, banner());
+    await shoot(page, `looks-${theme}.webp`, theme, looks());
+  }
+  // the site's link preview: the dark banner, square, at the 1280 × 640 previews are drawn at
+  // (last: a new file in src/app makes a running dev server reload the page)
+  await shoot(page, 'opengraph-image.png', 'dark', banner(), { square: true, scale: 0.5, to: new URL('../src/app/', import.meta.url) });
+}, { width: 1400, height: 1400 });
 
 // the states, alive: looping GIFs straight from the route
 for (const state of ['idle', 'thinking', 'working', 'waiting', 'blocked', 'done']) {
@@ -140,4 +134,3 @@ for (const state of ['idle', 'thinking', 'working', 'waiting', 'blocked', 'done'
   writeFileSync(new URL(`state-${state}.gif`, out), Buffer.from(await res.arrayBuffer()));
   console.log('wrote', `state-${state}.gif`);
 }
-process.exit(0);

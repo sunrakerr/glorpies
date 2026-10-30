@@ -8,7 +8,12 @@ export const metadata = { title: 'faq' };
 
 Yes. A name hashes to the same seed everywhere, and the seed drives every decision with plain arithmetic, so a face is built the same in every browser, on every server, in every version. Tests pin the faces of known names, and a release that changed one would be a breaking release.
 
-One honest footnote: functions like `Math.sin` round their last digit differently on ARM and x64 processors, so two machines can disagree about a coordinate by less than a millionth of a pixel. The face is the same; the bytes of a PNG might not be.
+Two honest footnotes about pixels, as opposed to faces:
+
+- Every browser and canvas library smooths edges and blends paint its own way, so the same face drawn in Chrome, in Safari and on a server differs in the soft edges of its strokes. The shapes, colours and features are the same; individual pixels aren't.
+- Functions like `Math.sin` round their last digit differently on ARM and x64 processors, so two machines can disagree about a coordinate by under a millionth of a pixel.
+
+So the promise is the same face everywhere, not the same bytes. Within one renderer the bytes are the same every time, and the tests pin them on each platform they run on.
 
 ## how many faces are there? can two names share one?
 
