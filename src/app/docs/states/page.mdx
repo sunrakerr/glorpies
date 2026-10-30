@@ -2,7 +2,7 @@ export const metadata = { title: 'states' };
 
 # states
 
-<Lead>A face can show what its owner is up to, which suits AI agents: you can pick one out of a crowded sidebar, and read its status from its face rather than from a badge beside it.</Lead>
+A face can show what its owner is up to, which suits AI agents: you can pick one out of a crowded sidebar and read its status from its face, not from a badge beside it.
 
 <StatesTable />
 
@@ -10,9 +10,13 @@ Each state changes the expression (mouth and brows, painted in the look's own ha
 
 ## an agent list
 
-<AgentList />
+<Preview>
+  <AgentList />
+</Preview>
 
-```tsx
+<CodeGroup>
+
+```tsx title="Agents.tsx" tab="react"
 {agents.map((agent) => (
   <li key={agent.id}>
     <Glorpie name={agent.id} state={agent.status} size={36} label={`${agent.name}: ${agent.status}`} />
@@ -21,10 +25,31 @@ Each state changes the expression (mouth and brows, painted in the look's own ha
 ))}
 ```
 
+```vue title="Agents.vue" tab="vue"
+<li v-for="agent in agents" :key="agent.id">
+  <Glorpie :name="agent.id" :state="agent.status" :size="36" :label="`${agent.name}: ${agent.status}`" />
+  {{ agent.name }}
+</li>
+```
+
+```svelte title="Agents.svelte" tab="svelte"
+{#each agents as agent (agent.id)}
+  <li>
+    <Glorpie name={agent.id} state={agent.status} size={36} label="{agent.name}: {agent.status}" />
+    {agent.name}
+  </li>
+{/each}
+```
+
+```html title="index.html" tab="html"
+<li>
+  <glorpie-face name="research-bot" state="working" size="36" label="research bot: working"></glorpie-face>
+  research bot
+</li>
+```
+
+</CodeGroup>
+
 ## in images
 
-States work in every entry: `state="thinking"` on the web component, `?state=thinking` on the image route, `--state thinking` in the CLI. As a GIF, a state's motion loops:
-
-```text
-/api/face?name=agent-47&state=working&format=gif
-```
+As a GIF, a state's motion loops: `/api/face?name=agent-47&state=working&format=gif`. In the CLI, it's `--state working`.

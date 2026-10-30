@@ -7,12 +7,12 @@ import { Avatar, AvatarFallback, AvatarImage, Glorpie } from 'glorpies/react';
 import { Tabs } from '../Tabs';
 
 /** A few faces in a row, each over its name. */
-export function Faces({ names, size = 64, look = 'auto', shape = 'squircle', state }: { names: string[]; size?: number; look?: LookChoice; shape?: Shape; state?: FaceState }) {
+export function Faces({ names, size = 64, look = 'auto', shape = 'squircle', state, background = true }: { names: string[]; size?: number; look?: LookChoice; shape?: Shape; state?: FaceState; background?: boolean }) {
   return (
     <div className="my-6 flex flex-wrap items-end gap-x-7 gap-y-5">
       {names.map((name) => (
         <figure key={name} className="flex flex-col items-center gap-2">
-          <Glorpie name={name} size={size} look={look} shape={shape} state={state} label={name} />
+          <Glorpie name={name} size={size} look={look} shape={shape} state={state} background={background} label={name} />
           <figcaption className="text-[11px] text-ink-2">{name}</figcaption>
         </figure>
       ))}
@@ -142,7 +142,7 @@ const PROPS: { prop: string; type: string; fallback: string; note: string }[] = 
   { prop: 'alive', type: 'boolean', fallback: 'true', note: 'Breathing, blinking, glancing at the pointer. Off by default for readers who prefer reduced motion.' },
   { prop: 'pokeable', type: 'boolean', fallback: 'false', note: 'A tap makes the face wobble.' },
   { prop: 'label', type: 'string', fallback: '"Avatar"', note: 'The accessible name (role="img").' },
-  { prop: 'priority', type: 'number', fallback: '1', note: 'Paints sooner when many faces are waiting, like the one in your header. React only.' },
+  { prop: 'priority', type: 'number', fallback: '1', note: 'Paints sooner when many faces are waiting, like the one in your header.' },
 ];
 
 export function PropsTable() {

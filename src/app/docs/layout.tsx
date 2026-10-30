@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function DocsLayout({ children }: { children: ReactNode }) {
   return (
     <Page className="pt-12">
-      <div className="grid gap-10 md:grid-cols-[150px_minmax(0,1fr)] xl:grid-cols-[150px_minmax(0,1fr)_160px]">
+      <div className="grid gap-10 md:grid-cols-[160px_minmax(0,1fr)] xl:grid-cols-[160px_minmax(0,1fr)_170px]">
         <Sidebar />
         <div className="min-w-0">
           <MobileIndex />

@@ -2,35 +2,29 @@ export const metadata = { title: 'react' };
 
 # react
 
-<Lead>`<Glorpie>` is a living face in a span: give it a name and a size. It renders on the server as a soft placeholder in the face's own colour, and paints on the client.</Lead>
+<Install />
 
-```tsx
+## use it
+
+```tsx title="UserBadge.tsx"
 import { Glorpie } from 'glorpies/react';
 
-<Glorpie name="ada@lovelace.dev" size={48} />
+export function UserBadge({ user }) {
+  return <Glorpie name={user.email} size={40} label={user.name} />;
+}
 ```
 
-<Faces names={['ada@lovelace.dev']} size={48} shape="circle" />
+<Preview>
+  <Faces names={['ada@lovelace.dev', 'agent-47', 'grace@hopper.dev']} size={40} shape="circle" />
+</Preview>
 
-## props
+It takes every [option](/docs/options), plus `className`, `style` and `onError`. React 18 and 19 both work, in any setup: Vite, Next.js, Remix, React Router.
 
-<PropsTable />
+## photo avatars
 
-## sizing
+People with a photo get their photo; everyone else, and anyone whose photo is still loading or fails, gets their face. `Avatar` sets the size and shape for both.
 
-`size` takes pixels or any CSS length. A face is painted at its displayed size times the device pixel ratio, so it stays sharp, and it's painted again if it grows. To fill a container, give it `"100%"` and size the container:
-
-```tsx
-<div style={{ width: 120, height: 120 }}>
-  <Glorpie name={user.id} size="100%" shape="squircle" />
-</div>
-```
-
-## a photo, with a face behind it
-
-People who upload a photo get their photo; everyone else, and anyone whose photo is still loading or fails, gets their face. `<Avatar>` sets the size and shape for both.
-
-```tsx
+```tsx title="Avatar.tsx"
 import { Avatar, AvatarFallback, AvatarImage } from 'glorpies/react';
 
 <Avatar size={56}>
@@ -39,22 +33,20 @@ import { Avatar, AvatarFallback, AvatarImage } from 'glorpies/react';
 </Avatar>
 ```
 
-<AvatarDemo />
+<Preview>
+  <AvatarDemo />
+</Preview>
 
-`AvatarFallback` takes every `<Glorpie>` prop except `size` and `shape`.
+`AvatarImage` is an `<img>`: `srcSet`, `onLoad` and `onError` work as usual. `AvatarFallback` takes every `Glorpie` prop but `size` and `shape`.
 
-## many faces on a page
+## server rendering
 
-A page of faces costs less than it looks:
+`glorpies/react` starts with `'use client'`, so in Next.js it works straight from server components, with no wrapper. On the server each face renders as a placeholder in its own colour, sized and cropped, so nothing shifts when it paints.
 
-- every face shares one animation loop, and only faces on screen move;
-- a face paints only once it comes near the screen, so a long list doesn't paint all at once;
-- `priority` lets the faces that matter, like the one in your header, paint first.
+## errors
 
-## server components and next.js
+A face that can't be painted calls `onError`; without one, the error is logged.
 
-`glorpies/react` is a client module (it starts with `'use client'`), so it can be used straight from server components, with no wrapper and no config. During server rendering each face is a placeholder in its own background colour, so the layout doesn't shift when it paints.
-
-## accessibility
-
-Every face has `role="img"` and an accessible name from `label` (default `"Avatar"`); pass the person's name. Faces hold still for readers who prefer reduced motion, unless you set `alive` yourself.
+```tsx
+<Glorpie name={user.id} onError={(error) => report(error)} />
+```

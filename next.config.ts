@@ -1,5 +1,6 @@
 import createMDX from '@next/mdx';
 import type { NextConfig } from 'next';
+import { fileURLToPath } from 'node:url';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -11,4 +12,11 @@ const nextConfig: NextConfig = {
 };
 
 // plugins are named, not imported, so Turbopack can load them
-export default createMDX({ options: { remarkPlugins: ['remark-gfm'] } })(nextConfig);
+const withMDX = createMDX({
+  options: {
+    remarkPlugins: ['remark-gfm'],
+    rehypePlugins: [fileURLToPath(new URL('./src/lib/rehype-code-meta.mjs', import.meta.url))],
+  },
+});
+
+export default withMDX(nextConfig);

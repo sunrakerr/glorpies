@@ -1,0 +1,49 @@
+export const metadata = { title: 'vue' };
+
+# vue
+
+<Install />
+
+## use it
+
+```vue title="UserBadge.vue"
+<script setup>
+import { Glorpie } from 'glorpies/vue';
+
+defineProps(['user']);
+</script>
+
+<template>
+  <Glorpie :name="user.email" :size="40" :label="user.name" />
+</template>
+```
+
+<Preview>
+  <Faces names={['ada@lovelace.dev', 'agent-47', 'grace@hopper.dev']} size={40} shape="circle" />
+</Preview>
+
+It takes every [option](/docs/options) as a prop. Bind numbers and booleans with `:`, as in `:size="40"` and `:background="false"`; a bare `background="false"` is the string `"false"`.
+
+## nuxt
+
+Nothing to configure. The component renders a placeholder on the server, in the face's own colour, and paints once the page is in the browser.
+
+```vue title="pages/team.vue"
+<script setup>
+import { Glorpie } from 'glorpies/vue';
+
+const { data: team } = await useFetch('/api/team');
+</script>
+
+<template>
+  <Glorpie v-for="person in team" :key="person.id" :name="person.email" :size="32" />
+</template>
+```
+
+## errors
+
+A face that can't be painted emits `error`; without a listener, the error is logged.
+
+```vue
+<Glorpie :name="user.id" @error="report" />
+```

@@ -2,28 +2,20 @@ export const metadata = { title: 'looks' };
 
 # looks
 
-<Lead>The same face can be painted 29 ways: 21 paintings for faces shown large, and 8 avatar looks that still read at 16px. Every look paints the same alien, just in a different hand. Type a name to see yours.</Lead>
+The same alien, in a different hand: 21 paintings for faces shown large, and 8 avatar looks that still read at 16px. Type a name to see yours.
 
 <LooksGrid />
 
 ## auto
 
-The default look, `auto`, picks for you: the watercolour at 72px and up, and the `ink` badge below, where a painting's brushwork would turn to mush. Set a `look` to choose one yourself.
-
-## without a background
-
-`background={false}` (or `background="false"`, or `?background=false`) keeps only the face: no backdrop, no pencil guidelines, no crop, transparent all around. It works in every look, so a face can sit straight on your own colours. A few looks draw their backdrop from the face itself (`mosaic`, `topo`, `thermal`, `holo`) and keep a little of it.
-
-## shapes
-
-`circle` (the default for components), `squircle`, `rounded` and `square`. The shape is a crop of the background, so a face without one has nothing to crop.
+The default, `auto`, picks for you: the watercolour at 72px and up, and the `ink` badge below, where a painting's brushwork would turn to mush. Set `look` to choose one yourself.
 
 ## the list
 
 `LOOKS` has every look, with its name and whether it's a painting or an avatar look:
 
 ```ts
-import { LOOKS, FULL_LOOKS, SMALL_LOOKS } from 'glorpies';
+import { FULL_LOOKS, LOOKS, SMALL_LOOKS } from 'glorpies';
 
-LOOKS.map((l) => l.id); // ['watercolour', 'atkinson', 'bayer', …]
+LOOKS.map((look) => look.id); // ['watercolour', 'atkinson', 'bayer', …]
 ```

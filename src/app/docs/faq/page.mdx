@@ -2,8 +2,6 @@ export const metadata = { title: 'faq' };
 
 # faq
 
-<Lead>The questions people ask once they've seen a few faces.</Lead>
-
 ## is it really the same face everywhere?
 
 Yes. A name hashes to the same seed everywhere, and the seed drives every decision with plain arithmetic, so a face is built the same in every browser, on every server, in every version. Tests pin the faces of known names, and a release that changed one would be a breaking release.
@@ -27,9 +25,13 @@ A name always gets the same face, so to let people choose, offer them a few (try
 
 There are no dependencies. The drop-in script for `<glorpie-face>` is one file, loaded once for the whole page. Faces paint only when they come near the screen, share one animation loop, and stop moving when they're off screen or the tab is hidden.
 
+## which frameworks does it work with?
+
+All of them. There are components for [React](/docs/react), [Vue](/docs/vue), [Svelte](/docs/svelte), [Solid](/docs/solid) and [Preact](/docs/preact); anything else that renders HTML, like [Angular](/docs/angular) or [Astro](/docs/astro), uses the [`<glorpie-face>` element](/docs/html). On a server, the image route runs in Next.js, SvelteKit, Nuxt, Astro, Express, Hono, Bun and Deno.
+
 ## does it work with server rendering?
 
-Yes. The React component renders a placeholder in the face's own colour on the server and paints on the client; the web component paints once it's on the page. For a face in HTML that never runs script, like an email, use an image from [your own route](/docs/server).
+Yes. Every component renders a placeholder in the face's own colour on the server, sized and cropped, and paints in the browser. For a face in HTML that never runs script, like an email, use an image from [your own route](/docs/server).
 
 ## can I use it commercially?
 

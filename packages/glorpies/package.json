@@ -1,7 +1,7 @@
 {
   "name": "glorpies",
   "version": "0.1.0",
-  "description": "Ugly little alien faces from any string: 9 quadrillion of them, hand-painted in watercolour and ink, alive. The same name always gets the same face. Zero dependencies, works anywhere.",
+  "description": "Ugly little alien avatars from any string: 9 quadrillion of them, hand-painted in watercolour and ink, alive. The same name always gets the same face. React, Vue, Svelte, Solid, Preact, a web component, server images and a CLI, with zero dependencies.",
   "license": "MIT",
   "author": "Aditya Shenoy (https://github.com/sunrakerr)",
   "homepage": "https://glorpies.vercel.app",

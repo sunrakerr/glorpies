@@ -1,0 +1,18 @@
+export const metadata = { title: 'options' };
+
+# options
+
+Every face takes the same options, under the name each framework expects: a prop in React, Vue, Svelte, Solid and Preact, an attribute (and property) on `<glorpie-face>`, a query parameter on the image route, and a flag in the CLI.
+
+<PropsTable />
+
+## errors
+
+A face that can't be painted is reported once, and logged unless something handles it:
+
+| where | how |
+| --- | --- |
+| React, Svelte, Solid, Preact | `onError={(error) => …}` |
+| Vue | `@error="…"` |
+| `<glorpie-face>` | a `glorpie-error` event; `preventDefault()` stops the log |
+| `mount()` | the `onError` option |

@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, ArrowRight, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -73,23 +73,22 @@ export function MobileIndex() {
 export function PrevNext() {
   const path = usePathname();
   const at = DOC_PAGES.findIndex((p) => docHref(p.slug) === path);
-  const prev = DOC_PAGES[at - 1];
-  const next = DOC_PAGES[at + 1];
+  const pages = [
+    { page: DOC_PAGES[at - 1], label: 'previous', align: '' },
+    { page: DOC_PAGES[at + 1], label: 'next', align: 'sm:col-start-2 sm:text-right' },
+  ];
   return (
-    <div className="mt-16 grid grid-cols-2 gap-4 border-t border-dashed border-ink/20 pt-6 text-[12.5px]">
-      {prev ? (
-        <Link href={docHref(prev.slug)} className="group flex flex-col gap-1 text-ink-2 transition hover:text-ink">
-          <span className="flex items-center gap-1.5 text-[11px] text-ink-2/60"><ArrowLeft className="size-3" strokeWidth={1.8} /> previous</span>
-          {prev.title}
-        </Link>
-      ) : <span />}
-      {next && (
-        <Link href={docHref(next.slug)} className="group flex flex-col items-end gap-1 text-right text-ink-2 transition hover:text-ink">
-          <span className="flex items-center gap-1.5 text-[11px] text-ink-2/60">next <ArrowRight className="size-3" strokeWidth={1.8} /></span>
-          {next.title}
-        </Link>
+    <nav aria-label="Previous and next" className="mt-20 grid gap-4 sm:grid-cols-2">
+      {pages.map(({ page, label, align }) =>
+        page ? (
+          <Link key={label} href={docHref(page.slug)} className={`group rounded-lg border border-ink/12 px-5 py-4 transition hover:border-accent ${align}`}>
+            <span className="block text-[11.5px] text-ink-2/70">{label === 'next' ? 'next →' : '← previous'}</span>
+            <span className="mt-1 block font-display text-[16px] text-ink transition group-hover:text-accent">{page.title}</span>
+            <span className="mt-1 block text-[13px] leading-relaxed text-ink-2">{page.summary}</span>
+          </Link>
+        ) : null,
       )}
-    </div>
+    </nav>
   );
 }
 

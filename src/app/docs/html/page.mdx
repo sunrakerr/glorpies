@@ -1,0 +1,60 @@
+export const metadata = { title: 'html & js' };
+
+# html & js
+
+## the element
+
+`<glorpie-face>` is a standard web component: it works in any page, template or CMS, and in any framework that renders HTML.
+
+```html title="index.html"
+<script type="module" src="https://unpkg.com/glorpies"></script>
+
+<glorpie-face name="ada@lovelace.dev" size="48"></glorpie-face>
+<glorpie-face name="agent-47" size="48" look="sticker" state="thinking"></glorpie-face>
+```
+
+With a bundler, install the package and import the element once instead of the script tag:
+
+```ts
+import 'glorpies/element';
+```
+
+Every [option](/docs/options) is an attribute and a property. Change one and the face changes with it, repainting only if it has to.
+
+```js
+const face = document.querySelector('glorpie-face');
+face.state = 'done';
+face.addEventListener('glorpie-error', (event) => report(event.detail));
+```
+
+Its canvas is exposed as `::part(canvas)`. To register it under another name, call `defineGlorpie('my-face')`.
+
+## a canvas of your own
+
+`mount()` brings a face to life on any canvas, sized with CSS:
+
+```ts
+import { mount } from 'glorpies';
+
+const face = mount(canvas, { name: 'agent-47', look: 'gouache', state: 'working' });
+
+face.update({ state: 'done' });
+face.poke();
+face.destroy();
+```
+
+The face paints at its displayed size times the device pixel ratio, paints again if it grows, and only animates while it's on screen.
+
+## pictures
+
+For a finished picture rather than a living face:
+
+```ts
+import { faceCanvas, faceColors, faceSVG } from 'glorpies';
+
+const canvas = faceCanvas('agent-47', { look: 'ink', size: 256, shape: 'circle' });
+const svg = faceSVG('agent-47', { size: 256, state: 'thinking' });
+const { bg, accent } = faceColors('agent-47');
+```
+
+`faceColors` is the palette a face is painted in, for theming whatever sits around it. A watercolour SVG is real vector paths; other looks wrap a picture.

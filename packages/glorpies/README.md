@@ -47,6 +47,36 @@ import { Glorpie, Avatar, AvatarImage, AvatarFallback } from 'glorpies/react';
 
 It renders on the server as a soft placeholder in the face's own background colour, then paints on the client.
 
+## Vue, Svelte, Solid and Preact
+
+The same `<Glorpie>`, with the same props, for each:
+
+```vue
+<script setup>
+import { Glorpie } from 'glorpies/vue';
+</script>
+
+<template>
+  <Glorpie :name="user.email" :size="40" state="thinking" />
+</template>
+```
+
+```svelte
+<script>
+  import { Glorpie } from 'glorpies/svelte';
+</script>
+
+<Glorpie name={user.email} size={40} state="thinking" />
+```
+
+```tsx
+import { Glorpie } from 'glorpies/solid'; // or 'glorpies/preact'
+
+<Glorpie name={user.email} size={40} state="thinking" />
+```
+
+Each renders a placeholder on the server (Nuxt, SvelteKit, SolidStart) and paints in the browser. Svelte also gets a `use:glorpie` action for a canvas of your own. Angular, Astro and anything else that renders HTML use `<glorpie-face>`.
+
 ## Props and attributes
 
 | | type | default | |
@@ -107,9 +137,13 @@ npm i glorpies @napi-rs/canvas
 import { faceRoute } from 'glorpies/server';
 export const { GET } = faceRoute();
 
-// anything that speaks fetch: Hono, Bun.serve, Deno.serve, Remix
+// anything that speaks fetch: SvelteKit, Nuxt, Astro, Hono, Bun, Deno
 import { createFaceHandler } from 'glorpies/server';
 Bun.serve({ fetch: createFaceHandler() });
+
+// Express, or node:http
+import { nodeFaceHandler } from 'glorpies/server';
+app.get('/api/face', nodeFaceHandler());
 ```
 
 ```
@@ -154,6 +188,8 @@ Installed in a project (`npm i glorpies @napi-rs/canvas`), it's just `npx glorpi
 | `randomName()` | a made-up name for a face nobody has named yet, like `soggy-glorp` |
 | `LOOKS`, `STATES`, `SHAPES` | everything there is to choose from |
 | `setCanvasFactory(f)` | draw on canvases from anywhere (the server entry does this for you) |
+
+The full guide, with every framework, is at [glorpies.vercel.app/docs](https://glorpies.vercel.app/docs).
 
 ## Credits
 

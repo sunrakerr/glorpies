@@ -1,0 +1,43 @@
+export const metadata = { title: 'astro' };
+
+# astro
+
+<Install />
+
+## in an astro component
+
+Astro renders custom elements as they are. Register the element in a script, which Astro bundles for the browser:
+
+```astro title="UserBadge.astro"
+---
+const { email } = Astro.props;
+---
+
+<glorpie-face name={email} size="40" style="width: 40px; height: 40px"></glorpie-face>
+
+<script>
+  import 'glorpies/element';
+</script>
+```
+
+<Preview>
+  <Faces names={['ada@lovelace.dev', 'agent-47', 'grace@hopper.dev']} size={40} shape="circle" />
+</Preview>
+
+Every [option](/docs/options) is an attribute. The inline size holds the face's place until the script runs.
+
+## in a framework island
+
+Already using React, Vue, Svelte, Solid or Preact in Astro? Use that framework's component in an island. It renders a coloured placeholder on the server, and a `client:visible` island paints only when it scrolls into view:
+
+```astro title="Team.astro"
+---
+import { Glorpie } from 'glorpies/react';
+---
+
+<Glorpie client:visible name="ada@lovelace.dev" size={40} />
+```
+
+## as an image
+
+For a face that needs no script at all, serve it from an [endpoint](/docs/server) and use an `<img>`.

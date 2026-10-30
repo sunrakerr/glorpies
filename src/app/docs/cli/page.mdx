@@ -2,20 +2,20 @@ export const metadata = { title: 'cli' };
 
 # cli
 
-<Lead>Any name to an image file, from a terminal. The CLI paints with `@napi-rs/canvas`, so ask npx for both.</Lead>
+The CLI paints with `@napi-rs/canvas`, so ask npx for both:
 
 ```sh
 npx -p glorpies -p @napi-rs/canvas glorpies agent-47 --look ink --size 128 --shape circle -o agent.png
 npx -p glorpies -p @napi-rs/canvas glorpies agent-47 --state thinking -f gif
 ```
 
-In a project that has both installed, it's just `npx glorpies agent-47`.
+In a project with both installed, it's just `npx glorpies agent-47`.
 
 ## options
 
 | flag | | default |
 | --- | --- | --- |
-| `-l`, `--look` | `auto` or a look id | `auto` |
+| `-l`, `--look` | `auto` or a [look](/docs/looks) | `auto` |
 | `-s`, `--size` | pixels, 16 to 4096 | `256` |
 | `-f`, `--format` | `png`, `webp`, `jpeg`, `svg`, `gif` | from `--out`, else `png` |
 | `--shape` | `circle`, `squircle`, `rounded`, `square` | `square` |
@@ -23,14 +23,12 @@ In a project that has both installed, it's just `npx glorpies agent-47`.
 | `--background false` | only the face | |
 | `--loop` | seconds, for a gif | `3` |
 | `-o`, `--out` | the file to write, or `-` for stdout | `<name>.<format>` |
-| `--force` | overwrite the file if it's there already | |
+| `--force` | overwrite the file if it's already there | |
 | `-h`, `--help` | | |
 
-A name that starts with a dash goes after `--`, as in `glorpies -- -weird-name`.
+A name that starts with a dash goes after `--`: `glorpies -- -weird-name`.
 
 ## in scripts
-
-Writing to stdout makes it easy to pipe:
 
 ```sh
 npx glorpies agent-47 -f webp -o - > avatar.webp
@@ -38,7 +36,3 @@ for name in ada grace linus; do npx glorpies "$name" --look sticker; done
 ```
 
 An existing file is never overwritten without `--force`.
-
-```sh
-npx glorpies agent-47 --force
-```

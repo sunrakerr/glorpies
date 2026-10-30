@@ -1,0 +1,34 @@
+export const metadata = { title: 'size and shape' };
+
+# size and shape
+
+## size
+
+`size` takes pixels or any CSS length. A face paints at its displayed size times the device pixel ratio, so it's always sharp, and paints again if it grows. To fill a box, give it `"100%"` and size the box.
+
+<Preview>
+  <Faces names={['agent-47']} size={20} shape="circle" />
+  <Faces names={['agent-47']} size={32} shape="circle" />
+  <Faces names={['agent-47']} size={48} shape="circle" />
+  <Faces names={['agent-47']} size={96} shape="circle" />
+</Preview>
+
+## shape
+
+The crop: `circle` (the default for components), `squircle`, `rounded` or `square`. Images default to `square`, and outside the shape they're transparent.
+
+<Preview>
+  <Faces names={['agent-47']} size={72} shape="circle" />
+  <Faces names={['agent-47']} size={72} shape="squircle" />
+  <Faces names={['agent-47']} size={72} shape="rounded" />
+  <Faces names={['agent-47']} size={72} shape="square" />
+</Preview>
+
+## without a background
+
+`background={false}` keeps only the face: no backdrop, no pencil guidelines, no crop, transparent all around, so it can sit straight on your own colours. It works in every look; a few draw their backdrop from the face itself (`mosaic`, `topo`, `thermal`, `holo`) and keep a little of it.
+
+<Preview>
+  <Faces names={['agent-47', 'soggy-glorp']} size={96} background={false} />
+  <Faces names={['agent-47']} size={96} look="sticker" background={false} />
+</Preview>

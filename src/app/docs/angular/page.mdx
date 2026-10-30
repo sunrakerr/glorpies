@@ -1,0 +1,48 @@
+export const metadata = { title: 'angular' };
+
+# angular
+
+<Install />
+
+## use it
+
+Import the element once, and allow custom elements in the components that use it:
+
+```ts title="user-badge.component.ts"
+import { Component, CUSTOM_ELEMENTS_SCHEMA, input } from '@angular/core';
+import 'glorpies/element';
+
+@Component({
+  selector: 'user-badge',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: `<glorpie-face [name]="email()" size="40" [label]="name()"></glorpie-face>`,
+})
+export class UserBadge {
+  email = input.required<string>();
+  name = input('Avatar');
+}
+```
+
+<Preview>
+  <Faces names={['ada@lovelace.dev', 'agent-47', 'grace@hopper.dev']} size={40} shape="circle" />
+</Preview>
+
+Every [option](/docs/options) is an attribute, and a property too, so `[name]="…"` and `[attr.name]="…"` both work.
+
+## errors
+
+The element fires `glorpie-error` when a face can't be painted; call `preventDefault()` to stop it being logged.
+
+```html
+<glorpie-face [name]="user.id" (glorpie-error)="report($event.detail); $event.preventDefault()"></glorpie-face>
+```
+
+## server rendering
+
+With Angular SSR the element renders as an empty tag and paints in the browser. Give it a size so the layout holds its place:
+
+```css
+glorpie-face { width: 40px; height: 40px; }
+```
+
+<Note>Why no Angular component? An Angular library has to be compiled by Angular's own toolchain and published as a package of its own. The element is first-class in Angular, so that's what we support; a dedicated package may follow if people ask for it.</Note>

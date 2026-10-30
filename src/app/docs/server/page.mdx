@@ -2,31 +2,79 @@ export const metadata = { title: 'server images' };
 
 # server images
 
-<Lead>Faces as image files, from a route in your own app: for emails, link previews, chat apps, and anything else that needs a URL instead of a component.</Lead>
+For emails, link previews, chat apps and anywhere else that wants a URL rather than a component, serve faces as image files from your own app.
 
 <Install packages="glorpies @napi-rs/canvas" />
 
+`@napi-rs/canvas` is a prebuilt canvas for Node, with no system libraries to install.
+
 ## a route
 
-In Next.js, a whole image API is two lines:
+<CodeGroup>
 
-<Code file="app/api/face/route.ts" lang="ts">{`
+```ts title="app/api/face/route.ts" tab="next.js"
 import { faceRoute } from 'glorpies/server';
 
 export const { GET } = faceRoute();
-`}</Code>
+```
 
-Anything that speaks `fetch` takes the same handler:
-
-```ts
+```ts title="src/routes/api/face/+server.ts" tab="sveltekit"
 import { createFaceHandler } from 'glorpies/server';
 
 const faces = createFaceHandler();
 
-Bun.serve({ fetch: faces });                 // Bun
-Deno.serve(faces);                           // Deno
-app.get('/face', (c) => faces(c.req.raw));   // Hono
+export const GET = ({ request }) => faces(request);
 ```
+
+```ts title="server/api/face.ts" tab="nuxt"
+import { createFaceHandler } from 'glorpies/server';
+
+const faces = createFaceHandler();
+
+export default defineEventHandler((event) => faces(toWebRequest(event)));
+```
+
+```ts title="src/pages/api/face.ts" tab="astro"
+import { createFaceHandler } from 'glorpies/server';
+
+const faces = createFaceHandler();
+
+export const GET = ({ request }) => faces(request);
+```
+
+```ts title="server.ts" tab="express"
+import express from 'express';
+import { nodeFaceHandler } from 'glorpies/server';
+
+const app = express();
+app.get('/api/face', nodeFaceHandler());
+app.listen(3000);
+```
+
+```ts title="server.ts" tab="hono"
+import { Hono } from 'hono';
+import { createFaceHandler } from 'glorpies/server';
+
+const faces = createFaceHandler();
+const app = new Hono();
+app.get('/api/face', (c) => faces(c.req.raw));
+
+export default app;
+```
+
+```ts title="server.ts" tab="bun"
+import { createFaceHandler } from 'glorpies/server';
+
+Bun.serve({ port: 3000, fetch: createFaceHandler() });
+```
+
+```ts title="server.ts" tab="deno"
+import { createFaceHandler } from 'npm:glorpies/server';
+
+Deno.serve(createFaceHandler());
+```
+
+</CodeGroup>
 
 Then ask for faces by URL:
 
@@ -41,37 +89,38 @@ Then ask for faces by URL:
 | parameter | values | default |
 | --- | --- | --- |
 | `name` | any string (required) | |
-| `look` | `auto` or a look id | `auto` |
-| `size` | 16 to 1024 pixels (up to 320 for gif) | `256` |
+| `look` | `auto` or a [look](/docs/looks) | `auto` |
+| `size` | 16 to 1024 pixels; gifs up to 320 | `256` |
 | `shape` | `circle`, `squircle`, `rounded`, `square`; outside is transparent | `square` |
 | `state` | `idle`, `thinking`, `working`, `waiting`, `blocked`, `done` | `idle` |
 | `background` | `false` for only the face | `true` |
 | `format` | `png`, `webp`, `jpeg`, `svg`, `gif` | `png` |
-| `loop` | seconds a gif lasts before it repeats, 1 to 8 | `3` |
+| `loop` | seconds a gif runs before it repeats, 1 to 8 | `3` |
 | `fps` | gif frames per second, 4 to 30 | `15` |
 
-Unknown values fall back to the defaults, so a typo gets a face rather than an error.
+Unknown values fall back to the defaults, so a typo still gets a face.
 
 ## options
 
-`faceRoute()` and `createFaceHandler()` take defaults for every query parameter, and three limits:
+Every handler takes defaults for the query, and limits:
 
 ```ts
 faceRoute({
   look: 'ink',
   size: 128,
-  cacheControl: 'public, max-age=86400',  // default: a year, for browsers and CDNs, immutable
-  maxSize: 512,                           // largest ?size= allowed (default 1024)
-  maxName: 128,                           // longest ?name= allowed (default 256)
+  maxSize: 512,                           // the largest ?size= (default 1024)
+  maxName: 128,                           // the longest ?name= (default 256)
+  cacheControl: 'public, max-age=86400',  // default: a year, for browsers and CDNs
 });
 ```
 
 ## caching and safety
 
-- The same request always gives the same image, so responses are cached for a year by default. Put the route behind your CDN and each face is painted once.
-- A name longer than `maxName` is refused with 414, and sizes are clamped, so no request can ask for an enormous image. A gif's frames are capped too.
+- The same URL always gives the same image, so responses are cached for a year by browsers and CDNs. Behind a CDN, each face is painted once.
+- Sizes are clamped and long names refused (414), so no request can ask for an enormous image. A gif's frames are capped too.
 - SVG is sent with a Content-Security-Policy that runs no script and loads nothing, and every response has `X-Content-Type-Options: nosniff`.
-- When painting fails the details go to your server's log; the response says only that it failed.
+- When painting fails, the details go to your server's log; the response only says that it failed.
+- Rendering is CPU work. On a public route, add your host's rate limiting, as for any image endpoint.
 
 ## without a route
 
@@ -82,8 +131,6 @@ const { body, type } = await renderImage('agent-47', { look: 'sticker', size: 25
 const gif = await faceGIF('agent-47', { state: 'done', size: 128, loop: 3 });
 ```
 
-Everything in `glorpies/server` sets up the native canvas itself. A GIF loops seamlessly with a scripted pose, so the same name always loops the same way.
-
-To draw with `faceCanvas()` or `faceSVG()` from `glorpies` on a server, call `await useNativeCanvas()` once first.
+Everything in `glorpies/server` sets up the native canvas itself. To draw with `faceCanvas()` or `faceSVG()` from `glorpies` on a server, call `await useNativeCanvas()` once first.
 
 <Note>This site answers the same URLs at `/api/face`, for trying things out. It's a demo, not a CDN for your app: host the route yourself for anything real.</Note>

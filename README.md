@@ -29,15 +29,26 @@ npm i glorpies
 
 ## ⵅ use
 
-**React**
+Every framework gets a `<Glorpie>` that takes the same options:
+
+| | |
+| --- | --- |
+| React | `import { Glorpie } from 'glorpies/react'` |
+| Vue 3, Nuxt | `import { Glorpie } from 'glorpies/vue'` |
+| Svelte 4 and 5, SvelteKit | `import { Glorpie } from 'glorpies/svelte'` |
+| Solid, SolidStart | `import { Glorpie } from 'glorpies/solid'` |
+| Preact | `import { Glorpie } from 'glorpies/preact'` |
+| Angular, Astro, Lit, plain HTML | `import 'glorpies/element'`, then `<glorpie-face>` |
 
 ```tsx
-import { Glorpie } from 'glorpies/react';
-
 <Glorpie name="ada@lovelace.dev" size={48} />
 ```
 
-**Anywhere else: one tag** (plain HTML, Vue, Svelte, Astro…)
+```vue
+<Glorpie :name="user.email" :size="48" />
+```
+
+**No build step?** One script tag:
 
 ```html
 <script type="module" src="https://unpkg.com/glorpies"></script>
@@ -48,9 +59,12 @@ import { Glorpie } from 'glorpies/react';
 **As images, from your own server** (for emails, OG images, anything that needs a URL)
 
 ```ts
-// app/api/face/route.ts
+// app/api/face/route.ts (Next.js); SvelteKit, Nuxt, Astro, Hono, Bun and Deno take the same handler
 import { faceRoute } from 'glorpies/server';
 export const { GET } = faceRoute();
+
+// Express, or node:http
+app.get('/api/face', nodeFaceHandler());
 
 // GET /api/face?name=ada@lovelace.dev&look=ink&size=128&format=png
 ```
@@ -97,7 +111,7 @@ const { bg, accent } = faceColors(user.email);
 header.style.background = bg;
 ```
 
-**Vue, Svelte, Angular or plain HTML.** Import the element once, then use the tag anywhere.
+**Angular, Astro or a CMS template.** Import the element once, then use the tag anywhere.
 
 ```ts
 import 'glorpies/element';

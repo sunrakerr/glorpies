@@ -1,0 +1,31 @@
+export const metadata = { title: 'solid' };
+
+# solid
+
+<Install />
+
+## use it
+
+```tsx title="UserBadge.tsx"
+import { Glorpie } from 'glorpies/solid';
+
+export function UserBadge(props) {
+  return <Glorpie name={props.user.email} size={40} label={props.user.name} />;
+}
+```
+
+<Preview>
+  <Faces names={['ada@lovelace.dev', 'agent-47', 'grace@hopper.dev']} size={40} shape="circle" />
+</Preview>
+
+It takes every [option](/docs/options), plus `class` and `onError`, and every prop is reactive: change a signal and the face follows.
+
+```tsx
+const [status, setStatus] = createSignal('working');
+
+<Glorpie name="agent-47" state={status()} />
+```
+
+## solidstart
+
+Nothing to configure. On the server the component renders a placeholder in the face's own colour, and it paints after hydration.

@@ -2,7 +2,7 @@ export const metadata = { title: 'api' };
 
 # api
 
-<Lead>Every export, by entry. Types are included; hover any of these in your editor for the details.</Lead>
+Types are included: hover any export in your editor for the details.
 
 ## glorpies
 
@@ -26,14 +26,18 @@ export const metadata = { title: 'api' };
 
 | export | |
 | --- | --- |
-| `<Glorpie>` | a living face; see [react](/docs/react) for its props |
+| `<Glorpie>` | a living face; see [react](/docs/react) and [options](/docs/options) |
 | `<Avatar>` | a photo avatar's frame: `size`, `shape`, `className`, `style` |
 | `<AvatarImage>` | the photo: an `<img>`, shown once it loads |
 | `<AvatarFallback>` | the face shown until then, or instead; every `<Glorpie>` prop but `size` and `shape` |
 
+## glorpies/vue, svelte, solid, preact
+
+Each exports `Glorpie`, a living face that takes every [option](/docs/options), and its props type. `glorpies/svelte` also exports the `glorpie` action, for a canvas of your own.
+
 ## glorpies/element
 
-Importing it registers `<glorpie-face>`; see [web component](/docs/web-component). `defineGlorpie(tag)` registers it under another name too, and `GlorpieElement` is its class.
+Importing it registers `<glorpie-face>`; see [html & js](/docs/html). `defineGlorpie(tag)` registers it under another name too, and `GlorpieElement` is its class.
 
 ## glorpies/server
 
@@ -44,9 +48,10 @@ Importing it registers `<glorpie-face>`; see [web component](/docs/web-component
 | `renderImage(name, options)` | `{ body, type }`: one image's bytes (or SVG text) and content type |
 | `faceGIF(name, options)` | a promise of a looping GIF's bytes |
 | `animationFrames(name, options)` | a promise of a loop's raw RGBA frames, for your own encoder |
+| `nodeFaceHandler(options?)` | `(req, res) => Promise<void>`, for `node:http` and Express |
 | `useNativeCanvas()` | points every renderer at `@napi-rs/canvas`; the server functions call it for you |
 | `FORMATS`, `FRAME_BUDGET` | the formats, and the most pixels a loop's frames may hold together |
 
 ## types
 
-`FaceName` (a string or a seed), `LookId`, `LookChoice` (a look or `auto`), `FaceState`, `Shape`, `Look`, `Palette`, `MountOptions`, `FaceHandle`, `StillOptions`, `GlorpieProps`, `AvatarProps`, `AvatarFallbackProps`, `ImageOptions`, `AnimationOptions`, `HandlerOptions`.
+`GlorpieOptions` (what every framework's component takes), `FaceName` (a string or a seed), `LookId`, `LookChoice` (a look or `auto`), `FaceState`, `Shape`, `Look`, `Palette`, `MountOptions`, `FaceHandle`, `StillOptions`, `GlorpieProps`, `AvatarProps`, `AvatarFallbackProps`, `ImageOptions`, `AnimationOptions`, `HandlerOptions`.
