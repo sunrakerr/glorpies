@@ -24,5 +24,5 @@ export default defineConfig([
     outDir: 'dist/cdn',
     noExternal: [/.*/],
   },
-  { entry: { cli: 'src/cli.ts' }, format: ['esm'], target: 'node20', external: ['@napi-rs/canvas'], noExternal: ['gifenc'], banner: { js: '#!/usr/bin/env node' } },
+  { entry: { cli: 'src/cli.ts' }, format: ['esm'], target: 'node22', external: ['@napi-rs/canvas'], noExternal: ['gifenc'], banner: { js: '#!/usr/bin/env node' } },
 ]);

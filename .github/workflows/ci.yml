@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [20, 24]
+        node: [22, 24, 26]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -28,7 +28,7 @@ jobs:
       - name: build and test
         run: pnpm test
       - name: the framework components in a real browser
-        if: matrix.node == 24
+        if: matrix.node == 26
         run: pnpm --filter glorpies test:browser
       - name: lint the package as npm will see it
         run: pnpm --filter glorpies lint:package
@@ -52,7 +52,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 26
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck

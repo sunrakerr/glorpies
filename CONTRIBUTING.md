@@ -4,7 +4,7 @@ Issues and pull requests are welcome. For anything bigger than a fix, open an is
 
 ## Setup
 
-Node 20 or newer and pnpm.
+Node 26 (the current LTS; `.nvmrc` pins it) and pnpm. The library itself supports Node 22 and newer.
 
 ```bash
 pnpm install
