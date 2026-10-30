@@ -5,11 +5,7 @@ import { isState } from './states';
 import { faceCanvas, faceSVG, isShape } from './still';
 import type { FaceName } from './seed';
 
-/**
- * Faces as image files, on a server or anywhere else without a DOM: Node, Bun,
- * Deno and serverless functions. Drawing uses `@napi-rs/canvas` (install it
- * alongside glorpies); it's loaded the first time an image is asked for.
- */
+/** Faces as image files wherever there's no DOM, drawn with `@napi-rs/canvas`, loaded on first use. */
 
 export const FORMATS = ['png', 'webp', 'jpeg', 'svg', 'gif'] as const;
 export type ImageFormat = (typeof FORMATS)[number];
@@ -66,15 +62,8 @@ export type HandlerOptions = Partial<ImageOptions> & {
 const SVG_CSP = "default-src 'none'; img-src data:; style-src 'unsafe-inline'";
 
 /**
- * A standard web request handler, `(Request) => Response`, so it mounts
- * anywhere that speaks fetch: Next.js route handlers, Remix, Hono, Bun.serve,
- * Deno.serve, Cloudflare-style workers that can load native modules.
- *
- *   GET /api/face?name=agent-47&look=ink&size=128&shape=circle&format=png
- *
- * Query: name (required), look, size, shape, state, background (false for
- * only the face), format (png, webp, jpeg, svg, gif), and for gif: loop
- * (seconds), fps.
+ * A fetch handler, `(Request) => Response`, for Next.js, Remix, Hono, Bun, Deno and the like:
+ * `GET /api/face?name=agent-47&look=ink&size=128&format=png`.
  */
 export function createFaceHandler(defaults: HandlerOptions = {}): (request: Request) => Promise<Response> {
   const { cacheControl = 'public, max-age=31536000, s-maxage=31536000, immutable', maxSize = 1024, maxName = 256, ...base } = defaults;

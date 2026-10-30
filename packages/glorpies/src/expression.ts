@@ -3,11 +3,8 @@ import type { Pt } from './geometry';
 import type { FaceState } from './states';
 
 /**
- * A state changes the face itself, not only how it moves: the mouth bends
- * into a smile or a frown, narrows or widens, and the brows lift, drop or
- * knit. The face's own strokes are reshaped (the ops that drew the mouth and
- * each brow, recorded in its sketch), so every look paints the expression in
- * its own hand, with the same wobble.
+ * A state reshapes the face's own mouth and brow strokes (found through its sketch), so every look
+ * paints the expression in its own hand.
  */
 
 type Brow = { lift: number; tilt: number };

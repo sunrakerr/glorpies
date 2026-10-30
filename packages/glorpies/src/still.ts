@@ -86,11 +86,7 @@ export function faceCanvas(name: FaceName, options: StillOptions = {}): HTMLCanv
   return out;
 }
 
-/**
- * One face as SVG markup. The original watercolour is real vector paths (pen
- * lines, hatching, shapes) with its glazes embedded; every other style is built
- * from pixels, dots and tiles, so its SVG wraps the picture.
- */
+/** One face as SVG. The watercolour is real vector paths; any other look is a picture wrapped in SVG. */
 export function faceSVG(name: FaceName, options: StillOptions = {}): string {
   const o = checked(options);
   const size = sizeOf(o.size);

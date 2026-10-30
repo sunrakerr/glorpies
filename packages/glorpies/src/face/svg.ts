@@ -8,11 +8,7 @@ import type { Face, Op } from './types';
 import { W } from './types';
 import { rasterizeWash } from './wash';
 
-/**
- * Glazes are raster by nature (pigment texture). They are embedded at about
- * the resolution the SVG is shown at, capped so a large export stays crisp
- * without bloating the file, so a small avatar SVG stays small.
- */
+/** Glazes are raster by nature, so they're embedded near the resolution the SVG is shown at, with a cap. */
 const GLAZE_SCALE = 1.6;
 const PAPER_SCALE = 2;
 const rasterScale = (sizePx: number, cap: number) => Math.min(cap, Math.max(0.3, (sizePx / W) * 1.25));

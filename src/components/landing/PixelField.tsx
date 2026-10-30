@@ -12,13 +12,7 @@ const FADE = 0.86;
 /** 4×4 Bayer thresholds, so the fading trails come out as 1-bit ordered dither. */
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
 
-/**
- * The margins of the page as a slow Game of Life in ink: live cells are solid,
- * dying ones leave a trail that fades through a dither, the pointer sows new
- * cells, and fresh soup is scattered whenever it settles down. Kept to the
- * edges by a mask, faint enough to sit under everything; in the dark it
- * glows alien green.
- */
+/** The page's margins as a slow Game of Life in ink: dying cells fade through a dither, and the pointer sows new ones. */
 export function PixelField() {
   const ref = useRef<HTMLCanvasElement>(null);
 

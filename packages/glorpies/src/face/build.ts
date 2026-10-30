@@ -18,9 +18,11 @@ const DROOL = '#8fd8ff';
 
 /**
  * Every name is an alien: a lumpy head in a colour no person has, eyes in
- * the wrong number and size (bulging, droopy, on stalks), something growing
- * out of the top (antennae, horns, spines, an exposed brain, a fin, a halo,
- * crystals, tentacles), and a mouth with too many or too few teeth.
+ * the wrong number and size, something growing out of the top, and a mouth
+ * with too many or too few teeth.
+ *
+ * The order of the random draws below is part of every name's face: removing
+ * or reordering a single draw changes the face of every name.
  */
 export function buildFace(seed: number, E: Engine): Face {
   E.seed(seed);

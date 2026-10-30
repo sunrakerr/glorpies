@@ -1,8 +1,6 @@
 /**
- * Where canvases and paths come from. In a browser these are the DOM's own;
- * a server swaps in a native implementation (see `server.ts`) before drawing,
- * and every renderer works unchanged, because none of them reach for the DOM
- * directly.
+ * Where canvases and paths come from: the DOM's in a browser, a native implementation on a server.
+ * No renderer reaches for the DOM directly.
  */
 export type CanvasFactory = {
   canvas(w: number, h: number): HTMLCanvasElement;

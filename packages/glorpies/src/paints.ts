@@ -13,12 +13,7 @@ import {
 } from './raster';
 
 
-/**
- * More media for the same wobbly faces. Every style reads the face's display
- * list or a flat/watercolour rendering of it, then rebuilds the picture from
- * its own primitive: brush strokes, chalk, dots, carved lines, glass, tiles,
- * yarn, bricks, voxels, triangles, contour lines, foil or blueprint ink.
- */
+/** The paintings: each reads the face's display list, or a flat rendering of it, and rebuilds it in its own medium. */
 
 type Render = (face: Face, E: Engine, px: number) => HTMLCanvasElement;
 

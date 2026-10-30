@@ -4,20 +4,6 @@ import { seedOf } from './seed';
 import { isState } from './states';
 import { faceColors, isShape } from './still';
 
-/**
- * <glorpie-face name="agent-47" size="48"></glorpie-face>
- *
- * Works in plain HTML and in any framework. Attributes:
- *   name      any string (required); the same name is always the same face
- *   look      a look id, or "auto" (default): watercolour when large, the ink badge below 72px
- *   size      pixels, or any CSS length (default 48)
- *   shape     circle (default), squircle, rounded, square
- *   state     idle, thinking, working, waiting, blocked, done
- *   background  "false" shows only the face: no backdrop, no pencil lines, no crop
- *   alive     "false" holds the face still (it also holds still for reduced motion)
- *   pokeable  tapping makes it wobble
- *   label     accessible name (default "Avatar")
- */
 const CSS = `
 :host{display:inline-block;position:relative;inline-size:var(--size);block-size:var(--size);overflow:hidden;vertical-align:middle;border-radius:50%;background:var(--wash);contain:layout paint}
 :host([shape=square]){border-radius:0}
@@ -39,6 +25,7 @@ const lookFrom = (v: string | null): LookChoice => (v && (v === 'auto' || isLook
 
 const Base: typeof HTMLElement = typeof HTMLElement === 'undefined' ? (class {} as typeof HTMLElement) : HTMLElement;
 
+/** `<glorpie-face>`: the React component's options as attributes, for plain HTML and any framework. */
 export class GlorpieElement extends Base {
   static observedAttributes = ATTRS;
   private canvas: HTMLCanvasElement | null = null;

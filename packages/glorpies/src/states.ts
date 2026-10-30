@@ -4,11 +4,7 @@ import type { Face } from './face/types';
 import { clamp, TAU, type Pt } from './geometry';
 import { hash01 } from './raster';
 
-/**
- * What a face can show besides who it is: an agent's status, read from the
- * face itself rather than from a badge beside it. Each state changes where the
- * eyes go, how often they blink and how the head breathes and sways.
- */
+/** What a face shows besides who it is: an agent's status, in its eyes, blinks, breathing and sway. */
 export const STATES = ['idle', 'thinking', 'working', 'waiting', 'blocked', 'done'] as const;
 export type FaceState = (typeof STATES)[number];
 

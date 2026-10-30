@@ -1,8 +1,4 @@
-/**
- * Loading states drawn in the same hand as the faces: a graphite face sketches
- * itself while a wash drifts across the sheet, and a wet brush passes over a
- * face that is being repainted in another style.
- */
+/** Loading states in the faces' own hand: a graphite face sketching itself, and a brush over a face being repainted. */
 
 /** Strokes of the underdrawing, in the order a hand would put them down. */
 const SKETCH = [

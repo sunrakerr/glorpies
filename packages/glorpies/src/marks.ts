@@ -5,10 +5,8 @@ import { hash01 } from './raster';
 import type { FaceState } from './states';
 
 /**
- * The comic artist's marks for a state, drawn in ink beside the head: a
- * trail of thought bubbles, a typing bubble, a question mark, a red
- * exclamation mark, sparkles. Expressions carry a state at large sizes; these carry it
- * in a 32px sidebar, where a raised brow is a single pixel.
+ * A state's marks beside the head: thought bubbles, a typing bubble, a ?, a red !, sparkles.
+ * They carry the state at 32px, where a raised brow is a single pixel.
  */
 
 /** Where the head is on the canvas, in canvas pixels. */

@@ -6,8 +6,6 @@ import type { Face, InkOp } from './face/types';
 import { W } from './face/types';
 import { drawFlat } from './styles';
 
-/** Raster helpers shared by the experimental styles. */
-
 export type Ctx = CanvasRenderingContext2D;
 export type RGB = [number, number, number];
 
@@ -23,6 +21,7 @@ export function faceSpace(px: number): [HTMLCanvasElement, Ctx] {
   return [c, g];
 }
 
+/** mulberry32, its seed scrambled first so neighbouring seeds start far apart. */
 export function rng(seed: number) {
   let a = Math.imul((seed ^ (seed >>> 16)) >>> 0, 0x45d9f3b) >>> 0;
   a = (a ^ (a >>> 16)) >>> 0;

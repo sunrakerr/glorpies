@@ -2,11 +2,7 @@ export type Lang = 'tsx' | 'ts' | 'html' | 'sh' | 'text';
 export type TokenKind = 'comment' | 'string' | 'keyword' | 'tag' | 'attr' | 'number' | 'flag' | 'command' | 'punct' | 'text';
 export type Token = { kind: TokenKind; text: string };
 
-/**
- * Just enough highlighting for the snippets on this site: strings, comments,
- * keywords, tags and attributes, and for the shell, commands and flags. One
- * regex, alternatives in priority order, everything between them is text.
- */
+/** Just enough highlighting for this site's snippets: one regex of alternatives in priority order. */
 const RULES: [TokenKind, string][] = [
   ['comment', String.raw`\/\/[^\n]*|<!--[\s\S]*?-->|(?<=^|\s)#[^\n]*`],
   ['string', String.raw`"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|\x60[^\x60]*\x60`],

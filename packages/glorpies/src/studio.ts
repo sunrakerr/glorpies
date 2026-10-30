@@ -20,7 +20,6 @@ class Recent<K, V> extends Map<K, V> {
   override get(key: K) {
     const v = super.get(key);
     if (v !== undefined) {
-      // a read makes it the newest again
       super.delete(key);
       super.set(key, v);
     }
@@ -55,11 +54,8 @@ export function forget(seed: number) {
 }
 
 /**
- * Painting a face is a few hundred milliseconds of canvas work, so jobs run one
- * at a time between frames, most important first (the face being inspected,
- * then exports, then the gallery in order). Paced jobs (eye poses) leave the
- * page as much free time as they took, so faces keep animating smoothly while
- * their eyes are painted.
+ * Jobs run one at a time between frames, most important first. Paced jobs (eye poses) leave the page
+ * as much time as they took, so faces keep animating while their eyes are painted.
  */
 type Job = { priority: number; order: number; paced: boolean; run: () => void };
 const jobs: Job[] = [];
@@ -133,18 +129,14 @@ const LAYER_LAG = 1.1;
 /** A style slower than this to paint gets only its most telling eye poses. */
 const SLOW_STYLE_MS = 40;
 
-/**
- * Watercolour is painted in layers so it can boil and blink. Every other style
- * is one still, followed by its eye poses: each is a job of its own so the page
- * never stalls for long, and each patch joins the raster as soon as it's ready.
- */
 /** How a face is painted: its look, whether it will move, its mood, and whether it keeps its background. */
 export type PaintOptions = { look?: LookId; lively?: boolean; state?: FaceState; background?: boolean };
 
 /**
- * `lively: false` paints only the still: a face that will never move needs no
- * split background and no eye poses. `background: false` lifts the face off
- * its paper (and its pencil lines) for every look.
+ * Paints a face as a series of small jobs, so the page never stalls for long.
+ * Watercolour comes in layers, so it can boil and blink; any other look is one
+ * still, then its eye poses, each joining the raster when it's ready. A face
+ * that won't move (`lively: false`) gets only the still.
  */
 export function paintRaster(seed: number, px: number, priority: number, o: PaintOptions = {}): Scheduled<{ face: Face; raster: Painting }> {
   const { look = DEFAULT_LOOK, lively = true, state = 'idle', background = true } = o;

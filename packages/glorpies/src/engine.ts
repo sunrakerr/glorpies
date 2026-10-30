@@ -1,19 +1,11 @@
 /**
- * Seeded randomness and smooth noise behind every face.
+ * Seeded randomness and smooth noise behind every face: sfc32, whose 128 bits
+ * of state hold a whole 53-bit seed, and value noise on a 4096-height lattice,
+ * cosine-eased over four octaves (what p5.js's noise gave the first faces).
  *
- * Random numbers come from sfc32, whose 128 bits of state take a whole 53-bit
- * seed, so each of the 9 quadrillion seeds is a stream of its own. The noise is
- * value noise: a ring of 4096 random heights read as a lattice 16 wide, eased
- * between with a cosine and summed over four octaves, each finer one half as
- * strong. (The faces were first drawn with p5.js, and this gives exactly what
- * its `noise` gave them.) Being plain arithmetic, both run anywhere: browsers,
- * workers, Node, Bun, Deno.
- *
- * Determinism comes from discipline, not isolation: a face is built from one
- * random stream (seeded once), and every paint/ink operation reseeds before it
- * runs, so an operation can be rendered again later (at another size, as SVG,
- * or as a new "boil" frame) and come out identical. The noise heights are
- * shared, so renderers call noiseSeed for their face before sampling.
+ * A face is built from one stream seeded once, and every paint and ink
+ * operation reseeds before it runs, so any operation renders identically when
+ * repeated. The lattice is shared: renderers call noiseSeed before sampling.
  */
 export type Engine = {
   seed(n: number): void;

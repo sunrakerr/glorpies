@@ -31,7 +31,6 @@ function lengths(n: number): Record<Phase, number> {
   return { type: n * TYPE, wait: WAIT, turn: (n - 1) * STAGGER + DITHER.length * STEP, hold: HOLD, erase: n * ERASE, gap: GAP };
 }
 
-
 /** What a cell shows, and the letter it stands for (which holds its place, so every cell is a letter's size). */
 type Cell = { ch: string; kind: 'glyph' | 'dots' | 'letter'; en: string };
 
@@ -58,12 +57,7 @@ function frame(text: string, phase: Phase, e: number): Cell[] {
 
 const keyOf = (cells: Cell[]) => cells.map((c) => c.ch).join('');
 
-/**
- * The headline as an incoming transmission: each line types out in an alien
- * script (Tifinagh), comes into focus through braille dots as English, holds, and is
- * erased by the cursor for the next. Screen readers get the plain words;
- * readers who prefer less motion see the lines change without the effect.
- */
+/** The headline: each line types out in alien, comes into focus through braille dots as English, and is erased for the next. */
 export function Transmission({ className = '' }: { className?: string }) {
   // nothing typed yet on the server; the lines start on the client
   const [cells, setCells] = useState<Cell[]>([]);

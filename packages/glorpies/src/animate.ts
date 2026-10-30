@@ -41,11 +41,8 @@ function timing(o: AnimationOptions) {
 }
 
 /**
- * A face's life as a seamless loop of frames, for places that can't run code
- * (email, chat apps, README files, an agent's profile picture). Painted the
- * same way the live faces are: the original's boiling layers, or a style split
- * into still background and moving face with all six eye poses, driven by a
- * scripted pose with no randomness, so the same name always loops the same way.
+ * A face's life as a seamless loop of frames, for places that can't run code. A scripted pose drives it,
+ * so the same name always loops the same way.
  */
 export function animationFrames(name: FaceName, options: AnimationOptions = {}): { frames: Uint8ClampedArray[]; size: number; fps: number; loop: number } {
   const o = checked(options);
@@ -102,11 +99,7 @@ export function animationFrames(name: FaceName, options: AnimationOptions = {}):
   return { frames, size, fps: count / loop, loop };
 }
 
-/**
- * The loop as an animated GIF. One palette is chosen for the whole loop, from
- * frames spread across it, so colours never flicker between frames; anything
- * outside the shape is transparent.
- */
+/** The loop as a GIF, with one palette for the whole loop so colours never flicker between frames. */
 export function faceGIF(name: FaceName, o: AnimationOptions = {}): Uint8Array {
   const { frames, size, loop } = animationFrames(name, o);
   // a crop or a face off its background leaves pixels to keep transparent

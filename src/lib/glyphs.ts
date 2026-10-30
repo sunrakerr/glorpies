@@ -1,9 +1,4 @@
-/**
- * Alien writing. The alphabet is Tifinagh (dots, rings and strokes, even in
- * weight beside the pixel letters): every letter has its own glyph, the same
- * one every time, so a name spelled in it is that name in alien. The section
- * marks are letters of it too. Purely for looks.
- */
+/** Alien writing, purely for looks: each letter maps to its own Tifinagh glyph, the same every time. */
 const TIFINAGH = 0x2d30, LETTERS = 0x2d67 - 0x2d30 + 1;
 
 /** A letter's alien counterpart; spaces stay spaces. */

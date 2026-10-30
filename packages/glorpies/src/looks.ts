@@ -89,11 +89,7 @@ const MIN_PAINT = 200;
 const isStyle = (id: string): id is StyleId => STYLES.some((s) => s.id === id);
 const isSmall = (id: string): id is SmallId => SMALL_STYLES.some((s) => s.id === id);
 
-/**
- * One face in one style, as a finished still. Every style reseeds itself, so
- * this is deterministic. `bare` paints only the background the style puts
- * behind the face.
- */
+/** One face in one look, as a finished still. `bare` paints only what the look puts behind the face. */
 export function renderLook(id: LookId, face: Face, E: Engine, px: number, bare = false): HTMLCanvasElement {
   if (isSmall(id)) return renderSmall(id, face, E, px, bare);
   // a painting's strokes, dots and leading are sized in pixels, so below this it would be a different picture,

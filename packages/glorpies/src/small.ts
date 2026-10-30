@@ -8,11 +8,8 @@ import { bareFace } from './face/bare';
 import type { Face, Sketch } from './face/types';
 
 /**
- * Faces for small places: avatars, sidebars, chat bubbles, favicons. The full
- * styles carry hundreds of strokes that turn to mud below about 64px, so these
- * redraw the face from its sketch (head, hair, eyes, mouth) with a few bold
- * shapes, crop in on the head and enlarge the eyes, which is what a face is
- * recognised by at a glance.
+ * Faces for small places. Full looks turn to mud below about 64px, so these redraw the face from its
+ * sketch with a few bold shapes, cropped in on the head with the eyes enlarged.
  */
 
 export const SMALL_STYLES = [

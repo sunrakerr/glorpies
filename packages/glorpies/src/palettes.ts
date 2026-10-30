@@ -12,12 +12,7 @@ export type Palette = {
   bg2: string;
 };
 
-/**
- * Every palette is an alien's, loud on purpose: acid greens, hot pinks,
- * violets and cyans, appendages in a clashing second colour, a glow for
- * antenna tips and a gold for halos and stars. The paper stays cream, so
- * they still read as paintings.
- */
+/** Alien palettes, loud on purpose, on cream paper so they still read as paintings. */
 export const PALETTES: readonly Palette[] = [
   { paper: '#f4f1e6', ink: '#161a12', skin: '#7ee05a', shade: '#3f9e3a', hair: '#ff4fa3', hair2: '#b8146a', accent: '#ffe14d', accent2: '#ffc93c', blush: '#ff7ab6', bg: '#c6a8ff', bg2: '#5ee0ff' },
   { paper: '#f6f0ea', ink: '#24102a', skin: '#ff7ac8', shade: '#d63f97', hair: '#5ee86a', hair2: '#1f9e4a', accent: '#5ef2ff', accent2: '#ffd23f', blush: '#ff4d6d', bg: '#fff07a', bg2: '#8f9bff' },

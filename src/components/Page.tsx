@@ -3,11 +3,7 @@ import type { ReactNode } from 'react';
 import { PixelField } from './landing/PixelField';
 import { Invader, SiteHeader } from './SiteHeader';
 
-/**
- * Every page's frame: the drifting pixel field at the sides, one column of the
- * same width under the same header, and the same footer. `wide` lets a page's
- * main content run edge to edge of that column; all pages share it.
- */
+/** Every page's frame: the pixel field, one column under the header, and the footer. */
 export function Page({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
     <div className="relative z-10 flex min-h-dvh flex-col">

@@ -12,11 +12,7 @@ const KINDS = [
   'meep', 'blob', 'spud', 'crud', 'twerp', 'globule', 'kludge', 'oog', 'scrunt', 'yoink', 'zug', 'blurp',
 ];
 
-/**
- * A made-up name for a face nobody has named yet, two words joined by a
- * hyphen: `soggy-glorp`. Names are ordinary names, so the same one always
- * paints the same face. `random` is any source of numbers in [0, 1).
- */
+/** A made-up name like `soggy-glorp`, for a face nobody has named yet. `random` returns numbers in [0, 1). */
 export function randomName(random: () => number = Math.random): string {
   const pick = (words: readonly string[]) => words[Math.floor(random() * words.length)];
   return `${pick(TRAITS)}-${pick(KINDS)}`;

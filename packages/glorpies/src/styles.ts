@@ -8,12 +8,7 @@ import { hatchLines } from './face/strokes';
 import type { Face } from './face/types';
 import { W } from './face/types';
 
-/**
- * Experimental renderings of the same face in other media. Each one reuses the
- * face's geometry (the display list and eye specs) but draws it with a
- * different primitive: dither dots, pixels, characters, stitches, halftone
- * dots, plotter lines, cut paper or neon tubes.
- */
+/** The face redrawn from its geometry in other media: dither dots, plotter lines, cut paper and neon tubes. */
 
 type Ctx = CanvasRenderingContext2D;
 type RGB = [number, number, number];
@@ -48,7 +43,8 @@ function rgb(hex: string): RGB {
 const lum = (r: number, g: number, b: number) => (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 
-function rng(seed: number) {
+/** mulberry32 on the seed as given; the scrambled-seed variant in raster.ts would paint these looks differently. */
+function plainRng(seed: number) {
   let a = seed >>> 0;
   return () => {
     a = (a + 0x6d2b79f5) >>> 0;
@@ -351,7 +347,7 @@ function cutout(face: Face, E: Engine, px: number) {
   const k = px / W;
   g.fillStyle = '#e6d9c2';
   g.fillRect(0, 0, W, W);
-  const r = rng(face.seed + 7);
+  const r = plainRng(face.seed + 7);
   g.fillStyle = 'rgba(110,85,50,0.06)';
   for (let i = 0; i < 2600; i++) g.fillRect(r() * W, r() * W, 0.6 + r(), 0.6 + r());
   const shadow = (on: boolean) => {

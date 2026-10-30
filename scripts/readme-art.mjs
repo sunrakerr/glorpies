@@ -56,7 +56,7 @@ const banner = () => `
   </div>
 </div>`;
 
-/** One name in every look, as a contact sheet on nothing, so it sits on GitHub's page in either theme. */
+/** One name in 24 looks, as a contact sheet with a transparent page behind it, so it sits on GitHub's page in either theme. */
 const LOOKS = ['watercolour', 'gouache', 'oil', 'sumi', 'charcoal', 'pointillism', 'linocut', 'warhol', 'stained', 'mosaic', 'neon', 'holo', 'atkinson', 'plotter', 'thermal', 'topo', 'blob', 'ink', 'sticker', 'cutpaper', 'pixel-icon', 'line-icon', 'glow', 'wash'];
 const looks = () => `
 <div id="art" style="width:1280px;box-sizing:border-box;padding:24px 48px 28px;color:var(--color-ink);font-family:var(--font-mono)">
