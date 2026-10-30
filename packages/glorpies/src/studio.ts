@@ -130,7 +130,17 @@ const LAYER_LAG = 1.1;
 const SLOW_STYLE_MS = 40;
 
 /** How a face is painted: its look, whether it will move, its mood, and whether it keeps its background. */
-export type PaintOptions = { look?: LookId; lively?: boolean; state?: FaceState; background?: boolean };
+export type PaintOptions = {
+  look?: LookId;
+  lively?: boolean;
+  state?: FaceState;
+  background?: boolean;
+  /** Called if a job after the first painting (a layer, an eye pose) fails; cancelling isn't a failure. */
+  onError?: (error: unknown) => void;
+};
+
+/** Cancelling a job rejects it with an AbortError, which is not a failure. */
+export const isCancelled = (error: unknown) => error instanceof Error && error.name === 'AbortError';
 
 /**
  * Paints a face as a series of small jobs, so the page never stalls for long.
@@ -152,7 +162,9 @@ export function paintRaster(seed: number, px: number, priority: number, o: Paint
   const follow: Scheduled<void>[] = [];
   const later = (prio: number, work: (E: Engine) => void) => {
     const job = schedule(prio, work, true);
-    job.promise.catch(() => {});
+    job.promise.catch((error: unknown) => {
+      if (!isCancelled(error)) o.onError?.(error);
+    });
     follow.push(job);
   };
   const base = schedule(priority, (E) => {

@@ -27,6 +27,9 @@ jobs:
       - run: pnpm --filter glorpies typecheck
       - name: build and test
         run: pnpm test
+      - name: the framework components in a real browser
+        if: matrix.node == 24
+        run: pnpm --filter glorpies test:browser
       - name: lint the package as npm will see it
         run: pnpm --filter glorpies lint:package
       - name: install the packed package the way a user would, and use it

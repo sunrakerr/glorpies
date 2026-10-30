@@ -2,7 +2,7 @@ import { marksFor, resolveLook, type LookChoice } from './looks';
 import { seedOf, type FaceName } from './seed';
 import { getStage, type Actor } from './stage';
 import type { FaceState } from './states';
-import { paintRaster, PRIORITY, type Scheduled } from './studio';
+import { isCancelled, paintRaster, PRIORITY, type Scheduled } from './studio';
 
 export type MountOptions = {
   name: FaceName;
@@ -63,6 +63,12 @@ export function mount(canvas: HTMLCanvasElement, options: MountOptions): FaceHan
 
   const wantsLife = () => o.alive ?? !prefersStill();
 
+  const report = (error: unknown) => {
+    if (disposed || isCancelled(error)) return;
+    if (o.onError) o.onError(error);
+    else console.error('glorpies: could not paint', o.name, error);
+  };
+
   const paint = (force = false) => {
     if (!near) return;
     const css = cssSize();
@@ -78,7 +84,7 @@ export function mount(canvas: HTMLCanvasElement, options: MountOptions): FaceHan
     key = next;
     job?.cancel();
     lively = wantsLife();
-    const j = paintRaster(seed, px, o.priority ?? PRIORITY.gallery, { look, lively, state, background });
+    const j = paintRaster(seed, px, o.priority ?? PRIORITY.gallery, { look, lively, state, background, onError: report });
     job = j;
     j.promise.then(({ face, raster }) => {
       if (disposed || job !== j) return;
@@ -100,9 +106,7 @@ export function mount(canvas: HTMLCanvasElement, options: MountOptions): FaceHan
       stage.drawNow(actor);
       o.onPaint?.(first);
     }, (error: unknown) => {
-      if (disposed || job !== j || (error instanceof Error && error.name === 'AbortError')) return;
-      if (o.onError) o.onError(error);
-      else console.error('glorpies: could not paint', o.name, error);
+      if (job === j) report(error);
     });
   };
 

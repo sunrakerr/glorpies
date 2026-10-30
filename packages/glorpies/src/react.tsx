@@ -4,41 +4,16 @@ import {
   createContext, useContext, useEffect, useMemo, useRef, useState,
   type CSSProperties, type ImgHTMLAttributes, type ReactNode,
 } from 'react';
-import type { LookChoice } from './looks';
+import { cssLength, RADIUS, type GlorpieOptions } from './host';
 import { mount, type FaceHandle } from './mount';
-import type { FaceName } from './seed';
-import type { FaceState } from './states';
 import { faceColors, type Shape } from './still';
 
-export type GlorpieProps = {
-  /** Any string or seed; the same name is always the same face. */
-  name: FaceName;
-  /** A look id, or `auto`: watercolour when large, the ink badge below 72px. */
-  look?: LookChoice;
-  /** Pixels, or any CSS length. Defaults to 48. */
-  size?: number | string;
-  /** The crop. Ignored without a background. */
-  shape?: Shape;
-  state?: FaceState;
-  /** `false` shows only the face: no backdrop, no pencil lines, no crop, transparent all around. Defaults to true. */
-  background?: boolean;
-  /** Breathing, blinking and glancing. Defaults to on, unless the reader prefers reduced motion. */
-  alive?: boolean;
-  /** Tapping makes the face wobble. */
-  pokeable?: boolean;
-  /** Accessible name. Defaults to "Avatar". */
-  label?: string;
-  /** Higher paints sooner when many faces are waiting, e.g. the one in your header. */
-  priority?: number;
+export type GlorpieProps = GlorpieOptions & {
   /** Called if the face can't be painted; without it the error is logged. */
   onError?: (error: unknown) => void;
   className?: string;
   style?: CSSProperties;
 };
-
-const RADIUS: Record<Shape, string> = { circle: '50%', squircle: '30%', rounded: '16%', square: '0' };
-
-const length = (size: number | string) => (typeof size === 'number' ? `${size}px` : size);
 
 /**
  * A living face. It renders on the server as a softly coloured placeholder in
@@ -80,7 +55,7 @@ export function Glorpie({ name, look = 'auto', size = 48, shape = 'circle', stat
       style={{
         display: 'inline-block', position: 'relative', overflow: 'hidden', verticalAlign: 'middle', flexShrink: 0,
         // a face off its background waits on nothing: no placeholder wash, and no crop
-        width: length(size), height: length(size), borderRadius: background ? RADIUS[shape] : 0, background: background ? wash : 'none', ...style,
+        width: cssLength(size), height: cssLength(size), borderRadius: background ? RADIUS[shape] : 0, background: background ? wash : 'none', ...style,
       }}
     >
       <canvas
@@ -122,7 +97,7 @@ export function Avatar({ children, size = 48, shape = 'circle', className, style
     <AvatarContext.Provider value={value}>
       <span
         className={className}
-        style={{ display: 'inline-grid', position: 'relative', overflow: 'hidden', verticalAlign: 'middle', flexShrink: 0, width: length(size), height: length(size), borderRadius: RADIUS[shape], ...style }}
+        style={{ display: 'inline-grid', position: 'relative', overflow: 'hidden', verticalAlign: 'middle', flexShrink: 0, width: cssLength(size), height: cssLength(size), borderRadius: RADIUS[shape], ...style }}
       >
         {children}
       </span>

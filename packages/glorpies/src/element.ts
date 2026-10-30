@@ -6,11 +6,11 @@ import { faceColors, isShape } from './still';
 
 const CSS = `
 :host{display:inline-block;position:relative;inline-size:var(--size);block-size:var(--size);overflow:hidden;vertical-align:middle;border-radius:50%;background:var(--wash);contain:layout paint}
-:host([shape=square]){border-radius:0}
-:host([shape=rounded]){border-radius:16%}
-:host([shape=squircle]){border-radius:30%}
-@supports (corner-shape:squircle){:host([shape=squircle]){border-radius:50%;corner-shape:squircle}}
-:host([background=false]){border-radius:0;corner-shape:round;background:none}
+:host([shape=square]){border-radius:0!important}
+:host([shape=rounded]){border-radius:16%!important}
+:host([shape=squircle]){border-radius:30%!important}
+@supports (corner-shape:squircle){:host([shape=squircle]){border-radius:50%!important;corner-shape:squircle}}
+:host([background=false]){border-radius:0!important;corner-shape:round;background:none!important}
 canvas{position:absolute;inset:0;inline-size:100%;block-size:100%;display:block;opacity:0;transition:opacity .45s ease}
 :host([data-ready]) canvas{opacity:1}
 :host(:not([data-ready]))::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);background-size:220% 100%;animation:sheen 1.4s ease-in-out infinite}
@@ -18,7 +18,7 @@ canvas{position:absolute;inset:0;inline-size:100%;block-size:100%;display:block;
 @media (prefers-reduced-motion:reduce){:host(:not([data-ready]))::after{animation:none}canvas{transition:none}}
 `;
 
-const ATTRS = ['name', 'look', 'size', 'shape', 'state', 'background', 'alive', 'pokeable', 'label'] as const;
+const ATTRS = ['name', 'look', 'size', 'shape', 'state', 'background', 'alive', 'pokeable', 'label', 'priority'] as const;
 
 /** An unknown look is painted as "auto". */
 const lookFrom = (v: string | null): LookChoice => (v && (v === 'auto' || isLook(v)) ? v : 'auto');
@@ -42,7 +42,14 @@ export class GlorpieElement extends Base {
     }
     if (!this.hasAttribute('role')) this.setAttribute('role', 'img');
     this.sync();
-    this.handle ??= mount(this.canvas!, { ...this.options(), onPaint: () => this.toggleAttribute('data-ready', true) });
+    this.handle ??= mount(this.canvas!, {
+      ...this.options(),
+      onPaint: () => this.toggleAttribute('data-ready', true),
+      // a listener can call preventDefault() to handle the failure itself; otherwise it's logged
+      onError: (error) => {
+        if (this.dispatchEvent(new CustomEvent('glorpie-error', { detail: error, cancelable: true }))) console.error('glorpies: could not paint', this.faceName, error);
+      },
+    });
   }
 
   disconnectedCallback() {
@@ -67,13 +74,13 @@ export class GlorpieElement extends Base {
   private sync() {
     const size = this.getAttribute('size') ?? '48';
     this.style.setProperty('--size', /^\d+(\.\d+)?$/.test(size) ? `${size}px` : size);
-    this.style.setProperty('--wash', faceColors(this.name).bg);
+    this.style.setProperty('--wash', faceColors(this.faceName).bg);
     this.setAttribute('aria-label', this.getAttribute('label') ?? 'Avatar');
     const shape = this.getAttribute('shape');
     if (shape && !isShape(shape)) console.warn(`<glorpie-face> unknown shape "${shape}"`);
   }
 
-  private get name() {
+  private get faceName() {
     return this.getAttribute('name') ?? '';
   }
 
@@ -81,16 +88,37 @@ export class GlorpieElement extends Base {
     const look = this.getAttribute('look');
     const state = this.getAttribute('state');
     const alive = this.getAttribute('alive');
+    const priority = Number(this.getAttribute('priority'));
     return {
-      name: this.name,
+      name: this.faceName,
       look: lookFrom(look),
       state: isState(state) ? state : 'idle',
       background: this.getAttribute('background') !== 'false',
       alive: alive === null ? undefined : alive !== 'false',
       pokeable: this.hasAttribute('pokeable'),
+      priority: Number.isFinite(priority) && this.hasAttribute('priority') ? priority : undefined,
     };
   }
 }
+
+/** Attributes for which `false` is a value of its own rather than "leave it out". */
+const SWITCHES = new Set<string>(['background', 'alive']);
+
+// every attribute is a property too, as frameworks set properties when an element has them
+for (const attr of ATTRS) {
+  Object.defineProperty(GlorpieElement.prototype, attr, {
+    get(this: GlorpieElement) {
+      return this.getAttribute(attr);
+    },
+    set(this: GlorpieElement, value: unknown) {
+      if (value === false && SWITCHES.has(attr)) this.setAttribute(attr, 'false');
+      else if (value === null || value === undefined || value === false) this.removeAttribute(attr);
+      else this.setAttribute(attr, value === true ? '' : String(value));
+    },
+  });
+}
+
+export interface GlorpieElement extends Record<(typeof ATTRS)[number], string | null> {}
 
 /** Registers the element (as <glorpie-face> unless you name it). Safe to call more than once, and on a server. */
 export function defineGlorpie(tag = 'glorpie-face') {

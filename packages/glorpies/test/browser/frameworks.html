@@ -1,0 +1,58 @@
+<!doctype html><meta charset="utf-8">
+<script type="importmap">{ "imports": {
+  "vue": "/node_modules/vue/dist/vue.esm-browser.prod.js",
+  "preact": "/node_modules/preact/dist/preact.mjs",
+  "solid-js": "/node_modules/solid-js/dist/solid.js",
+  "solid-js/web": "/node_modules/solid-js/web/dist/web.js"
+} }</script>
+<div id="vue"></div><div id="preact"></div><div id="solid"></div>
+<script type="module">
+  const results = {};
+  const ready = (root) => new Promise((resolve) => { const t0 = performance.now(); const tick = () => { const el = root.querySelector('glorpie-face'); el?.hasAttribute('data-ready') ? resolve(el) : performance.now() - t0 > 15000 ? resolve(null) : setTimeout(tick, 50); }; tick(); });
+
+  const Vue = await import('vue');
+  const { Glorpie: VueGlorpie } = await import('/dist/vue.js');
+  const state = Vue.ref('idle');
+  Vue.createApp({ setup: () => () => Vue.h(VueGlorpie, { name: 'agent-47', size: 64, state: state.value }) }).mount('#vue');
+  let el = await ready(document.getElementById('vue'));
+  state.value = 'done'; await Vue.nextTick();
+  results.vue = { painted: !!el, upgraded: el?.shadowRoot !== null, state: el?.getAttribute('state') };
+
+  const { h, render } = await import('preact');
+  const { Glorpie: PreactGlorpie } = await import('/dist/preact.js');
+  const root = document.getElementById('preact');
+  render(h(PreactGlorpie, { name: 'agent-47', size: 64 }), root);
+  el = await ready(root);
+  render(h(PreactGlorpie, { name: 'agent-47', size: 64, state: 'blocked' }), root);
+  results.preact = { painted: !!el, upgraded: el?.shadowRoot !== null, state: el?.getAttribute('state') };
+
+  const { createSignal } = await import('solid-js');
+  const { render: solidRender, createComponent } = await import('solid-js/web');
+  const { Glorpie: SolidGlorpie } = await import('/dist/solid.js');
+  const [look, setLook] = createSignal('watercolour');
+  const solidRoot = document.getElementById('solid');
+  solidRender(() => createComponent(SolidGlorpie, { name: 'agent-47', size: 64, get look() { return look(); } }), solidRoot);
+  el = await ready(solidRoot);
+  setLook('ink');
+  results.solid = { painted: !!el, upgraded: el?.shadowRoot !== null, look: el?.getAttribute('look') };
+
+  // a failure after the first painting (an eye pose, a layer) still reaches onError
+  const { mount, setCanvasFactory } = await import('/dist/index.js');
+  const canvas = Object.assign(document.createElement('canvas'), { style: 'width:64px;height:64px' });
+  document.body.append(canvas);
+  const failures = [];
+  let painted = false;
+  mount(canvas, {
+    name: 'deferred-failure', look: 'ink',
+    onPaint: () => {
+      painted = true;
+      setCanvasFactory({ canvas: () => { throw new Error('no canvas'); }, path: () => new Path2D() });
+    },
+    onError: (error) => failures.push(String(error)),
+  });
+  const t0 = performance.now();
+  while (!failures.length && performance.now() - t0 < 10000) await new Promise((r) => setTimeout(r, 50));
+  results.deferred = { painted, reported: failures.length > 0 };
+
+  window.__results = results;
+</script>

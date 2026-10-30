@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -161,6 +161,10 @@ test('svgs of different faces can sit inline together', async () => {
   assert.ok(a.size > 0);
   for (const id of a) assert.ok(!b.has(id) && !c.has(id), `${id} is shared`);
   assert.deepEqual(ids(faceSVG('agent-47', { look: 'watercolour', size: 64 })), a, 'the same picture keeps its ids');
+  // two pictures whose ids once collided, when the options were hashed
+  const p = ids(faceSVG('agent-47', { look: 'watercolour', state: 'idle', shape: 'squircle', size: 836 }));
+  const q = ids(faceSVG('agent-47', { look: 'watercolour', state: 'thinking', shape: 'rounded', size: 133 }));
+  for (const id of p) assert.ok(!q.has(id), `${id} is shared`);
 });
 
 test('unknown options are refused before they reach any markup', () => {
@@ -239,6 +243,68 @@ test('the cli paints a file, and keeps an existing one unless told to overwrite 
   assert.equal(again.status, 1);
   assert.match(again.stderr, /already exists/);
   execFileSync(process.execPath, [cli, 'agent-47', '--size', '32', '-o', out, '--force'], { stdio: 'pipe' });
+});
+
+/** What every framework's <Glorpie> must render on the server: the element, its attributes, and a placeholder in the face's place. */
+function assertPlaceholder(html, framework) {
+  assert.match(html, /<glorpie-face\b/, framework);
+  assert.match(html, /name="agent-47"/, framework);
+  assert.match(html, /size="40"/, framework);
+  assert.match(html, /state="thinking"/, framework);
+  assert.match(html, /width:\s*40px/, `${framework} holds the face's place`);
+  assert.match(html, /border-radius:\s*30%/, `${framework} crops it before it paints`);
+}
+
+const props = { name: 'agent-47', size: 40, state: 'thinking', shape: 'squircle' };
+
+test('vue renders the face on the server', async () => {
+  const { createSSRApp, h } = await import('vue');
+  const { renderToString } = await import('vue/server-renderer');
+  const { Glorpie } = await import('../dist/vue.js');
+  assertPlaceholder(await renderToString(createSSRApp({ render: () => h(Glorpie, props) })), 'vue');
+});
+
+test('preact renders the face on the server', async () => {
+  const { h } = await import('preact');
+  const { renderToString } = await import('preact-render-to-string');
+  const { Glorpie } = await import('../dist/preact.js');
+  assertPlaceholder(renderToString(h(Glorpie, props)), 'preact');
+});
+
+test('solid renders the face on the server', async () => {
+  const { renderToString, createComponent } = await import('solid-js/web');
+  const { Glorpie } = await import('../dist/solid.js');
+  assertPlaceholder(renderToString(() => createComponent(Glorpie, props)), 'solid');
+});
+
+test('the svelte component compiles, and renders the face on the server', async () => {
+  const { compile } = await import('svelte/compiler');
+  const { render } = await import('svelte/server');
+  const source = readFileSync(new URL('../dist/svelte/Glorpie.svelte', import.meta.url), 'utf8');
+  compile(source, { generate: 'client' });
+  const server = new URL('../dist/svelte/Glorpie.server.test.js', import.meta.url);
+  writeFileSync(server, compile(source, { generate: 'server' }).js.code);
+  try {
+    const { default: Glorpie } = await import(server.href);
+    assertPlaceholder(render(Glorpie, { props }).body, 'svelte');
+  } finally {
+    rmSync(server);
+  }
+});
+
+test('node servers get faces through nodeFaceHandler', async () => {
+  const { createServer } = await import('node:http');
+  const { nodeFaceHandler } = await import('../dist/server.js');
+  const server = createServer(nodeFaceHandler()).listen(0);
+  await new Promise((r) => server.once('listening', r));
+  try {
+    const res = await fetch(`http://localhost:${server.address().port}/face?name=agent-47&size=32&look=ink`);
+    assert.equal(res.headers.get('content-type'), 'image/png');
+    assert.deepEqual([...new Uint8Array(await res.arrayBuffer()).subarray(0, 4)], PNG);
+    assert.equal((await fetch(`http://localhost:${server.address().port}/face`)).status, 400);
+  } finally {
+    server.close();
+  }
 });
 
 test('the drop-in script stays small', () => {

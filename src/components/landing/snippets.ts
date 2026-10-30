@@ -45,7 +45,7 @@ function query(c: Choice, format?: string) {
  */
 function cli(c: Choice) {
   const flags = [
-    c.look !== 'auto' && `--look ${c.look}`, '--size 256', c.background ? `--shape ${c.shape}` : '--background false',
+    `--look ${resolveLook(c.look, c.size)}`, '--size 256', c.background ? `--shape ${c.shape}` : '--background false',
     c.state !== 'idle' && `--state ${c.state}`, '-o face.png',
   ].filter(Boolean);
   return `npx -p glorpies -p @napi-rs/canvas glorpies ${flags.join(' ')} ${c.name.startsWith('-') ? '-- ' : ''}${shellWord(c.name || 'face')}`;

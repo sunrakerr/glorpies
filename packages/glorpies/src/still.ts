@@ -51,8 +51,7 @@ export function checked<T extends StillOptions>(o: T): T {
 
 /** Ids for an SVG's definitions: the same for the same picture and different for any other, so faces can sit inline side by side. */
 function svgIds(name: FaceName, o: StillOptions, size: number): string {
-  const variant = seedOf(JSON.stringify([o.look ?? 'auto', o.state ?? 'idle', o.shape ?? 'square', o.background !== false, size]));
-  return `glorpie-${seedOf(name).toString(36)}-${variant.toString(36).slice(0, 6)}`;
+  return ['glorpie', seedOf(name).toString(36), o.look ?? 'auto', o.state ?? 'idle', o.shape ?? 'square', o.background === false ? 'bare' : 'paper', size].join('-');
 }
 
 /** The face for a name, built once and cached. */

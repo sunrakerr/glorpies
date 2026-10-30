@@ -57,7 +57,7 @@ It renders on the server as a soft placeholder in the face's own background colo
 | `shape` | `circle` `squircle` `rounded` `square` | `circle` | The crop. None without a background. |
 | `background` | `boolean` | `true` | `false` keeps only the face: no backdrop, no pencil lines, no crop, transparent all around. |
 | `state` | `idle` `thinking` `working` `waiting` `blocked` `done` | `idle` | What the face shows besides who it is. |
-| `alive` | `boolean` | `true` | Breathing, blinking, glancing. Off for readers who prefer reduced motion. |
+| `alive` | `boolean` | `true` | Breathing, blinking, glancing. Off by default for readers who prefer reduced motion. |
 | `pokeable` | `boolean` | `false` | A tap makes the face wobble. |
 | `label` | `string` | `"Avatar"` | Accessible name (`role="img"`). |
 

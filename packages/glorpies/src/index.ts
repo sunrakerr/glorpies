@@ -8,5 +8,6 @@ export {
 export { isState, STATES, type FaceState } from './states';
 export { faceCanvas, faceColors, faceSVG, isShape, SHAPES, type Shape, type StillOptions } from './still';
 export { mount, type FaceHandle, type MountOptions } from './mount';
+export type { GlorpieOptions } from './host';
 export { setCanvasFactory, type CanvasFactory } from './canvas';
 export type { Palette } from './palettes';

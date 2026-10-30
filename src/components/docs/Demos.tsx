@@ -139,7 +139,7 @@ const PROPS: { prop: string; type: string; fallback: string; note: string }[] = 
   { prop: 'shape', type: '"circle" | "squircle" | "rounded" | "square"', fallback: '"circle"', note: 'The crop. Without a background there is nothing to crop.' },
   { prop: 'background', type: 'boolean', fallback: 'true', note: 'false keeps only the face: no backdrop, no pencil lines, transparent all around.' },
   { prop: 'state', type: 'idle | thinking | working | waiting | blocked | done', fallback: '"idle"', note: 'For agents: changes the expression, the motion and a mark by the head.' },
-  { prop: 'alive', type: 'boolean', fallback: 'true', note: 'Breathing, blinking, glancing at the pointer. Off for readers who prefer reduced motion.' },
+  { prop: 'alive', type: 'boolean', fallback: 'true', note: 'Breathing, blinking, glancing at the pointer. Off by default for readers who prefer reduced motion.' },
   { prop: 'pokeable', type: 'boolean', fallback: 'false', note: 'A tap makes the face wobble.' },
   { prop: 'label', type: 'string', fallback: '"Avatar"', note: 'The accessible name (role="img").' },
   { prop: 'priority', type: 'number', fallback: '1', note: 'Paints sooner when many faces are waiting, like the one in your header. React only.' },

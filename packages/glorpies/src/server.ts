@@ -1,3 +1,4 @@
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import { animationFrames as frames, faceGIF as gif, type AnimationOptions } from './animate';
 import { setCanvasFactory } from './canvas';
 import { isLook, type LookChoice } from './looks';
@@ -103,6 +104,16 @@ export function createFaceHandler(defaults: HandlerOptions = {}): (request: Requ
       console.error('glorpies: could not paint', name, e);
       return new Response('Could not paint that face', { status: 500 });
     }
+  };
+}
+
+/** The handler for Node's own servers: `node:http`, Express, or anything that hands you `(req, res)`. */
+export function nodeFaceHandler(defaults?: HandlerOptions): (req: IncomingMessage, res: ServerResponse) => Promise<void> {
+  const handle = createFaceHandler(defaults);
+  return async (req, res) => {
+    const response = await handle(new Request(new URL(req.url ?? '/', 'http://localhost')));
+    res.writeHead(response.status, Object.fromEntries(response.headers));
+    res.end(Buffer.from(await response.arrayBuffer()));
   };
 }
 

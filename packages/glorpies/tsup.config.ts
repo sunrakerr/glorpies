@@ -3,12 +3,15 @@ import { defineConfig } from 'tsup';
 export default defineConfig([
   {
     // built together so every entry shares one copy of the engine (one animation loop, one face cache)
-    entry: { index: 'src/index.ts', element: 'src/element.ts', react: 'src/react.tsx', server: 'src/server.ts', testing: 'src/testing.ts' },
+    entry: {
+      index: 'src/index.ts', element: 'src/element.ts', react: 'src/react.tsx', vue: 'src/vue.ts', preact: 'src/preact.ts', solid: 'src/solid.ts',
+      'svelte/action': 'src/svelte/action.ts', server: 'src/server.ts', testing: 'src/testing.ts',
+    },
     format: ['esm'],
     target: 'es2022',
     dts: true,
     clean: true,
-    external: ['react', '@napi-rs/canvas'],
+    external: ['react', 'vue', 'preact', 'solid-js', 'svelte', '@napi-rs/canvas'],
     // the 5KB gif encoder is bundled in, so the package has no runtime dependencies at all
     noExternal: ['gifenc'],
   },
