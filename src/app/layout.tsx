@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist_Mono, Geist_Pixel, Noto_Sans_Symbols_2, Noto_Sans_Tifinagh } from 'next/font/google';
 import { SITE_URL } from '@/lib/site';
-import { THEME_SCRIPT } from '@/lib/theme';
+import { DEFAULT_THEME, THEME_SCRIPT } from '@/lib/theme';
 import './globals.css';
 
 /** Crisp square pixels for titles, labels and controls; Geist Mono for reading. */
@@ -35,7 +35,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     // the theme is set before paint by the script below, so the attribute is allowed to differ on hydration
-    <html lang="en" data-theme="light" suppressHydrationWarning className={[pixel, mono, tifinagh, braille].map((f) => f.variable).join(' ')}>
+    <html lang="en" data-theme={DEFAULT_THEME} suppressHydrationWarning className={[pixel, mono, tifinagh, braille].map((f) => f.variable).join(' ')}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
