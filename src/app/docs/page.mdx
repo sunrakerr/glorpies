@@ -4,7 +4,7 @@ export const metadata = { title: { absolute: 'docs · glorpies' } };
 
 <Faces names={['ada@lovelace.dev', 'agent-47', 'soggy-glorp', 'grace@hopper.dev', 'bot-9000']} size={72} />
 
-glorpies is an avatar library. It turns any string into a hand-painted alien in watercolour and dip pen: antennae, extra eyes, horns, halos, too many teeth. The same string always gives the same face, in every browser and on every server, and the faces are alive: they breathe, blink and glance around.
+glorpies is an open-source avatar library. It turns any string into a hand-painted alien in watercolour and dip pen: antennae, extra eyes, horns, halos, too many teeth. The same string always gives the same face, in every browser and on every server, and the faces are alive: they breathe, blink and glance around.
 
 ## why glorpies
 
@@ -16,6 +16,19 @@ Every user, bot and agent in your app gets a face that's recognisably theirs, bu
 - **Light.** No runtime dependencies. Faces paint when they near the viewport and share one animation loop.
 - **Moods for agents.** Six states put an agent's status on its face: idle, thinking, working, waiting, blocked, done.
 
+## what it's for
+
+- **User avatars.** A face for every account from its id or email, and a fallback while a photo loads, when it fails, or when there isn't one ([`<Avatar>`](/docs/react#photo-avatars)).
+- **AI agents and bots.** Each agent is recognisable in a crowded sidebar, and its [state](/docs/states) shows what it's doing.
+- **Chat, comments and multiplayer.** Every participant, cursor and commenter gets a face, guests included.
+- **Anonymous users.** A face from a session id, with nothing to sign up for.
+- **Placeholders.** Seed data, demos and design mocks with real-looking people instead of grey circles.
+- **Emails, link previews and READMEs.** PNG, WebP, SVG and looping GIFs from [your own route](/docs/server) or the [CLI](/docs/cli).
+
 ## how it works
 
 The name is hashed to a 53-bit seed. The seed drives a deterministic random stream that builds the alien as a list of drawing operations: glazes, hatching, pen lines and fills. That list is painted in the look you choose, and the eyes are drawn live on top. [Watch one being painted](/how).
+
+## open source
+
+glorpies is MIT licensed, and the code is on [GitHub](https://github.com/sunrakerr/glorpies). Issues and pull requests are welcome; read the [contributing guide](https://github.com/sunrakerr/glorpies/blob/main/CONTRIBUTING.md) first.

@@ -24,6 +24,8 @@ Hand-painted in watercolour and dip pen. Antennae, extra eyes, horns, halos, too
 
 **9,007,199,254,740,992** faces, over a million for every person on earth. A username, email or bot id always gets the same one, on every device and server. No API calls, no image downloads, nothing to store.
 
+Use them for **user avatars** and photo fallbacks, **AI agents and bots** (with moods that show what they're doing), chat and comments, multiplayer cursors, guest and anonymous users, and placeholder people in demos and seed data.
+
 ## Quick start
 
 ```bash
@@ -107,10 +109,10 @@ Each renders a placeholder on the server (Nuxt, SvelteKit, SolidStart) and paint
 | `shape` | `circle` `squircle` `rounded` `square` | `circle` | The crop. None with `background={false}`. |
 | `background` | `boolean` or a colour | `true` | `false` keeps only the face: no backdrop, no pencil lines, no crop, transparent all around. A colour (`"#ffe9a8"`) puts the face on it instead of its paper, inside the crop. |
 | `state` | `idle` `thinking` `working` `waiting` `blocked` `done` | `idle` | What the face shows besides who it is. |
-| `alive` | `boolean` | on, unless reduced motion | Breathing, blinking, glancing. On unless the reader prefers reduced motion. |
+| `alive` | `boolean` | on, unless reduced motion | Breathing, blinking and glancing. |
 | `pokeable` | `boolean` | `false` | A tap makes the face wobble. |
 | `label` | `string` | `"Avatar"` | Accessible name (`role="img"`). |
-| `priority` | `number` | — | Higher values paint sooner when many faces are waiting. |
+| `priority` | `number` | | Higher values paint sooner when many faces are waiting. |
 
 These are attributes on `<glorpie-face>` too: use `background="false"` or `alive="false"` to turn those options off. See [options and error handling](https://glorpies.vercel.app/docs/options) for framework-specific callbacks.
 
@@ -228,6 +230,6 @@ The full guide, with every framework, is at [glorpies.vercel.app/docs](https://g
 
 ## Licence
 
-Made by [sunrakerr](https://github.com/sunrakerr).
+Made by [sunrakerr](https://github.com/sunrakerr). Open source on [GitHub](https://github.com/sunrakerr/glorpies): issues and pull requests are welcome.
 
 [MIT](LICENSE). Bundled third-party licences are in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).

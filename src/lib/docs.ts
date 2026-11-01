@@ -41,7 +41,7 @@ export const DOCS: { group: string; pages: DocPage[] }[] = [
     pages: [
       { slug: 'options', title: 'options', mark: 'ⵎ', summary: 'Every option, as a prop, attribute, query parameter or flag.' },
       { slug: 'api', title: 'api', mark: 'ⵥ', summary: 'Every export, by entry point.' },
-      { slug: 'faq', title: 'faq', mark: 'ⵇ', summary: 'Determinism, collisions, size, SSR and licence.' },
+      { slug: 'faq', title: 'faq', mark: 'ⵇ', summary: 'Determinism, collisions, size, SSR, licence and source.' },
     ],
   },
 ];

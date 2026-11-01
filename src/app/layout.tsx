@@ -12,7 +12,7 @@ const tifinagh = Noto_Sans_Tifinagh({ subsets: ['tifinagh'], weight: '400', vari
 const braille = Noto_Sans_Symbols_2({ subsets: ['braille'], weight: '400', variable: '--font-braille-dots', preload: false });
 
 const description =
-  '9 quadrillion different hand-painted alien avatars, over a million for every person on earth. any string gets its own, and always the same one. alive, with moods for agents. react, vue, svelte, solid, preact, a web component, server images and a cli, with zero dependencies.';
+  '9 quadrillion hand-painted alien avatars for your users, ai agents and bots, over a million for every person on earth. any string gets its own, and always the same one. alive, with moods for agents. react, vue, svelte, solid, preact, a web component, server images and a cli. open source, with zero dependencies.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { REPO_URL } from '@/lib/site';
 import { PixelField } from './landing/PixelField';
 import { Invader, SiteHeader } from './SiteHeader';
 
@@ -39,16 +40,19 @@ export function Section({ title, mark, id, aside, className = '', children }: { 
   );
 }
 
-/** The mark, the licence, who made it and the other pages, under a dashed rule like the sections'. */
+const LINK = 'text-ink underline decoration-ink/30 underline-offset-[3px] transition hover:text-accent hover:decoration-accent';
+
+/** The mark, the source and licence, who made it and the other pages, under a dashed rule like the sections'. */
 export function Footer() {
   return (
     <footer className="mb-10 mt-14 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-t border-dashed border-ink/20 pt-5 text-[11.5px] text-ink-2">
       <span className="flex items-center gap-2">
-        <Invader className="h-[10px] text-accent" />
-        <span className="text-ink">glorpies</span> · mit licence · made by{' '}
-        <a href="https://github.com/sunrakerr" target="_blank" rel="noopener noreferrer" className="text-ink underline decoration-ink/30 underline-offset-[3px] transition hover:text-accent hover:decoration-accent">
-          sunrakerr
-        </a>
+        <Invader className="h-[10px] shrink-0 text-accent" />
+        {/* one run of text, so it wraps as words rather than as flex items */}
+        <span>
+          <span className="text-ink">glorpies</span> · <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className={LINK}>open source</a>, mit licence · made by{' '}
+          <a href="https://github.com/sunrakerr" target="_blank" rel="noopener noreferrer" className={LINK}>sunrakerr</a>
+        </span>
       </span>
       <nav className="flex items-center gap-4">
         <Link href="/" className="transition hover:text-ink">./</Link>

@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Copy, Dices, FileCode, ImageDown } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Copy, Dices, FileCode, ImageDown } from 'lucide-react';
 import Link from 'next/link';
 import { useDeferredValue, useEffect, useState, type ReactNode } from 'react';
 import { FACES, FULL_LOOKS, lookOf, randomName, resolveLook, seedOf, SHAPES, SMALL_LOOKS, STATES, type FaceState, type LookChoice, type LookId } from 'glorpies';
@@ -14,6 +14,7 @@ import { Page, Section } from '../Page';
 import { Pick, Tabs } from '../Tabs';
 import { IconButton, ToastView, useToast } from '../ui';
 import { DOCS, docHref } from '@/lib/docs';
+import { REPO_URL } from '@/lib/site';
 import { MARKS } from '@/lib/glyphs';
 import { Crowd } from './Crowd';
 import { Transmission } from './Transmission';
@@ -68,7 +69,7 @@ function Hero({ onPick }: { onPick: (name: string) => void }) {
       <div>
         <Transmission className="font-display text-[clamp(1.9rem,5.6vw,2.75rem)] leading-[1.05]" />
         <p className="mt-4 max-w-[36rem] text-[15px] leading-relaxed text-ink-2">
-          <span className="text-ink">{FACES.toLocaleString('en-US')}</span> different hand-painted aliens: over a million for every person on earth. any string (a username, an email, a bot id) gets its own, and always the same one. for every framework, as server images and from a cli, with zero dependencies.
+          <span className="text-ink">{FACES.toLocaleString('en-US')}</span> hand-painted aliens, over a million for every person on earth. any string gets its own, and always the same one: avatars for your users, your ai agents and bots, chats and guests. for every framework, as server images and from a cli. open source, with zero dependencies.
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-5">
           <Link href="/docs" className="inline-flex items-center gap-1.5 rounded-md bg-ink px-3 py-2 text-[12.5px] text-paper transition hover:bg-accent hover:text-paper">
@@ -77,6 +78,9 @@ function Hero({ onPick }: { onPick: (name: string) => void }) {
           <Link href="/gallery" className="text-[12.5px] text-ink-2 transition hover:text-ink">
             <span className="text-ink-2/50">./</span>gallery
           </Link>
+          <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 text-[12.5px] text-ink-2 transition hover:text-ink">
+            <span className="hidden sm:inline">source on&nbsp;</span>github <ArrowUpRight aria-hidden className="size-3 text-ink-2/50" strokeWidth={1.8} />
+          </a>
         </div>
         <nav aria-label="Frameworks" className="mt-7 flex flex-wrap items-center gap-x-1 gap-y-2 text-[12px]">
           <span className="mr-2 text-ink-2/70">works with</span>

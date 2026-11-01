@@ -23,6 +23,8 @@ Hand-painted in watercolour and dip pen. Antennae, extra eyes, horns, halos, too
 
 **9,007,199,254,740,992** faces, over a million for every person on earth. A username, email or bot id always gets the same one, on every device and server. No API calls, no image downloads, nothing to store.
 
+Use them for **user avatars** and photo fallbacks, **AI agents and bots** (with moods that show what they're doing), chat and comments, multiplayer cursors, guest and anonymous users, and placeholder people in demos and seed data.
+
 ## ⵣ quick start
 
 ```bash
@@ -87,7 +89,7 @@ Made for agents too: a face you can pick out of a crowded sidebar, with a status
 <Glorpie name="agent-47" state="thinking" />
 ```
 
-## options
+## ⵎ options
 
 The same props on every `<Glorpie>`, or attributes on `<glorpie-face>`:
 
@@ -143,7 +145,7 @@ const { bg, accent } = faceColors(user.email);
 header.style.background = bg;
 ```
 
-## server images
+## ⵡ server images
 
 For emails, Open Graph images, chat integrations and anywhere else that needs an image URL, serve faces from your own app. Image rendering and the CLI need the optional `@napi-rs/canvas` peer dependency. Node deployments support Node 22 and newer.
 
@@ -169,7 +171,7 @@ PNG, WebP, JPEG, SVG and seamless GIF loops, cached for a year by default. `crea
 
 [Server setup for every framework, query parameters and limits](https://glorpies.vercel.app/docs/server).
 
-## CLI
+## ⵜ cli
 
 Write a face straight to a file:
 
@@ -191,7 +193,7 @@ A name hashes to a 53-bit seed, and the seed drives a random stream (sfc32) and 
 
 [Watch it paint one](https://glorpies.vercel.app/how), step by step, or read [the faq](https://glorpies.vercel.app/docs/faq) on why the same name gives the same face everywhere.
 
-## this repo
+## ⵛ this repo
 
 `packages/glorpies` is the library, with zero runtime dependencies. `src/` is the site, a Next.js app. To work on the repo, use Node 26 and pnpm.
 
@@ -205,9 +207,9 @@ pnpm typecheck && pnpm test
 - In that same directory, `face/render.ts` paints and animates a face; `stage.ts` runs one animation loop for every face on a page. `styles.ts` and `small.ts` repaint faces in the other looks.
 - `scripts/` holds headless Chrome checks, and `readme-art.mjs`, which draws the pictures in this README and the site's link preview.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) before a pull request. There's one rule: an existing face must never change.
+glorpies is open source, and issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) before a pull request. There's one rule: an existing face must never change. Report security issues privately, as [SECURITY.md](SECURITY.md) describes.
 
-## licence
+## ⵇ licence
 
 Made by **[sunrakerr](https://github.com/sunrakerr)**.
 

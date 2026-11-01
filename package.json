@@ -17,7 +17,6 @@
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",
     "@mdx-js/react": "^3.1.1",
-    "@napi-rs/canvas": "^1.0.13",
     "@next/mdx": "^16.4.3",
     "glorpies": "workspace:*",
     "lucide-react": "^1.61.0",

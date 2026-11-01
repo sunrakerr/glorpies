@@ -1,10 +1,11 @@
 'use client';
 
-import { ChevronDown } from 'lucide-react';
+import { ArrowUpRight, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { DOC_PAGES, DOCS, docHref } from '@/lib/docs';
+import { REPO_URL } from '@/lib/site';
 
 function Index({ onPick }: { onPick?: () => void }) {
   const path = usePathname();
@@ -34,6 +35,9 @@ function Index({ onPick }: { onPick?: () => void }) {
           </ul>
         </div>
       ))}
+      <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 py-1 text-ink-2 transition hover:text-ink">
+        source on github <ArrowUpRight aria-hidden className="size-3 text-ink-2/50" strokeWidth={1.8} />
+      </a>
     </nav>
   );
 }

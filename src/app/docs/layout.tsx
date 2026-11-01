@@ -5,7 +5,7 @@ import { Page } from '@/components/Page';
 
 export const metadata: Metadata = {
   title: { default: 'docs', template: '%s · glorpies docs' },
-  description: 'How to use glorpies: hand-painted alien avatars from any string, in React, as a web component, on a canvas, from a server route or the command line.',
+  description: 'How to use glorpies, the open-source library of hand-painted alien avatars for users, AI agents and bots: in React, Vue, Svelte, Solid, Preact, as a web component, on a canvas, from a server route or the command line.',
 };
 
 export default function DocsLayout({ children }: { children: ReactNode }) {
