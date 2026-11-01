@@ -1,4 +1,4 @@
-import { defineGlorpie } from '../element';
+import { defineGlorpie } from '../element-core';
 import { mount, type MountOptions } from '../mount';
 
 export { attributesOf, hostStyle, styleText } from '../host';

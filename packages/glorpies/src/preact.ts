@@ -1,5 +1,5 @@
 import { h, type JSX } from 'preact';
-import { defineGlorpie } from './element';
+import { defineGlorpie } from './element-core';
 import { attributesOf, hostStyle, type GlorpieOptions } from './host';
 
 // called here, not left to an import: bundlers may drop an import that only has side effects

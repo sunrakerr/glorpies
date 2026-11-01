@@ -1,5 +1,5 @@
 import { defineComponent, getCurrentInstance, h, type PropType } from 'vue';
-import { defineGlorpie } from './element';
+import { defineGlorpie } from './element-core';
 import { attributesOf, hostStyle, type GlorpieOptions } from './host';
 import type { LookChoice } from './looks';
 import type { FaceName } from './seed';
