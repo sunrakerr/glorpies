@@ -12,7 +12,7 @@ const base = process.argv.slice(2).find((arg) => !arg.startsWith('--')) ?? BASE_
 const out = new URL('../.github/assets/', import.meta.url);
 mkdirSync(out, { recursive: true });
 const { body: hero } = await renderImage('sunrakerrisfriednoodlz', {
-  look: 'watercolour', size: 512, format: 'png', background: false,
+  look: 'watercolour', size: 512, format: 'png', shape: 'circle',
 });
 writeFileSync(new URL('glorpie.png', out), hero);
 console.log('wrote glorpie.png');

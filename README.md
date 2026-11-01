@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://glorpies.vercel.app"><img src=".github/assets/glorpie.png" width="192" height="192" alt="sunrakerrisfriednoodlz: a purple Glorpie with a yellow crown, pointy ears and too many teeth"></a>
+  <a href="https://glorpies.vercel.app"><img src=".github/assets/glorpie.png" width="192" height="192" alt="sunrakerrisfriednoodlz: a purple Glorpie with a yellow crown, pointy ears and too many teeth, painted on a mint wash in a circle"></a>
 </p>
 
 <h1 align="center">glorpies</h1>
@@ -40,7 +40,7 @@ import { Glorpie } from 'glorpies/react';
 By default, small avatars use the ink look; at 72px and above they use watercolour. To paint the Glorpie at the top of this page:
 
 ```tsx
-<Glorpie name="sunrakerrisfriednoodlz" look="watercolour" size={192} background={false} />
+<Glorpie name="sunrakerrisfriednoodlz" look="watercolour" size={192} />
 ```
 
 ## ⵅ frameworks
@@ -176,7 +176,7 @@ PNG, WebP, JPEG, SVG and seamless GIF loops, cached for a year by default. `crea
 Write a face straight to a file:
 
 ```bash
-npx -p glorpies -p @napi-rs/canvas glorpies sunrakerrisfriednoodlz --look watercolour --size 512 -o glorpie.png
+npx -p glorpies -p @napi-rs/canvas glorpies sunrakerrisfriednoodlz --look watercolour --size 512 --shape circle -o glorpie.png
 ```
 
 Or a whole team, after installing `glorpies` and `@napi-rs/canvas` in your project:

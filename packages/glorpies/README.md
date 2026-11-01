@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://glorpies.vercel.app"><img src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/glorpie.png" width="192" height="192" alt="sunrakerrisfriednoodlz: a purple Glorpie with a yellow crown, pointy ears and too many teeth"></a>
+  <a href="https://glorpies.vercel.app"><img src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/glorpie.png" width="192" height="192" alt="sunrakerrisfriednoodlz: a purple Glorpie with a yellow crown, pointy ears and too many teeth, painted on a mint wash in a circle"></a>
 </p>
 
 <h1 align="center">glorpies</h1>
@@ -41,7 +41,7 @@ import { Glorpie } from 'glorpies/react';
 By default, small avatars use the ink look; at 72px and above they use watercolour. To paint the Glorpie at the top of this page:
 
 ```tsx
-<Glorpie name="sunrakerrisfriednoodlz" look="watercolour" size={192} background={false} />
+<Glorpie name="sunrakerrisfriednoodlz" look="watercolour" size={192} />
 ```
 
 ## Anywhere: one tag
