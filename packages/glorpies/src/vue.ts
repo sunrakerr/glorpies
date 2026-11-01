@@ -20,7 +20,7 @@ export const Glorpie = defineComponent({
     size: { type: [Number, String] as PropType<number | string>, default: 48 },
     shape: String as PropType<Shape>,
     state: String as PropType<FaceState>,
-    background: { type: Boolean, default: true },
+    background: { type: [Boolean, String] as PropType<boolean | string>, default: true },
     alive: { type: Boolean, default: undefined },
     pokeable: Boolean,
     label: String,

@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage, Glorpie } from 'glorpies/react';
 import { Tabs } from '../Tabs';
 
 /** A few faces in a row, each over its name. */
-export function Faces({ names, size = 64, look = 'auto', shape = 'squircle', state, background = true }: { names: string[]; size?: number; look?: LookChoice; shape?: Shape; state?: FaceState; background?: boolean }) {
+export function Faces({ names, size = 64, look = 'auto', shape = 'squircle', state, background = true }: { names: string[]; size?: number; look?: LookChoice; shape?: Shape; state?: FaceState; background?: boolean | string }) {
   return (
     <div className="my-6 flex flex-wrap items-end gap-x-7 gap-y-5">
       {names.map((name) => (
@@ -137,7 +137,7 @@ const PROPS: { prop: string; type: string; fallback: string; note: string }[] = 
   { prop: 'look', type: '"auto" | look id', fallback: '"auto"', note: 'auto resolves to watercolour at 72px and up, ink below. See looks.' },
   { prop: 'size', type: 'number | CSS length', fallback: '48', note: 'Pixels, or any CSS length such as "100%". Repaints at the new resolution when it grows.' },
   { prop: 'shape', type: '"circle" | "squircle" | "rounded" | "square"', fallback: '"circle"', note: 'The crop. Ignored when background is false.' },
-  { prop: 'background', type: 'boolean', fallback: 'true', note: 'false draws only the face, on transparency: no backdrop, pencil guides or crop.' },
+  { prop: 'background', type: 'boolean | string', fallback: 'true', note: 'false draws only the face, on transparency: no backdrop, pencil guides or crop. A CSS colour puts the face on that colour instead of its paper, inside its crop.' },
   { prop: 'state', type: 'idle | thinking | working | waiting | blocked | done', fallback: '"idle"', note: 'Changes the expression and motion, and adds a mark beside the head. See states.' },
   { prop: 'alive', type: 'boolean', fallback: 'true', note: 'Breathing, blinking and glancing at the pointer. Defaults to false under prefers-reduced-motion.' },
   { prop: 'pokeable', type: 'boolean', fallback: 'false', note: 'Clicking or tapping the face makes it wobble.' },

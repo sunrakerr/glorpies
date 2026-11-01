@@ -9,7 +9,7 @@ import { splitLayers } from './layers';
 import { lookOf, marksFor, renderLook, resolveLook } from './looks';
 import { drawMarks } from './marks';
 import { scriptedPose, type FaceState } from './states';
-import { checked, faceOf, shapePath, sizeOf, type StillOptions } from './still';
+import { backdropOf, checked, faceOf, shapePath, sizeOf, type StillOptions } from './still';
 import type { FaceName } from './seed';
 
 export type AnimationOptions = StillOptions & {
@@ -49,21 +49,21 @@ export function animationFrames(name: FaceName, options: AnimationOptions = {}):
   const { size, loop, count } = timing(o);
   const state: FaceState = o.state ?? 'idle';
   const look = resolveLook(o.look, size);
-  const background = o.background !== false;
-  const face = background ? faceOf(name, state) : unguided(faceOf(name, state));
+  const { paper, colour } = backdropOf(o.background);
+  const face = paper ? faceOf(name, state) : unguided(faceOf(name, state));
   const E = getEngine();
 
   let raster: Painting;
   if (look === 'watercolour') {
     raster = rasterizeFace(face, E, size);
-    if (!background) cutBackdrop(raster, face);
+    if (!paper) cutBackdrop(raster, face);
   } else {
     const still = renderLook(look, face, E, size);
     const { motion, eyes, tiles } = lookOf(look);
     const r: StillRaster = { px: size, still, layers: 'whole', back: null, figure: null, mask: null, motion, eyes, tiles, patches: [], glance: null };
     const back = renderLook(look, face, E, size, true);
     // off its background the face moves over nothing; otherwise over its own background, held still
-    const cut = background ? null : cutOut(look, face, E, still, back);
+    const cut = paper ? null : cutOut(look, face, E, still, back);
     const split = cut ? { figure: cut.figure, mask: cut.mask } : splitLayers(still, back);
     if (split) Object.assign(r, { layers: 'split', back: cut ? makeCanvas(size) : back, figure: split.figure, mask: split.mask });
     const rest = pixelsOf(still);
@@ -86,8 +86,14 @@ export function animationFrames(name: FaceName, options: AnimationOptions = {}):
     if ('still' in raster) drawStill(g, face, raster, pose, size);
     else drawFrame(g, face, raster, pose, size);
     if (marks) drawMarks(g, face, state, marks, t);
-    if (background && o.shape && o.shape !== 'square') {
-      g.setTransform(1, 0, 0, 1, 0, 0);
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    if (colour) {
+      g.globalCompositeOperation = 'destination-over';
+      g.fillStyle = colour;
+      g.fillRect(0, 0, size, size);
+      g.globalCompositeOperation = 'source-over';
+    }
+    if ((paper || colour) && o.shape && o.shape !== 'square') {
       g.globalCompositeOperation = 'destination-in';
       shapePath(g, o.shape, size);
       g.fill();
@@ -102,8 +108,9 @@ export function animationFrames(name: FaceName, options: AnimationOptions = {}):
 /** The loop as a GIF, with one palette for the whole loop so colours never flicker between frames. */
 export function faceGIF(name: FaceName, o: AnimationOptions = {}): Uint8Array {
   const { frames, size, loop } = animationFrames(name, o);
-  // a crop or a face off its background leaves pixels to keep transparent
-  const shaped = o.background === false || (!!o.shape && o.shape !== 'square');
+  // a crop or a face on nothing leaves pixels to keep transparent
+  const { paper, colour } = backdropOf(o.background);
+  const shaped = (!paper && !colour) || (!!o.shape && o.shape !== 'square');
   const sample = new Uint8ClampedArray(frames.length > 4 ? size * size * 4 * 4 : frames[0]!.length);
   if (frames.length > 4) for (let k = 0; k < 4; k++) sample.set(frames[Math.floor((k * frames.length) / 4)]!, k * size * size * 4);
   else sample.set(frames[0]!);

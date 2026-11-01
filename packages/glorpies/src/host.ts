@@ -1,7 +1,7 @@
 import type { LookChoice } from './looks';
 import type { FaceName } from './seed';
 import type { FaceState } from './states';
-import { faceColors, type Shape } from './still';
+import { backdropOf, faceColors, type Shape } from './still';
 
 /** What every framework's `<Glorpie>` takes. */
 export type GlorpieOptions = {
@@ -11,11 +11,14 @@ export type GlorpieOptions = {
   look?: LookChoice;
   /** Pixels, or any CSS length. Defaults to 48. */
   size?: number | string;
-  /** The crop. Ignored without a background. */
+  /** The crop. Ignored with `background={false}`. */
   shape?: Shape;
   state?: FaceState;
-  /** `false` shows only the face: no backdrop, no pencil lines, no crop. Defaults to true. */
-  background?: boolean;
+  /**
+   * `true` (the default) paints the face on its own paper. `false` shows only the face: no backdrop,
+   * no pencil lines, no crop. Any CSS colour puts the face on that colour instead, cropped to its shape.
+   */
+  background?: boolean | string;
   /** Breathing, blinking and glancing. Defaults to on, unless the reader prefers reduced motion. */
   alive?: boolean;
   /** Tapping makes the face wobble. */
@@ -37,6 +40,7 @@ export function attributesOf(o: GlorpieOptions): Record<string, string> {
   if (o.shape) attrs.shape = o.shape;
   if (o.state) attrs.state = o.state;
   if (o.background === false) attrs.background = 'false';
+  else if (typeof o.background === 'string') attrs.background = o.background;
   if (o.alive !== undefined) attrs.alive = String(o.alive);
   if (o.pokeable) attrs.pokeable = '';
   if (o.label) attrs.label = o.label;
@@ -47,14 +51,14 @@ export function attributesOf(o: GlorpieOptions): Record<string, string> {
 /** The face's size, crop and colour as inline style, so it holds its place before the element upgrades or the page hydrates. */
 export function hostStyle(o: GlorpieOptions): Record<string, string> {
   const size = cssLength(o.size ?? 48);
-  const background = o.background !== false;
+  const { paper, colour } = backdropOf(o.background);
   return {
     display: 'inline-block',
     'vertical-align': 'middle',
     width: size,
     height: size,
-    'border-radius': background ? RADIUS[o.shape ?? 'circle'] : '0',
-    background: background ? faceColors(o.name).bg : 'none',
+    'border-radius': paper || colour ? RADIUS[o.shape ?? 'circle'] : '0',
+    background: colour ?? (paper ? faceColors(o.name).bg : 'none'),
   };
 }
 

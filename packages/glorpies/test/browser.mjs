@@ -28,9 +28,10 @@ try {
       vue: { painted: true, upgraded: true, state: 'done' },
       preact: { painted: true, upgraded: true, state: 'blocked' },
       solid: { painted: true, upgraded: true, look: 'ink' },
+      colour: { painted: true, colour: 'rgb(255, 233, 168)', radius: '50%', stillPainted: true, changed: 'rgb(255, 99, 71)' },
       deferred: { painted: true, reported: true },
     });
-    console.log('vue, preact and solid paint and follow their props; a late failure reaches onError');
+    console.log('vue, preact and solid paint and follow their props; a background colour sits in the crop without repainting; a late failure reaches onError');
   });
 } finally {
   server.close();

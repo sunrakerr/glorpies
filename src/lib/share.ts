@@ -5,7 +5,7 @@ import { fileName, PRIORITY, schedule } from 'glorpies/internal/studio';
 export const EXPORT_SIZES = [1024, 2048] as const;
 
 /** A face as it should be exported: the gallery's are square and at ease, the playground's take its shape and mood. */
-export type Still = { name: string; look: LookId; shape?: Shape; state?: FaceState; background?: boolean };
+export type Still = { name: string; look: LookId; shape?: Shape; state?: FaceState; background?: boolean | string };
 
 /** Painted in the queue, after the face being looked at and before the rest of the gallery. */
 const painted = <T,>(work: () => T) => schedule(PRIORITY.export, work).promise;

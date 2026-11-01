@@ -19,7 +19,7 @@ With a bundler, import the element once instead:
 import 'glorpies/element';
 ```
 
-Every [option](/docs/options) is both an attribute and a reflected property. Changing one updates the face in place. `name`, `look`, `state` and `background` trigger a repaint; a larger `size` repaints at the new resolution; anything else is CSS.
+Every [option](/docs/options) is both an attribute and a reflected property. Changing one updates the face in place. `name`, `look` and `state` trigger a repaint, and so does `background` going on or off the face's paper (one colour for another is only CSS); a larger `size` repaints at the new resolution; anything else is CSS.
 
 ```js
 const face = document.querySelector('glorpie-face');

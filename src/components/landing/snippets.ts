@@ -2,7 +2,7 @@ import { resolveLook, type FaceState, type LookChoice, type Shape } from 'glorpi
 import type { Lang } from '@/lib/highlight';
 
 /** What a face is set to; every snippet is written from it. */
-export type Choice = { name: string; look: LookChoice; shape: Shape; state: FaceState; background: boolean; alive: boolean; size: number };
+export type Choice = { name: string; look: LookChoice; shape: Shape; state: FaceState; background: boolean | string; alive: boolean; size: number };
 
 /** The playground's name is made up on arrival; see Landing. */
 export const START: Choice = { name: '', look: 'auto', shape: 'square', state: 'idle', background: true, alive: true, size: 48 };
@@ -31,9 +31,10 @@ function props(c: Choice, syntax: keyof typeof SYNTAX) {
   const { name, value } = SYNTAX[syntax];
   const out = [name(c.name), value('size', c.size)];
   if (c.look !== 'auto') out.push(`look=${q(c.look)}`);
-  if (c.shape !== 'circle' && c.background) out.push(`shape=${q(c.shape)}`);
+  if (c.shape !== 'circle' && c.background !== false) out.push(`shape=${q(c.shape)}`);
   if (c.state !== 'idle') out.push(`state=${q(c.state)}`);
-  if (!c.background) out.push(value('background', false));
+  if (c.background === false) out.push(value('background', false));
+  else if (typeof c.background === 'string') out.push(`background=${q(c.background)}`);
   if (!c.alive) out.push(value('alive', false));
   return out.join(' ');
 }
@@ -41,8 +42,10 @@ function props(c: Choice, syntax: keyof typeof SYNTAX) {
 /** The image's address on your own route (see the server snippet): twice the size for sharp screens, in the look shown at the size itself. */
 function query(c: Choice, format?: string) {
   const p = new URLSearchParams({ name: c.name, size: String(c.size * 2), look: resolveLook(c.look, c.size) });
-  if (c.background) p.set('shape', c.shape);
-  else p.set('background', 'false');
+  if (c.background === false) p.set('background', 'false');
+  else p.set('shape', c.shape);
+  // a hex colour goes without its #, which a url would otherwise have to escape
+  if (typeof c.background === 'string') p.set('background', c.background.replace(/^#/, ''));
   if (c.state !== 'idle') p.set('state', c.state);
   if (format) p.set('format', format);
   return `/api/face?${p}`;
@@ -54,7 +57,8 @@ function query(c: Choice, format?: string) {
  */
 function cli(c: Choice) {
   const flags = [
-    `--look ${resolveLook(c.look, c.size)}`, '--size 256', c.background ? `--shape ${c.shape}` : '--background false',
+    `--look ${resolveLook(c.look, c.size)}`, '--size 256', c.background === false ? '--background false' : `--shape ${c.shape}`,
+    typeof c.background === 'string' && `--background ${shellWord(c.background.replace(/^#/, ''))}`,
     c.state !== 'idle' && `--state ${c.state}`, '-o face.png',
   ].filter(Boolean);
   return `npx -p glorpies -p @napi-rs/canvas glorpies ${flags.join(' ')} ${c.name.startsWith('-') ? '-- ' : ''}${shellWord(c.name || 'face')}`;

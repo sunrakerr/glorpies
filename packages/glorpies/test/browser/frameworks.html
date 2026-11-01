@@ -36,6 +36,15 @@
   setLook('ink');
   results.solid = { painted: !!el, upgraded: el?.shadowRoot !== null, look: el?.getAttribute('look') };
 
+  // a colour is the element's own background, kept inside its crop, and changing it doesn't repaint
+  const tinted = document.createElement('div');
+  tinted.innerHTML = '<glorpie-face name="agent-47" size="64" shape="circle" background="#ffe9a8"></glorpie-face>';
+  document.body.append(tinted);
+  el = await ready(tinted);
+  const { backgroundColor: colour, borderRadius: radius } = getComputedStyle(el);
+  el.setAttribute('background', 'tomato');
+  results.colour = { painted: !!el, colour, radius, stillPainted: el.hasAttribute('data-ready'), changed: getComputedStyle(el).backgroundColor };
+
   // a failure after the first painting (an eye pose, a layer) still reaches onError
   const { mount, setCanvasFactory } = await import('/dist/index.js');
   const canvas = Object.assign(document.createElement('canvas'), { style: 'width:64px;height:64px' });

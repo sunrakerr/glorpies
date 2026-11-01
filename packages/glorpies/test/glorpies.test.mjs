@@ -219,13 +219,43 @@ test('without a background, every look keeps only the face', async () => {
     const px = pixelsOf(faceCanvas('agent-47', { look: look.id, size: 96, background: false }));
     let clear = 0;
     for (let i = 3; i < px.length; i += 4) if (px[i] === 0) clear++;
-    // mosaic, topo, thermal and holo draw their background from the face, so some of it stays
-    if (!['mosaic', 'topo', 'thermal', 'holo'].includes(look.id)) assert.ok(clear > px.length / 4 / 4, `${look.id} is see-through around the face`);
+    // thermal paints its whole square as heat, so little of it is clear
+    if (look.id !== 'thermal') assert.ok(clear > px.length / 4 / 4, `${look.id} is see-through around the face`);
   }
   const gif = await faceGIF('agent-47', { look: 'ink', size: 48, loop: 1, background: false });
   assert.ok(gif.length > 0);
   const svg = await renderImage('agent-47', { format: 'svg', size: 128, background: false });
   assert.match(svg.body, /<mask /, 'the vector paths stay, under a mask of the face');
+});
+
+test('a background colour sits behind the face, inside its crop, in every format', async () => {
+  await useNativeCanvas();
+  const at = (px, size, x, y) => [...px.subarray((y * size + x) * 4, (y * size + x) * 4 + 4)];
+  for (const look of ['watercolour', 'oil', 'ink']) {
+    const square = pixelsOf(faceCanvas('agent-47', { look, size: 96, background: '#ffe9a8' }));
+    assert.deepEqual(at(square, 96, 1, 1), [255, 233, 168, 255], `${look}: the colour fills the corner`);
+    const round = pixelsOf(faceCanvas('agent-47', { look, size: 96, background: 'tomato', shape: 'circle' }));
+    assert.equal(at(round, 96, 0, 0)[3], 0, `${look}: the crop still cuts`);
+    assert.deepEqual(at(round, 96, 48, 3), [255, 99, 71, 255], `${look}: inside the crop it's the colour`);
+  }
+  const svg = faceSVG('agent-47', { look: 'watercolour', size: 64, background: 'rgb(255 233 168)', shape: 'circle' });
+  assert.match(svg, /<rect width="64" height="64" fill="#ffe9a8"\/>/, 'an svg names the colour as canvas writes it');
+  assert.match(svg, /clip-path/);
+  assert.throws(() => faceCanvas('agent-47', { background: 'not a colour' }), /unknown background colour/);
+  assert.throws(() => faceSVG('agent-47', { background: '"/><script>' }), /unknown background colour/);
+
+  const gif = await animationFrames('agent-47', { look: 'ink', size: 48, loop: 1, fps: 4, background: '#ffe9a8' });
+  assert.deepEqual(at(gif.frames[0], 48, 1, 1), [255, 233, 168, 255], 'every frame of a loop is on the colour');
+
+  const get = async (q) => (await createFaceHandler()(new Request(`http://x/api/face?name=agent-47&size=32&${q}`))).status;
+  for (const q of ['background=ffe9a8', 'background=%23ffe9a8', 'background=tomato', 'background=nonsense', 'format=jpeg&background=ffe9a8']) assert.equal(await get(q), 200, q);
+  const jpeg = await renderImage('agent-47', { format: 'jpeg', size: 32, background: '#000000' });
+  assert.ok(jpeg.body.length > 0);
+
+  const cli = fileURLToPath(new URL('../dist/cli.js', import.meta.url));
+  const out = join(mkdtempSync(join(tmpdir(), 'glorpies-')), 'face.png');
+  execFileSync(process.execPath, [cli, 'agent-47', '--size', '32', '--background', 'ffe9a8', '-o', out], { stdio: 'pipe' });
+  assert.deepEqual([...readFileSync(out).subarray(0, 4)], PNG);
 });
 
 test('every server export works in a fresh process', () => {

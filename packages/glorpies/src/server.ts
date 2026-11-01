@@ -3,7 +3,7 @@ import { animationFrames as frames, faceGIF as gif, type AnimationOptions } from
 import { setCanvasFactory } from './canvas';
 import { isLook, type LookChoice } from './looks';
 import { isState } from './states';
-import { faceCanvas, faceSVG, isShape } from './still';
+import { backdropOf, colourOf, faceCanvas, faceSVG, isShape } from './still';
 import type { FaceName } from './seed';
 
 /** Faces as image files wherever there's no DOM, drawn with `@napi-rs/canvas`, loaded on first use. */
@@ -45,9 +45,18 @@ export async function renderImage(name: FaceName, o: ImageOptions = {}): Promise
   const format = o.format ?? 'png';
   if (format === 'svg') return { body: faceSVG(name, o), type: TYPES.svg };
   if (format === 'gif') return { body: gif(name, o), type: TYPES.gif };
-  // jpeg has no transparency to crop or cut with, so it is always square and on its paper
-  const c = faceCanvas(name, format === 'jpeg' ? { ...o, shape: 'square', background: true } : o) as unknown as NativeCanvas;
+  // jpeg has no transparency to crop or cut with, so it is always square, on its paper or its colour
+  const c = faceCanvas(name, format === 'jpeg' ? { ...o, shape: 'square', background: backdropOf(o.background).colour ?? true } : o) as unknown as NativeCanvas;
   return { body: await c.encode(format, o.quality ?? 90), type: TYPES[format] };
+}
+
+/** `?background=`: false (or 0, no, none), true, or a colour; a hex colour may leave out the # that a url would otherwise have to escape. Anything else is the default. */
+function backgroundFrom(v: string | null, fallback: ImageOptions['background']): ImageOptions['background'] {
+  if (v === null) return fallback;
+  if (['false', '0', 'no', 'none'].includes(v)) return false;
+  if (['true', '1', 'yes', ''].includes(v)) return true;
+  const colour = /^[\da-f]{3,8}$/i.test(v) ? `#${v}` : v;
+  return colourOf(colour) ? colour : fallback;
 }
 
 export type HandlerOptions = Partial<ImageOptions> & {
@@ -79,13 +88,15 @@ export function createFaceHandler(defaults: HandlerOptions = {}): (request: Requ
       const v = q.has(k) ? Number(q.get(k)) : NaN;
       return Math.min(hi, Math.max(lo, Number.isFinite(v) ? v : fallback));
     };
-    const look = q.get('look'), shape = q.get('shape'), state = q.get('state'), format = q.get('format'), background = q.get('background');
+    const look = q.get('look'), shape = q.get('shape'), state = q.get('state'), format = q.get('format');
+    // a colour is checked by canvas, which loads on first use
+    await useNativeCanvas();
     const o: ImageOptions = {
       ...base,
       look: look && (look === 'auto' || isLook(look)) ? (look as LookChoice) : base.look,
       shape: isShape(shape) ? shape : base.shape,
       state: isState(state) ? state : base.state,
-      background: background === null ? base.background : !['false', '0', 'no', 'none'].includes(background),
+      background: backgroundFrom(q.get('background'), base.background),
       format: (FORMATS as readonly string[]).includes(format ?? '') ? (format as ImageFormat) : base.format,
       size: Math.round(num('size', base.size ?? 256, 16, maxSize)),
       loop: num('loop', base.loop ?? 3, 1, 8),

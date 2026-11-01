@@ -1,6 +1,7 @@
 import { marksFor, resolveLook, type LookChoice } from './looks';
 import { seedOf, type FaceName } from './seed';
 import { getStage, type Actor } from './stage';
+import { backdropOf } from './still';
 import type { FaceState } from './states';
 import { isCancelled, paintRaster, PRIORITY, type Scheduled } from './studio';
 
@@ -10,8 +11,8 @@ export type MountOptions = {
   /** Breathing, blinking and following the pointer. Defaults to on, unless the reader prefers reduced motion. */
   alive?: boolean;
   state?: FaceState;
-  /** `false` lifts the face off its paper: no backdrop, no pencil lines, transparent all around. Defaults to true. */
-  background?: boolean;
+  /** `false` lifts the face off its paper: no backdrop, no pencil lines, transparent all around. A colour lifts it onto that colour, set as the canvas's CSS background. Defaults to true. */
+  background?: boolean | string;
   /** Tapping the face makes it wobble. */
   pokeable?: boolean;
   /** Higher paints sooner when many faces are waiting. */
@@ -106,7 +107,7 @@ export function mount(canvas: HTMLCanvasElement, options: MountOptions): FaceHan
     const seed = seedOf(o.name);
     // a state is painted into the face (its expression), so a new state is a new painting
     const state = o.state ?? 'idle';
-    const background = o.background ?? true;
+    const background = backdropOf(o.background).paper;
     const next = `${seed}:${look}:${state}:${background}`;
     if (!px || (!force && next === key && painted && px <= painted * 1.15)) return;
     if (next !== key) {
@@ -178,6 +179,15 @@ export function mount(canvas: HTMLCanvasElement, options: MountOptions): FaceHan
       }, { rootMargin: '200px' })
     : null;
   seen?.observe(canvas);
+  // a colour goes behind the canvas, so changing it costs nothing; a background set some other way is left alone
+  let tinted = false;
+  const tint = () => {
+    const { colour } = backdropOf(o.background);
+    if (colour) canvas.style.background = colour;
+    else if (tinted) canvas.style.background = '';
+    tinted = colour !== null;
+  };
+  tint();
   const tap = () => actor && stage.poke(actor);
   if (o.pokeable) canvas.addEventListener('pointerdown', tap);
   paint();
@@ -191,7 +201,8 @@ export function mount(canvas: HTMLCanvasElement, options: MountOptions): FaceHan
         else canvas.removeEventListener('pointerdown', tap);
       }
       // a face that was painted to hold still is painted again, fully, when it comes alive
-      const repaint = seedOf(was.name) !== seedOf(o.name) || was.look !== o.look || was.state !== o.state || (was.background ?? true) !== (o.background ?? true);
+      const repaint = seedOf(was.name) !== seedOf(o.name) || was.look !== o.look || was.state !== o.state || backdropOf(was.background).paper !== backdropOf(o.background).paper;
+      tint();
       if (repaint || (wantsLife() && !lively)) paint(true);
       else apply();
     },

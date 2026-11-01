@@ -25,11 +25,34 @@ export type StillOptions = {
   /** Width and height in pixels. */
   size?: number;
   state?: FaceState;
-  /** Crops the picture; ignored without a background, which is all a crop would cut. */
+  /** Crops the picture; ignored with `background: false`, which leaves nothing around the face to cut. */
   shape?: Shape;
-  /** `false` keeps only the face: no backdrop, no pencil lines, transparent all around. Defaults to true. */
-  background?: boolean;
+  /**
+   * `true` (the default) paints the face on its own paper. `false` keeps only the face: no backdrop,
+   * no pencil lines, transparent all around. A colour (`#ffe9a8`, `rgb()`, `hsl()`, a name) puts the
+   * face on that colour instead of its paper.
+   */
+  background?: boolean | string;
 };
+
+/** What `background` asks for: the face's own paper, or a colour behind the face (null for none). */
+export function backdropOf(background: boolean | string | null | undefined): { paper: boolean; colour: string | null } {
+  if (background === false || background === 'false') return { paper: false, colour: null };
+  if (background === undefined || background === null || background === true || background === '' || background === 'true') return { paper: true, colour: null };
+  return { paper: false, colour: background };
+}
+
+/** A colour as canvas writes it (`#rrggbb` or `rgba(…)`), or null if canvas can't read it. */
+export function colourOf(value: string): string | null {
+  const g = makeCanvas(1).getContext('2d')!;
+  // an unreadable colour leaves fillStyle as it was, so it reads differently after black than after white
+  g.fillStyle = '#000000';
+  g.fillStyle = value;
+  const after = String(g.fillStyle);
+  g.fillStyle = '#ffffff';
+  g.fillStyle = value;
+  return after === String(g.fillStyle) ? after : null;
+}
 
 /** The largest still there is: 8192² is already a quarter of a gigabyte of pixels. */
 export const MAX_SIZE = 8192;
@@ -46,12 +69,19 @@ export function checked<T extends StillOptions>(o: T): T {
   if (o.look !== undefined && o.look !== 'auto' && !isLook(o.look)) throw new TypeError(`glorpies: unknown look "${String(o.look)}"`);
   if (o.state !== undefined && !isState(o.state)) throw new TypeError(`glorpies: unknown state "${String(o.state)}"`);
   if (o.shape !== undefined && !isShape(o.shape)) throw new TypeError(`glorpies: unknown shape "${String(o.shape)}"`);
-  return o;
+  const { colour } = backdropOf(o.background);
+  if (colour === null) return o;
+  // written back as canvas reads it, so what reaches the markup is a plain colour and nothing else
+  const plain = colourOf(colour);
+  if (!plain) throw new TypeError(`glorpies: unknown background colour "${colour}"`);
+  return { ...o, background: plain };
 }
 
 /** Ids for an SVG's definitions: the same for the same picture and different for any other, so faces can sit inline side by side. */
 function svgIds(name: FaceName, o: StillOptions, size: number): string {
-  return ['glorpie', seedOf(name).toString(36), o.look ?? 'auto', o.state ?? 'idle', o.shape ?? 'square', o.background === false ? 'bare' : 'paper', size].join('-');
+  const { paper, colour } = backdropOf(o.background);
+  const ground = colour ? `on${colour.replace(/\W/g, '')}` : paper ? 'paper' : 'bare';
+  return ['glorpie', seedOf(name).toString(36), o.look ?? 'auto', o.state ?? 'idle', o.shape ?? 'square', ground, size].join('-');
 }
 
 /** The face for a name, built once and cached. */
@@ -71,12 +101,14 @@ export function faceCanvas(name: FaceName, options: StillOptions = {}): HTMLCanv
   const size = sizeOf(o.size);
   const look = resolveLook(o.look, size);
   const face = paintedFace(name, o);
+  const { paper, colour } = backdropOf(o.background);
   const E = getEngine();
   let c = renderLook(look, face, E, size);
-  if (o.background === false) c = cutOut(look, face, E, c)?.figure ?? c;
+  if (!paper) c = cutOut(look, face, E, c)?.figure ?? c;
   // marks sit beside the head, so they go on after the cut
   drawStateMarks(c, face, look, o.state);
-  if (o.background === false || !o.shape || o.shape === 'square') return c;
+  if (colour) c = onColour(c, colour);
+  if (!(paper || colour) || !o.shape || o.shape === 'square') return c;
   const out = makeCanvas(size);
   const g = out.getContext('2d')!;
   shapePath(g, o.shape, size);
@@ -91,10 +123,14 @@ export function faceSVG(name: FaceName, options: StillOptions = {}): string {
   const size = sizeOf(o.size);
   const look = resolveLook(o.look, size);
   const ids = svgIds(name, o, size);
-  const inner = look === 'watercolour'
-    ? watercolourSVG(paintedFace(name, o), size, o.state, o.background !== false, ids)
-    : `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><image width="${size}" height="${size}" href="${faceCanvas(name, { ...o, shape: 'square' }).toDataURL('image/png')}"/></svg>`;
-  if (o.background === false || !o.shape || o.shape === 'square') return inner;
+  const { paper, colour } = backdropOf(o.background);
+  const box = `xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"`;
+  let inner = look === 'watercolour'
+    ? watercolourSVG(paintedFace(name, o), size, o.state, paper, ids)
+    : `<svg ${box}><image width="${size}" height="${size}" href="${faceCanvas(name, { ...o, shape: 'square' }).toDataURL('image/png')}"/></svg>`;
+  // any other look has its colour painted in already
+  if (colour && look === 'watercolour') inner = `<svg ${box}><rect width="${size}" height="${size}" fill="${colour}"/>${inner}</svg>`;
+  if (!(paper || colour) || !o.shape || o.shape === 'square') return inner;
   const id = `${ids}-shape`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><defs><clipPath id="${id}"><path d="${shapeD(o.shape, size)}"/></clipPath></defs><g clip-path="url(#${id})">${inner}</g></svg>`;
 }
@@ -108,7 +144,17 @@ function drawStateMarks(c: HTMLCanvasElement, face: Face, look: LookId, state: F
 /** The face as painted for these options: in its state's expression, and without its pencil lines when it's off its paper. */
 function paintedFace(name: FaceName, o: StillOptions): Face {
   const face = inState(name, o.state);
-  return o.background === false ? unguided(face) : face;
+  return backdropOf(o.background).paper ? face : unguided(face);
+}
+
+/** A face lifted off its paper, laid on a colour. */
+function onColour(c: HTMLCanvasElement, colour: string): HTMLCanvasElement {
+  const out = makeCanvas(c.width, c.height);
+  const g = out.getContext('2d')!;
+  g.fillStyle = colour;
+  g.fillRect(0, 0, out.width, out.height);
+  g.drawImage(c, 0, 0);
+  return out;
 }
 
 /** Up to this size, a vector face's cut is worked out from a painting of it; it's a soft edge, so it needn't be sharper. */

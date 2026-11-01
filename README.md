@@ -66,7 +66,7 @@ Components render a coloured placeholder on the server, then paint on a canvas i
 
 ## ⵙ looks
 
-29 of them: 21 paintings for faces shown large, and 8 avatar looks that still read at 16px. Every look works without its background too (`background={false}`): only the face, on nothing.
+29 of them: 21 paintings for faces shown large, and 8 avatar looks that still read at 16px. Every look works without its background too (`background={false}`): only the face, on nothing. Or on a colour of your own: `background="#ffe9a8"`.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/looks-dark.webp">
@@ -97,7 +97,7 @@ The same props on every `<Glorpie>`, or attributes on `<glorpie-face>`:
 | `size` | `48` | Pixels, or a CSS length such as `"3rem"`. |
 | `look` | `"auto"` | Any of the 29 looks. `auto` uses ink below 72px and watercolour at 72px and above. |
 | `shape` | `"circle"` | `circle`, `squircle`, `rounded` or `square`. |
-| `background` | `true` | `false` removes the backdrop and crop, leaving a transparent background. |
+| `background` | `true` | `false` removes the backdrop and crop, leaving a transparent background. A colour (`"#ffe9a8"`) puts the face on it instead, inside the crop. |
 | `state` | `"idle"` | `idle`, `thinking`, `working`, `waiting`, `blocked` or `done`. |
 | `alive` | on, unless reduced motion | Breathing, blinking and glancing. Set `false` for a still face. |
 | `pokeable` | `false` | A tap makes the face wobble. |

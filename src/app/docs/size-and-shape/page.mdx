@@ -24,11 +24,23 @@ export const metadata = { title: 'size and shape' };
   <Faces names={['agent-47']} size={72} shape="square" />
 </Preview>
 
-## without a background
+## background
 
-`background={false}` draws only the face: no backdrop, no pencil guides, no crop, transparent everywhere else. It works in every look. `mosaic`, `topo`, `thermal` and `holo` derive their backdrop from the face, so they keep some of it.
+`background={false}` draws only the face: no backdrop, no pencil guides, no crop, transparent everywhere else. It works in every look.
 
 <Preview>
   <Faces names={['agent-47', 'soggy-glorp']} size={96} background={false} />
   <Faces names={['agent-47']} size={96} look="sticker" background={false} />
 </Preview>
+
+A colour puts the face on that colour instead of its paper, cropped to its `shape`. Components take any CSS colour, set as the element's own background, so changing it never repaints. Images, the [server](/docs/server) and the [CLI](/docs/cli) paint it in and take anything canvas reads: hex, `rgb()`, `hsl()`, or a name.
+
+<Preview>
+  <Faces names={['agent-47']} size={96} shape="circle" background="#ffe9a8" />
+  <Faces names={['soggy-glorp']} size={96} shape="circle" background="#cfe2ff" />
+  <Faces names={['agent-47']} size={96} shape="squircle" look="ink" background="#2b231d" />
+</Preview>
+
+```tsx
+<Glorpie name={user.id} background="#ffe9a8" />
+```

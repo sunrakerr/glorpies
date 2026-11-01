@@ -6,7 +6,7 @@ import {
 } from 'react';
 import { cssLength, RADIUS, type GlorpieOptions } from './host';
 import { mount, type FaceHandle } from './mount';
-import { faceColors, type Shape } from './still';
+import { backdropOf, faceColors, type Shape } from './still';
 
 export type GlorpieProps = GlorpieOptions & {
   /** Called if the face can't be painted; without it the error is logged. */
@@ -24,6 +24,8 @@ export function Glorpie({ name, look = 'auto', size = 48, shape = 'circle', stat
   const handle = useRef<FaceHandle | null>(null);
   const [ready, setReady] = useState(false);
   const wash = useMemo(() => faceColors(name).bg, [name]);
+  // a colour sits behind a face lifted off its paper, so changing it never repaints
+  const { paper, colour } = backdropOf(background);
   const reportError = useRef(onError);
   useEffect(() => {
     reportError.current = onError;
@@ -31,7 +33,7 @@ export function Glorpie({ name, look = 'auto', size = 48, shape = 'circle', stat
 
   useEffect(() => {
     const h = mount(ref.current!, {
-      name, look, state, background, alive, pokeable, priority,
+      name, look, state, background: paper, alive, pokeable, priority,
       onPaint: () => setReady(true),
       onError: (error) => (reportError.current ? reportError.current(error) : console.error('glorpies: could not paint', name, error)),
     });
@@ -44,8 +46,8 @@ export function Glorpie({ name, look = 'auto', size = 48, shape = 'circle', stat
   }, []);
 
   useEffect(() => {
-    handle.current?.update({ name, look, state, background, alive, pokeable });
-  }, [name, look, state, background, alive, pokeable]);
+    handle.current?.update({ name, look, state, background: paper, alive, pokeable });
+  }, [name, look, state, paper, alive, pokeable]);
 
   return (
     <span
@@ -55,7 +57,7 @@ export function Glorpie({ name, look = 'auto', size = 48, shape = 'circle', stat
       style={{
         display: 'inline-block', position: 'relative', overflow: 'hidden', verticalAlign: 'middle', flexShrink: 0,
         // a face off its background waits on nothing: no placeholder wash, and no crop
-        width: cssLength(size), height: cssLength(size), borderRadius: background ? RADIUS[shape] : 0, background: background ? wash : 'none', ...style,
+        width: cssLength(size), height: cssLength(size), borderRadius: paper || colour ? RADIUS[shape] : 0, background: colour ?? (paper ? wash : 'none'), ...style,
       }}
     >
       <canvas

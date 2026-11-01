@@ -14,7 +14,7 @@ const HELP = `glorpies: paint a face from any name
   -f, --format  ${FORMATS.join(', ')} (default: from --out, else png)
       --shape   ${SHAPES.join(', ')} (default square)
       --state   ${STATES.join(', ')} (default idle)
-      --background false  only the face: no backdrop, no pencil lines
+      --background  false for only the face (no backdrop, no pencil lines), or a colour to put it on: ffe9a8, '#ffe9a8', tomato
       --loop    seconds, for gif (default 3)
   -o, --out     file to write (default <name>.<format>; "-" for stdout)
       --force   overwrite the file if it exists
@@ -22,6 +22,13 @@ const HELP = `glorpies: paint a face from any name
 
   npx glorpies agent-47 --look ink --size 128 --shape circle -o agent.png
   npx glorpies agent-47 --state thinking -f gif`;
+
+/** --background: true, false, or a colour, a hex one with or without its #. */
+function backgroundOf(v: string | undefined): boolean | string | undefined {
+  if (v === undefined) return undefined;
+  if (v === 'true' || v === 'false') return v === 'true';
+  return /^[\da-f]{3,8}$/i.test(v) ? `#${v}` : v;
+}
 
 async function main() {
   const { values, positionals } = parseArgs({
@@ -67,7 +74,7 @@ async function main() {
     shape: values.shape as never,
     state: values.state as never,
     loop: num('loop', values.loop, 0.5, 10),
-    background: values.background === undefined ? undefined : values.background !== 'false',
+    background: backgroundOf(values.background),
   });
   const out = values.out ?? `${name.replace(/[^\w.-]+/g, '-')}.${format}`;
   if (out === '-') process.stdout.write(body);

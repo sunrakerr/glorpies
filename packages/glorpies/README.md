@@ -104,8 +104,8 @@ Each renders a placeholder on the server (Nuxt, SvelteKit, SolidStart) and paint
 | `name` | `string \| number` | required | Any string. The same name is always the same face. |
 | `look` | look id \| `"auto"` | `"auto"` | `auto` paints watercolour, or the ink badge below 72px. |
 | `size` | `number \| string` | `48` | Pixels, or any CSS length. |
-| `shape` | `circle` `squircle` `rounded` `square` | `circle` | The crop. None without a background. |
-| `background` | `boolean` | `true` | `false` keeps only the face: no backdrop, no pencil lines, no crop, transparent all around. |
+| `shape` | `circle` `squircle` `rounded` `square` | `circle` | The crop. None with `background={false}`. |
+| `background` | `boolean` or a colour | `true` | `false` keeps only the face: no backdrop, no pencil lines, no crop, transparent all around. A colour (`"#ffe9a8"`) puts the face on it instead of its paper, inside the crop. |
 | `state` | `idle` `thinking` `working` `waiting` `blocked` `done` | `idle` | What the face shows besides who it is. |
 | `alive` | `boolean` | on, unless reduced motion | Breathing, blinking, glancing. On unless the reader prefers reduced motion. |
 | `pokeable` | `boolean` | `false` | A tap makes the face wobble. |
@@ -116,7 +116,7 @@ These are attributes on `<glorpie-face>` too: use `background="false"` or `alive
 
 **Looks.** Paintings, for faces shown large: `watercolour`, `atkinson`, `bayer`, `plotter`, `cutout`, `neon`, `gouache`, `oil`, `sumi`, `charcoal`, `pointillism`, `linocut`, `warhol`, `stencil`, `stained`, `mosaic`, `felt`, `lowpoly`, `topo`, `thermal`, `holo`. Avatars, which still read at 16px: `blob`, `ink`, `sticker`, `cutpaper`, `pixel-icon`, `line-icon`, `glow`, `wash`.
 
-**Without a background.** `background={false}` keeps the face, its crown and tentacles, and the sparkles of a celestial one, on nothing. Every look supports it; the crop is removed too.
+**Without a background, or on a colour.** `background={false}` keeps the face, its crown and tentacles, and the sparkles of a celestial one, on nothing. Every look supports it; the crop is removed too. `background="#ffe9a8"` puts the face on that colour instead of its paper, still cropped to its shape.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/looks-dark.webp">
@@ -188,7 +188,7 @@ The fetch handler also fits SvelteKit, Nuxt, Astro, Hono and Deno; `nodeFaceHand
 /api/face?name=agent-47&state=thinking&format=gif
 ```
 
-Query: `name` (required), `look`, `size` (16–1024; GIFs up to 320), `shape` (outside is transparent), `state`, `background` (`false` for only the face), `format` (`png`, `webp`, `jpeg`, `svg`, `gif`), and for GIFs `loop` (seconds) and `fps`. Responses are cached for a year: the same request always gives the same image.
+Query: `name` (required), `look`, `size` (16–1024; GIFs up to 320), `shape` (outside is transparent), `state`, `background` (`false` for only the face, or a colour such as `ffe9a8`), `format` (`png`, `webp`, `jpeg`, `svg`, `gif`), and for GIFs `loop` (seconds) and `fps`. Responses are cached for a year: the same request always gives the same image.
 
 GIFs loop seamlessly with a scripted pose, so the same name always loops the same way. Watercolour SVG is real vector paths; it's large, so prefer PNG or WebP at avatar sizes.
 

@@ -2,7 +2,7 @@ import { isLook, type LookChoice } from './looks';
 import { mount, type FaceHandle } from './mount';
 import { seedOf } from './seed';
 import { isState } from './states';
-import { faceColors, isShape } from './still';
+import { backdropOf, faceColors, isShape } from './still';
 
 const CSS = `
 :host{display:inline-block;position:relative;inline-size:var(--size);block-size:var(--size);overflow:hidden;vertical-align:middle;border-radius:50%;background:var(--wash);contain:layout paint}
@@ -65,16 +65,17 @@ export class GlorpieElement extends Base {
     const repaints =
       attr === 'name' ? seedOf(was ?? '') !== seedOf(now ?? '')
       : attr === 'look' ? lookFrom(was) !== lookFrom(now)
-      : attr === 'background' && (was !== 'false') !== (now !== 'false');
+      // a colour is the host's own background, so only going on or off the paper repaints
+      : attr === 'background' && backdropOf(was).paper !== backdropOf(now).paper;
     if (repaints) this.removeAttribute('data-ready');
     this.handle.update(this.options());
   }
 
-  /** Mirrors attributes into what CSS and assistive tech read: size, the placeholder wash, the label. */
+  /** Mirrors attributes into what CSS and assistive tech read: size, the wash behind the face (its own, or a chosen colour), the label. */
   private sync() {
     const size = this.getAttribute('size') ?? '48';
     this.style.setProperty('--size', /^\d+(\.\d+)?$/.test(size) ? `${size}px` : size);
-    this.style.setProperty('--wash', faceColors(this.faceName).bg);
+    this.style.setProperty('--wash', backdropOf(this.getAttribute('background')).colour ?? faceColors(this.faceName).bg);
     this.setAttribute('aria-label', this.getAttribute('label') ?? 'Avatar');
     const shape = this.getAttribute('shape');
     if (shape && !isShape(shape)) console.warn(`<glorpie-face> unknown shape "${shape}"`);
@@ -93,7 +94,7 @@ export class GlorpieElement extends Base {
       name: this.faceName,
       look: lookFrom(look),
       state: isState(state) ? state : 'idle',
-      background: this.getAttribute('background') !== 'false',
+      background: backdropOf(this.getAttribute('background')).paper,
       alive: alive === null ? undefined : alive !== 'false',
       pokeable: this.hasAttribute('pokeable'),
       priority: Number.isFinite(priority) && this.hasAttribute('priority') ? priority : undefined,

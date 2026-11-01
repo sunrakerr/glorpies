@@ -108,10 +108,10 @@ function Playground({ c, name, set }: { c: Choice; name: string; set: (p: Partia
                 the paper is opaque and stays cream in the dark, so the sheet's lifted-corner shadows don't show through */}
             <div className="bg-[#f4eee4]">
               {/* off its background the face sits on a checkerboard, the usual sign for transparent */}
-              <div className={`relative aspect-square w-full overflow-hidden transition-[padding] duration-500 ease-soft ${c.background ? 'bg-[#ebe3d5]/50' : 'checker'} ${c.shape === 'square' || !c.background ? 'p-0' : 'p-[8%]'}`}>
+              <div className={`relative aspect-square w-full overflow-hidden transition-[padding] duration-500 ease-soft ${c.background !== false ? 'bg-[#ebe3d5]/50' : 'checker'} ${c.shape === 'square' || c.background === false ? 'p-0' : 'p-[8%]'}`}>
                 <Glorpie
                   name={name} look={portraitLook} size="100%" shape={c.shape} state={c.state} background={c.background} alive={c.alive} pokeable priority={3} label={`The face for “${name}”`}
-                  style={{ transition: 'border-radius .5s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow .5s', boxShadow: c.shape === 'square' || !c.background ? 'none' : '0 1px 2px rgb(60 40 20 / 0.12), 0 12px 28px -14px rgb(60 40 20 / 0.4)' }}
+                  style={{ transition: 'border-radius .5s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow .5s', boxShadow: c.shape === 'square' || c.background === false ? 'none' : '0 1px 2px rgb(60 40 20 / 0.12), 0 12px 28px -14px rgb(60 40 20 / 0.4)' }}
                 />
               </div>
             </div>
@@ -159,11 +159,18 @@ function Playground({ c, name, set }: { c: Choice; name: string; set: (p: Partia
         <Field flag="look" hint={c.look === 'auto' ? `auto picks ${resolveLook(c.look, c.size)} at ${c.size}px` : `"${c.look}"`}>
           <LookGrid seed={seed} value={c.look} onChange={(look) => set({ look })} />
         </Field>
-        <Field flag="background" hint={c.background ? undefined : 'only the face: no backdrop, no pencil lines'}>
-          <Tabs options={['true', 'false'] as const} value={c.background ? 'true' : 'false'} onChange={(v) => set({ background: v === 'true' })} />
+        <Field flag="background" hint={c.background === false ? 'only the face: no backdrop, no pencil lines' : typeof c.background === 'string' ? 'any css colour, in place of its paper' : undefined}>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <Tabs
+              options={['true', 'false', 'colour'] as const}
+              value={typeof c.background === 'string' ? 'colour' : String(c.background) as 'true' | 'false'}
+              onChange={(v) => set({ background: v === 'colour' ? (typeof c.background === 'string' ? c.background : SWATCHES[0]!) : v === 'true' })}
+            />
+            {typeof c.background === 'string' && <Swatches value={c.background} onChange={(background) => set({ background })} />}
+          </div>
         </Field>
-        <Field flag="shape" hint={c.background ? undefined : 'nothing to crop without a background'}>
-          <div className={c.background ? '' : 'pointer-events-none opacity-40'}>
+        <Field flag="shape" hint={c.background !== false ? undefined : 'nothing to crop without a background'}>
+          <div className={c.background !== false ? '' : 'pointer-events-none opacity-40'}>
             <Tabs options={SHAPES} value={c.shape} onChange={(shape) => set({ shape })} />
           </div>
         </Field>
@@ -174,6 +181,24 @@ function Playground({ c, name, set }: { c: Choice; name: string; set: (p: Partia
           <Tabs options={['true', 'false'] as const} value={c.alive ? 'true' : 'false'} onChange={(v) => set({ alive: v === 'true' })} />
         </Field>
       </div>
+    </div>
+  );
+}
+
+/** Colours to try a face on; the last swatch opens a picker for any other. */
+const SWATCHES = ['#ffe9a8', '#ffd2c2', '#d4efc4', '#cfe2ff', '#e5d8ff', '#2b231d'];
+
+function Swatches({ value, onChange }: { value: string; onChange: (colour: string) => void }) {
+  const custom = !SWATCHES.includes(value);
+  const ring = (on: boolean) => (on ? 'ring-2 ring-accent ring-offset-2 ring-offset-paper' : 'ring-1 ring-inset ring-ink/15 hover:scale-110');
+  return (
+    <div role="radiogroup" aria-label="Background colour" className="flex items-center gap-2">
+      {SWATCHES.map((s) => (
+        <button key={s} type="button" role="radio" aria-checked={value === s} aria-label={s} title={s} onClick={() => onChange(s)} className={`size-5 rounded-full transition ${ring(value === s)}`} style={{ background: s }} />
+      ))}
+      <label title="Any colour" className={`relative size-5 cursor-pointer rounded-full transition ${ring(custom)}`} style={{ background: custom ? value : 'conic-gradient(#ff8a8a, #ffd36e, #a6e88a, #7fc8ff, #c39bff, #ff8a8a)' }}>
+        <input type="color" aria-label="Any colour" value={/^#[\da-f]{6}$/i.test(value) ? value : '#ffe9a8'} onChange={(e) => onChange(e.target.value)} className="absolute inset-0 size-full cursor-pointer opacity-0" />
+      </label>
     </div>
   );
 }
