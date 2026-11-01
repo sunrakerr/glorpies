@@ -76,6 +76,25 @@ Deno.serve(createFaceHandler());
 
 </CodeGroup>
 
+For Next.js, add the native canvas to `serverExternalPackages` so the bundler leaves its platform binary for Node to load:
+
+```js title="next.config.mjs"
+export default {
+  serverExternalPackages: ['@napi-rs/canvas'],
+};
+```
+
+For SvelteKit, keep the native canvas external in your Vite config alongside your existing SvelteKit plugin:
+
+```js title="vite.config.js"
+export default {
+  // keep your existing plugins and other settings
+  ssr: { external: ['@napi-rs/canvas'] },
+};
+```
+
+Use a Node runtime for image routes; the native canvas cannot run in an edge isolate. Other server frameworks need a Node-compatible deployment too.
+
 Then request faces by URL:
 
 ```text

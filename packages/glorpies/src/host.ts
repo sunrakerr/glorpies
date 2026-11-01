@@ -34,8 +34,10 @@ export const RADIUS: Record<Shape, string> = { circle: '50%', squircle: '30%', r
 export const cssLength = (size: number | string) => (typeof size === 'number' ? `${size}px` : size);
 
 /** The `<glorpie-face>` attributes for a set of options; an attribute left out is the default. */
-export function attributesOf(o: GlorpieOptions): Record<string, string> {
-  const attrs: Record<string, string> = { name: String(o.name), size: String(o.size ?? 48) };
+export function attributesOf(o: GlorpieOptions): Record<string, string | number> {
+  const attrs: Record<string, string | number> = { name: o.name, size: String(o.size ?? 48) };
+  // HTML attributes lose numeric identity. Keep it explicit through SSR and hydration.
+  if (typeof o.name === 'number') attrs['data-seed'] = String(o.name);
   if (o.look) attrs.look = o.look;
   if (o.shape) attrs.shape = o.shape;
   if (o.state) attrs.state = o.state;

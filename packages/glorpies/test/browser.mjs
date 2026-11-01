@@ -30,6 +30,8 @@ try {
       solid: { painted: true, upgraded: true, look: 'ink' },
       colour: { painted: true, colour: 'rgb(255, 233, 168)', radius: '50%', stillPainted: true, changed: 'rgb(255, 99, 71)' },
       deferred: { painted: true, reported: true },
+      motionDefault: true,
+      seeds: { vue: true, solid: true, preact: true, element: true },
     });
     console.log('vue, preact and solid paint and follow their props; a background colour sits in the crop without repainting; a late failure reaches onError');
   });

@@ -13,7 +13,8 @@
   const Vue = await import('vue');
   const { Glorpie: VueGlorpie } = await import('/dist/vue.js');
   const state = Vue.ref('idle');
-  Vue.createApp({ setup: () => () => Vue.h(VueGlorpie, { name: 'agent-47', size: 64, state: state.value }) }).mount('#vue');
+  const vueName = Vue.ref('agent-47');
+  Vue.createApp({ setup: () => () => Vue.h(VueGlorpie, { name: vueName.value, size: 64, state: state.value }) }).mount('#vue');
   let el = await ready(document.getElementById('vue'));
   state.value = 'done'; await Vue.nextTick();
   results.vue = { painted: !!el, upgraded: el?.shadowRoot !== null, state: el?.getAttribute('state') };
@@ -30,11 +31,17 @@
   const { render: solidRender, createComponent } = await import('solid-js/web');
   const { Glorpie: SolidGlorpie } = await import('/dist/solid.js');
   const [look, setLook] = createSignal('watercolour');
+  const [solidName, setSolidName] = createSignal('agent-47');
   const solidRoot = document.getElementById('solid');
-  solidRender(() => createComponent(SolidGlorpie, { name: 'agent-47', size: 64, get look() { return look(); } }), solidRoot);
+  solidRender(() => createComponent(SolidGlorpie, { get name() { return solidName(); }, size: 64, get look() { return look(); } }), solidRoot);
   el = await ready(solidRoot);
   setLook('ink');
   results.solid = { painted: !!el, upgraded: el?.shadowRoot !== null, look: el?.getAttribute('look') };
+
+  // Preact clears reflected properties with an empty string: restore the default motion policy.
+  render(h(PreactGlorpie, { name: 'agent-47', size: 64, alive: false }), root);
+  render(h(PreactGlorpie, { name: 'agent-47', size: 64 }), root);
+  results.motionDefault = !root.querySelector('glorpie-face').hasAttribute('alive');
 
   // a colour is the element's own background, kept inside its crop, and changing it doesn't repaint
   const tinted = document.createElement('div');
@@ -44,6 +51,38 @@
   const { backgroundColor: colour, borderRadius: radius } = getComputedStyle(el);
   el.setAttribute('background', 'tomato');
   results.colour = { painted: !!el, colour, radius, stillPainted: el.hasAttribute('data-ready'), changed: getComputedStyle(el).backgroundColor };
+
+  // A number is a seed, while a numeric string is a name: all wrappers preserve both across updates.
+  const { mount: mountReference } = await import('/dist/index.js');
+  const reference = document.createElement('canvas');
+  reference.style.cssText = 'width:64px;height:64px';
+  document.body.append(reference);
+  let referencePainted = false;
+  const referenceHandle = mountReference(reference, { name: 'reference', look: 'ink', alive: false, background: false, morph: false, onPaint: () => { referencePainted = true; } });
+  const pixels = (canvas) => Array.from(canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data).join(',');
+  results.seeds = {};
+  const direct = document.createElement('glorpie-face');
+  direct.size = '64'; direct.look = 'ink'; direct.alive = 'false'; direct.background = 'false';
+  document.body.append(direct);
+  for (const name of [42, '42', 43, '', 42]) {
+    referencePainted = false; referenceHandle.update({ name });
+    vueName.value = name; state.value = 'idle';
+    setSolidName(name); setLook('ink');
+    // Use identical still rendering options for comparisons.
+    const updates = [
+      ['vue', document.querySelector('#vue glorpie-face')],
+      ['solid', document.querySelector('#solid glorpie-face')],
+    ];
+    render(h(PreactGlorpie, { name, size: 64, look: 'ink', alive: false, background: false }), root);
+    direct.name = name;
+    await Vue.nextTick();
+    updates.push(['preact', root.querySelector('glorpie-face')], ['element', direct]);
+    for (const [, host] of updates) { host.look = 'ink'; host.alive = 'false'; host.background = 'false'; }
+    const deadline = performance.now() + 15000;
+    while ((!referencePainted || updates.some(([, host]) => !host.hasAttribute('data-ready'))) && performance.now() < deadline) await new Promise(r => setTimeout(r, 20));
+    const expected = pixels(reference);
+    for (const [kind, host] of updates) results.seeds[kind] = (results.seeds[kind] ?? true) && pixels(host.shadowRoot.querySelector('canvas')) === expected;
+  }
 
   // a failure after the first painting (an eye pose, a layer) still reaches onError
   const { mount, setCanvasFactory } = await import('/dist/index.js');

@@ -1,5 +1,7 @@
 <script>
-  import { attributesOf, hostStyle, styleText } from './action.js';
+  import { attributesOf, defineGlorpie, hostStyle, styleText } from './action.js';
+
+  defineGlorpie();
 
   export let name;
   export let look = undefined;

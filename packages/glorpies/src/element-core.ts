@@ -1,6 +1,6 @@
 import { isLook, type LookChoice } from './looks';
 import { mount, type FaceHandle } from './mount';
-import { seedOf } from './seed';
+import { seedOf, type FaceName } from './seed';
 import { isState } from './states';
 import { backdropOf, faceColors, isShape } from './still';
 
@@ -23,11 +23,17 @@ const ATTRS = ['name', 'look', 'size', 'shape', 'state', 'background', 'alive', 
 /** An unknown look is painted as "auto". */
 const lookFrom = (v: string | null): LookChoice => (v && (v === 'auto' || isLook(v)) ? v : 'auto');
 
+// The marker only applies to the name it accompanied; later HTML attribute edits are strings.
+function numericName(element: GlorpieElement): number | undefined {
+  const value = element.getAttribute('data-seed');
+  return value !== null && value === element.getAttribute('name') && String(Number(value)) === value ? Number(value) : undefined;
+}
+
 const Base: typeof HTMLElement = typeof HTMLElement === 'undefined' ? (class {} as typeof HTMLElement) : HTMLElement;
 
 /** `<glorpie-face>`: the React component's options as attributes, for plain HTML and any framework. */
 export class GlorpieElement extends Base {
-  static observedAttributes = ATTRS;
+  static observedAttributes = [...ATTRS, 'data-seed'];
   private canvas: HTMLCanvasElement | null = null;
   private handle: FaceHandle | null = null;
 
@@ -63,7 +69,8 @@ export class GlorpieElement extends Base {
     this.sync();
     // the canvas fades out only for a different painting: a renamed face, or a look that resolves to another
     const repaints =
-      attr === 'name' ? seedOf(was ?? '') !== seedOf(now ?? '')
+      attr === 'data-seed' ? true
+      : attr === 'name' ? seedOf(was ?? '') !== seedOf(now ?? '')
       : attr === 'look' ? lookFrom(was) !== lookFrom(now)
       // a colour is the host's own background, so only going on or off the paper repaints
       : attr === 'background' && backdropOf(was).paper !== backdropOf(now).paper;
@@ -81,8 +88,8 @@ export class GlorpieElement extends Base {
     if (shape && !isShape(shape)) console.warn(`<glorpie-face> unknown shape "${shape}"`);
   }
 
-  private get faceName() {
-    return this.getAttribute('name') ?? '';
+  private get faceName(): FaceName {
+    return numericName(this) ?? this.getAttribute('name') ?? '';
   }
 
   private options() {
@@ -109,17 +116,23 @@ const SWITCHES = new Set<string>(['background', 'alive']);
 for (const attr of ATTRS) {
   Object.defineProperty(GlorpieElement.prototype, attr, {
     get(this: GlorpieElement) {
-      return this.getAttribute(attr);
+      return attr === 'name' ? numericName(this) ?? this.getAttribute(attr) : this.getAttribute(attr);
     },
     set(this: GlorpieElement, value: unknown) {
+      if (attr === 'name') {
+        if (typeof value === 'number') this.setAttribute('data-seed', String(value));
+        else this.removeAttribute('data-seed');
+      }
       if (value === false && SWITCHES.has(attr)) this.setAttribute(attr, 'false');
-      else if (value === null || value === undefined || value === false) this.removeAttribute(attr);
+      else if (value === null || value === undefined || value === false || (value === '' && SWITCHES.has(attr))) this.removeAttribute(attr);
       else this.setAttribute(attr, value === true ? '' : String(value));
     },
   });
 }
 
-export interface GlorpieElement extends Record<(typeof ATTRS)[number], string | null> {}
+export interface GlorpieElement extends Record<Exclude<(typeof ATTRS)[number], 'name'>, string | null> {
+  name: FaceName | null;
+}
 
 /** Registers the element (as <glorpie-face> unless you name it). Safe to call more than once, and on a server. */
 export function defineGlorpie(tag = 'glorpie-face') {

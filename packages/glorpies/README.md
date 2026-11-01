@@ -7,6 +7,7 @@
 <p align="center"><b>Ugly little alien avatars from any string.</b></p>
 
 <p align="center">
+  <a href="https://www.npmjs.com/package/glorpies"><img alt="npm version" src="https://img.shields.io/npm/v/glorpies?style=flat-square&color=b4ff5a&labelColor=0d0c13"></a>
   <img alt="zero dependencies" src="https://img.shields.io/badge/dependencies-0-b4ff5a?style=flat-square&labelColor=0d0c13">
   <img alt="TypeScript types included" src="https://img.shields.io/badge/TypeScript-included-b4ff5a?style=flat-square&labelColor=0d0c13">
   <a href="https://github.com/sunrakerr/glorpies/blob/main/LICENSE"><img alt="MIT licence" src="https://img.shields.io/badge/licence-MIT-b4ff5a?style=flat-square&labelColor=0d0c13"></a>
@@ -17,7 +18,7 @@
   <a href="https://glorpies.sunrakerr.dev/gallery">./gallery</a> &nbsp;·&nbsp;
   <a href="https://glorpies.sunrakerr.dev/docs">./docs</a> &nbsp;·&nbsp;
   <a href="https://glorpies.sunrakerr.dev/how">./how</a> &nbsp;·&nbsp;
-  <a href="https://github.com/sunrakerr/glorpies">./source</a>
+  <a href="https://github.com/sunrakerr/glorpies">./github</a>
 </p>
 
 Hand-painted in watercolour and dip pen. Antennae, extra eyes, horns, halos, too many teeth. And they're alive: they breathe, blink and glance at you.
@@ -43,6 +44,8 @@ By default, small avatars use the ink look; at 72px and above they use watercolo
 ```tsx
 <Glorpie name="sunrakerrisfriednoodlz" look="watercolour" size={192} />
 ```
+
+A numeric `name` is a seed; a string is hashed into one. `name={42}` and `name="42"` produce different faces. For the web component, set `face.name = 42` in JavaScript to use a numeric seed.
 
 ## Anywhere: one tag
 
@@ -164,6 +167,14 @@ import { faceRoute } from 'glorpies/server';
 export const { GET } = faceRoute();
 ```
 
+For Next.js, keep the native canvas outside the server bundle:
+
+```js
+// next.config.mjs
+export default { serverExternalPackages: ['@napi-rs/canvas'] };
+```
+
+
 For a fetch-based server:
 
 ```ts
@@ -232,4 +243,4 @@ The full guide, with every framework, is at [glorpies.sunrakerr.dev/docs](https:
 
 Made by [sunrakerr](https://github.com/sunrakerr). Open source on [GitHub](https://github.com/sunrakerr/glorpies): issues and pull requests are welcome.
 
-[MIT](LICENSE). Bundled third-party licences are in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+[MIT](https://github.com/sunrakerr/glorpies/blob/main/packages/glorpies/LICENSE). Bundled third-party licences are in [THIRD-PARTY-NOTICES.md](https://github.com/sunrakerr/glorpies/blob/main/packages/glorpies/THIRD-PARTY-NOTICES.md).

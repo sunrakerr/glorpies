@@ -12,7 +12,7 @@ export type GlorpieProps = GlorpieOptions & {
   class?: string;
 };
 
-const ATTRIBUTES = ['name', 'look', 'size', 'shape', 'state', 'background', 'alive', 'pokeable', 'label', 'priority'] as const;
+const ATTRIBUTES = ['name', 'data-seed', 'look', 'size', 'shape', 'state', 'background', 'alive', 'pokeable', 'label', 'priority'] as const;
 
 /** A living face for Solid: `<Glorpie name="ada@lovelace.dev" size={40} />`. */
 export function Glorpie(props: GlorpieProps): JSX.Element {

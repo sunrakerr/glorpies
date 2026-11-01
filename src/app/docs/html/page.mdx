@@ -24,8 +24,11 @@ Every [option](/docs/options) is both an attribute and a reflected property. Cha
 ```js
 const face = document.querySelector('glorpie-face');
 face.state = 'done';
+face.name = 42; // a numeric seed; the string '42' is a different face
 face.addEventListener('glorpie-error', (event) => report(event.detail));
 ```
+
+HTML attributes are strings. Use the `name` property for a numeric seed; the components preserve numeric props automatically.
 
 The canvas is exposed as `::part(canvas)`. To register the element under another tag, call `defineGlorpie('my-face')`.
 

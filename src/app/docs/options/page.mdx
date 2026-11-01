@@ -2,7 +2,9 @@ export const metadata = { title: 'options' };
 
 # options
 
-The same options everywhere: props on the components, attributes and properties on `<glorpie-face>`, query parameters on the image route, and flags in the CLI.
+The components share the options below, as do the attributes and properties on `<glorpie-face>`. The [image route](/docs/server) and [CLI](/docs/cli) accept the options that apply to image files.
+
+A numeric `name` is a seed; a string is hashed into one. `name={42}` and `name="42"` are different faces. On the element, use `face.name = 42` for a seed: HTML attributes, URL query parameters and CLI arguments are strings.
 
 <PropsTable />
 

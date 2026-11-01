@@ -7,6 +7,7 @@
 <p align="center"><b>Ugly little alien avatars from any string.</b></p>
 
 <p align="center">
+  <a href="https://www.npmjs.com/package/glorpies"><img alt="npm version" src="https://img.shields.io/npm/v/glorpies?style=flat-square&color=b4ff5a&labelColor=0d0c13"></a>
   <img alt="zero dependencies" src="https://img.shields.io/badge/dependencies-0-b4ff5a?style=flat-square&labelColor=0d0c13">
   <img alt="TypeScript types included" src="https://img.shields.io/badge/TypeScript-included-b4ff5a?style=flat-square&labelColor=0d0c13">
   <a href="LICENSE"><img alt="MIT licence" src="https://img.shields.io/badge/licence-MIT-b4ff5a?style=flat-square&labelColor=0d0c13"></a>
@@ -42,6 +43,8 @@ By default, small avatars use the ink look; at 72px and above they use watercolo
 ```tsx
 <Glorpie name="sunrakerrisfriednoodlz" look="watercolour" size={192} />
 ```
+
+A numeric `name` is a seed; a string is hashed into one. `name={42}` and `name="42"` produce different faces. For the web component, set `face.name = 42` in JavaScript to use a numeric seed.
 
 ## ⵅ frameworks
 
@@ -159,6 +162,14 @@ import { faceRoute } from 'glorpies/server';
 
 export const { GET } = faceRoute();
 ```
+
+For Next.js, keep the native canvas outside the server bundle:
+
+```js
+// next.config.mjs
+export default { serverExternalPackages: ['@napi-rs/canvas'] };
+```
+
 
 Then use your route:
 
