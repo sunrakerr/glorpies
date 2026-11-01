@@ -1,0 +1,157 @@
+export const metadata = { title: 'quick start' };
+
+# quick start
+
+<Steps>
+
+<Step title="Install the package">
+
+<Install />
+
+One package for every framework, with an entry point per framework, so you only bundle the one you import. Server images and the CLI need Node 22+.
+
+</Step>
+
+<Step title="Put a face on the page">
+
+
+<CodeGroup>
+
+```tsx title="UserBadge.tsx" tab="react"
+import { Glorpie } from 'glorpies/react';
+
+export function UserBadge({ user }) {
+  return <Glorpie name={user.email} size={40} />;
+}
+```
+
+```vue title="UserBadge.vue" tab="vue"
+<script setup>
+import { Glorpie } from 'glorpies/vue';
+
+defineProps(['user']);
+</script>
+
+<template>
+  <Glorpie :name="user.email" :size="40" />
+</template>
+```
+
+```svelte title="UserBadge.svelte" tab="svelte"
+<script>
+  import { Glorpie } from 'glorpies/svelte';
+
+  let { user } = $props();
+</script>
+
+<Glorpie name={user.email} size={40} />
+```
+
+```tsx title="UserBadge.tsx" tab="solid"
+import { Glorpie } from 'glorpies/solid';
+
+export function UserBadge(props) {
+  return <Glorpie name={props.user.email} size={40} />;
+}
+```
+
+```tsx title="UserBadge.tsx" tab="preact"
+import { Glorpie } from 'glorpies/preact';
+
+export function UserBadge({ user }) {
+  return <Glorpie name={user.email} size={40} />;
+}
+```
+
+```ts title="user-badge.component.ts" tab="angular"
+import { Component, CUSTOM_ELEMENTS_SCHEMA, input } from '@angular/core';
+import 'glorpies/element';
+
+@Component({
+  selector: 'user-badge',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: `<glorpie-face [name]="email()" size="40"></glorpie-face>`,
+})
+export class UserBadge {
+  email = input.required<string>();
+}
+```
+
+```astro title="UserBadge.astro" tab="astro"
+---
+const { email } = Astro.props;
+---
+
+<glorpie-face name={email} size="40"></glorpie-face>
+
+<script>
+  import 'glorpies/element';
+</script>
+```
+
+```html title="index.html" tab="html"
+<script type="module" src="https://unpkg.com/glorpies"></script>
+
+<glorpie-face name="ada@lovelace.dev" size="40"></glorpie-face>
+```
+
+</CodeGroup>
+
+<Preview>
+  <Faces names={['ada@lovelace.dev']} size={40} shape="circle" />
+</Preview>
+
+</Step>
+
+<Step title="Make it yours">
+
+Every framework takes the same [options](/docs/options): a look, a shape, a state and more.
+
+<CodeGroup>
+
+```tsx title="App.tsx" tab="react"
+<Glorpie name="agent-47" size={64} look="sticker" shape="squircle" state="thinking" />
+```
+
+```vue title="App.vue" tab="vue"
+<Glorpie name="agent-47" :size="64" look="sticker" shape="squircle" state="thinking" />
+```
+
+```svelte title="App.svelte" tab="svelte"
+<Glorpie name="agent-47" size={64} look="sticker" shape="squircle" state="thinking" />
+```
+
+```tsx title="App.tsx" tab="solid"
+<Glorpie name="agent-47" size={64} look="sticker" shape="squircle" state="thinking" />
+```
+
+```tsx title="App.tsx" tab="preact"
+<Glorpie name="agent-47" size={64} look="sticker" shape="squircle" state="thinking" />
+```
+
+```html title="template" tab="angular"
+<glorpie-face name="agent-47" size="64" look="sticker" shape="squircle" state="thinking"></glorpie-face>
+```
+
+```astro title="Page.astro" tab="astro"
+<glorpie-face name="agent-47" size="64" look="sticker" shape="squircle" state="thinking"></glorpie-face>
+```
+
+```html title="index.html" tab="html"
+<glorpie-face name="agent-47" size="64" look="sticker" shape="squircle" state="thinking"></glorpie-face>
+```
+
+</CodeGroup>
+
+<Preview>
+  <Faces names={['agent-47']} size={64} look="sticker" shape="squircle" state="thinking" />
+</Preview>
+
+</Step>
+
+</Steps>
+
+Your framework's page covers server rendering, errors and, in React, photo avatars.
+
+<Frameworks />
+

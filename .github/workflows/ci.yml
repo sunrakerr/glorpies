@@ -1,0 +1,59 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  library:
+    name: library on node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24, 26]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter glorpies typecheck
+      - name: build and test
+        run: pnpm test
+      - name: the framework components in a real browser
+        if: matrix.node == 26
+        run: pnpm --filter glorpies test:browser
+      - name: lint the package as npm will see it
+        run: pnpm --filter glorpies lint:package
+      - name: install the packed package the way a user would, and use it
+        run: |
+          app="$RUNNER_TEMP/app" && mkdir -p "$app" && cd "$app"
+          npm init -y > /dev/null
+          npm install "$GITHUB_WORKSPACE"/packages/glorpies/.pack/glorpies-*.tgz @napi-rs/canvas react
+          node --input-type=module -e "
+            import { renderImage } from 'glorpies/server';
+            import { Glorpie } from 'glorpies/react';
+            const { body } = await renderImage('agent-47', { size: 64 });
+            if (body[0] !== 0x89 || typeof Glorpie !== 'function') process.exit(1);
+          "
+          npx glorpies agent-47 --size 64 -o face.png && test -s face.png
+
+  site:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm build

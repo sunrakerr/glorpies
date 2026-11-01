@@ -1,0 +1,25 @@
+name: a glorpie misbehaves
+description: something broke, or a face came out wrong
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: what happened
+      description: what you did, what you expected, and what you got instead. A screenshot helps.
+    validations:
+      required: true
+  - type: input
+    id: name
+    attributes:
+      label: the face
+      description: the name (and look, size, state) of a face that shows it, if it's about a face
+      placeholder: "agent-47, look=ink, size=32"
+  - type: input
+    id: where
+    attributes:
+      label: where
+      description: glorpies version, and the entry (react, element, server, cli) and browser or runtime
+      placeholder: "glorpies 0.1.0, glorpies/react, Safari 19"
+    validations:
+      required: true

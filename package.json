@@ -1,0 +1,38 @@
+{
+  "name": "glorpies-site",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.15.0",
+  "engines": {
+    "node": "26.x"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "pnpm --filter glorpies build && pnpm --filter glorpies test"
+  },
+  "dependencies": {
+    "@mdx-js/loader": "^3.1.1",
+    "@mdx-js/react": "^3.1.1",
+    "@napi-rs/canvas": "^1.0.13",
+    "@next/mdx": "^16.4.3",
+    "glorpies": "workspace:*",
+    "lucide-react": "^1.61.0",
+    "next": "^16.4.2",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "remark-gfm": "^4.0.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/mdx": "^2.0.14",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3"
+  }
+}

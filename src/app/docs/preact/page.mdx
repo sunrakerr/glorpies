@@ -1,0 +1,23 @@
+export const metadata = { title: 'preact' };
+
+# preact
+
+<Install />
+
+## use it
+
+```tsx title="UserBadge.tsx"
+import { Glorpie } from 'glorpies/preact';
+
+export function UserBadge({ user }) {
+  return <Glorpie name={user.email} size={40} label={user.name} />;
+}
+```
+
+<Preview>
+  <Faces names={['ada@lovelace.dev', 'agent-47', 'grace@hopper.dev']} size={40} shape="circle" />
+</Preview>
+
+Takes every [option](/docs/options), plus `class` and `onError`. It's written against Preact directly, so it doesn't need `preact/compat`. With `preact-render-to-string` it renders a placeholder in the face's background colour.
+
+If your app already aliases `react` to `preact/compat`, `glorpies/react` works too, including `Avatar`.

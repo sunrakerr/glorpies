@@ -1,0 +1,21 @@
+export const metadata = { title: 'looks' };
+
+# looks
+
+21 paintings for faces shown large, and 8 avatar looks that hold up at 16px. The face is the same in every look; only the rendering changes. Type a name to try yours.
+
+<LooksGrid />
+
+## auto
+
+The default. It resolves to `watercolour` at 72px and above, and to `ink` below that, where brushwork stops reading. `resolveLook(look, size)` tells you which one it picks.
+
+## the list
+
+`LOOKS` lists every look. `FULL_LOOKS` and `SMALL_LOOKS` split it into paintings and avatar looks:
+
+```ts
+import { FULL_LOOKS, LOOKS, SMALL_LOOKS } from 'glorpies';
+
+LOOKS.map((look) => look.id); // ['watercolour', 'atkinson', 'bayer', …]
+```

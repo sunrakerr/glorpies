@@ -1,0 +1,47 @@
+export const metadata = { title: 'svelte' };
+
+# svelte
+
+<Install />
+
+## use it
+
+```svelte title="UserBadge.svelte"
+<script>
+  import { Glorpie } from 'glorpies/svelte';
+
+  let { user } = $props();
+</script>
+
+<Glorpie name={user.email} size={40} label={user.name} />
+```
+
+<Preview>
+  <Faces names={['ada@lovelace.dev', 'agent-47', 'grace@hopper.dev']} size={40} shape="circle" />
+</Preview>
+
+Takes every [option](/docs/options) as a prop, plus `class` and `onError`. Ships as `.svelte` source, compiled by your app's Svelte, so it works in Svelte 4 and 5.
+
+## on your own canvas
+
+The `glorpie` action runs a face on any canvas. The canvas is sized by CSS; the backing store follows its size and the device pixel ratio.
+
+```svelte title="Portrait.svelte"
+<script>
+  import { glorpie } from 'glorpies/svelte';
+</script>
+
+<canvas use:glorpie={{ name: 'agent-47', look: 'gouache' }} style="width: 240px; height: 240px"></canvas>
+```
+
+## sveltekit
+
+No configuration. On the server the component renders a placeholder in the face's background colour, at its final size; it paints after hydration.
+
+## errors
+
+```svelte
+<Glorpie name={user.id} onError={(error) => report(error)} />
+```
+
+Without `onError`, a failed paint goes to `console.error`.

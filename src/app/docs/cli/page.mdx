@@ -1,0 +1,38 @@
+export const metadata = { title: 'cli' };
+
+# cli
+
+The CLI renders with `@napi-rs/canvas`, so npx needs both packages:
+
+```sh
+npx -p glorpies -p @napi-rs/canvas glorpies agent-47 --look ink --size 128 --shape circle -o agent.png
+npx -p glorpies -p @napi-rs/canvas glorpies agent-47 --state thinking -f gif
+```
+
+In a project with both installed: `npx glorpies agent-47`.
+
+## options
+
+| flag | | default |
+| --- | --- | --- |
+| `-l`, `--look` | `auto` or a [look](/docs/looks) | `auto` |
+| `-s`, `--size` | pixels, 16 to 4096 | `256` |
+| `-f`, `--format` | `png`, `webp`, `jpeg`, `svg`, `gif` | from `--out`, else `png` |
+| `--shape` | `circle`, `squircle`, `rounded`, `square` | `square` |
+| `--state` | `idle`, `thinking`, `working`, `waiting`, `blocked`, `done` | `idle` |
+| `--background false` | only the face | |
+| `--loop` | seconds, for a gif | `3` |
+| `-o`, `--out` | the file to write, or `-` for stdout | `<name>.<format>` |
+| `--force` | overwrite an existing file | |
+| `-h`, `--help` | | |
+
+Names starting with `-` go after `--`: `glorpies -- -weird-name`.
+
+## in scripts
+
+```sh
+npx glorpies agent-47 -f webp -o - > avatar.webp
+for name in ada grace linus; do npx glorpies "$name" --look sticker; done
+```
+
+Existing files are never overwritten without `--force`. Errors exit with status 1.

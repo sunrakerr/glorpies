@@ -1,0 +1,60 @@
+export const metadata = { title: 'html & js' };
+
+# html & js
+
+## the element
+
+`<glorpie-face>` is a standard custom element. It works in any page, template or CMS, and in any framework that renders HTML.
+
+```html title="index.html"
+<script type="module" src="https://unpkg.com/glorpies"></script>
+
+<glorpie-face name="ada@lovelace.dev" size="48"></glorpie-face>
+<glorpie-face name="agent-47" size="48" look="sticker" state="thinking"></glorpie-face>
+```
+
+With a bundler, import the element once instead:
+
+```ts
+import 'glorpies/element';
+```
+
+Every [option](/docs/options) is both an attribute and a reflected property. Changing one updates the face in place. `name`, `look`, `state` and `background` trigger a repaint; a larger `size` repaints at the new resolution; anything else is CSS.
+
+```js
+const face = document.querySelector('glorpie-face');
+face.state = 'done';
+face.addEventListener('glorpie-error', (event) => report(event.detail));
+```
+
+The canvas is exposed as `::part(canvas)`. To register the element under another tag, call `defineGlorpie('my-face')`.
+
+## a canvas of your own
+
+`mount()` runs a face on a canvas you own. Size the canvas with CSS:
+
+```ts
+import { mount } from 'glorpies';
+
+const face = mount(canvas, { name: 'agent-47', look: 'gouache', state: 'working' });
+
+face.update({ state: 'done' });
+face.poke();
+face.destroy();
+```
+
+The backing store tracks the canvas's CSS size times `devicePixelRatio` and repaints when it grows or the browser zoom changes. Animation pauses while the canvas is off screen or the tab is hidden.
+
+## pictures
+
+Still images, with no animation loop:
+
+```ts
+import { faceCanvas, faceColors, faceSVG } from 'glorpies';
+
+const canvas = faceCanvas('agent-47', { look: 'ink', size: 256, shape: 'circle' });
+const svg = faceSVG('agent-47', { size: 256, state: 'thinking' });
+const { bg, accent } = faceColors('agent-47');
+```
+
+`faceColors` returns the face's palette, for theming the UI around it. In a `watercolour` SVG, pen lines, hatching and solids are vector paths, while the glazes and paper are embedded images; other looks are a single embedded image.

@@ -1,0 +1,34 @@
+export const metadata = { title: 'size and shape' };
+
+# size and shape
+
+## size
+
+`size` takes a number in pixels or any CSS length. The canvas backing store is the rendered size times `devicePixelRatio`, and repaints when it grows or the browser zoom changes. To fill a container, use `size="100%"`.
+
+<Preview>
+  <Faces names={['agent-47']} size={20} shape="circle" />
+  <Faces names={['agent-47']} size={32} shape="circle" />
+  <Faces names={['agent-47']} size={48} shape="circle" />
+  <Faces names={['agent-47']} size={96} shape="circle" />
+</Preview>
+
+## shape
+
+`circle` (the default for components), `squircle`, `rounded` or `square`. Server images default to `square`; other shapes are transparent outside the crop.
+
+<Preview>
+  <Faces names={['agent-47']} size={72} shape="circle" />
+  <Faces names={['agent-47']} size={72} shape="squircle" />
+  <Faces names={['agent-47']} size={72} shape="rounded" />
+  <Faces names={['agent-47']} size={72} shape="square" />
+</Preview>
+
+## without a background
+
+`background={false}` draws only the face: no backdrop, no pencil guides, no crop, transparent everywhere else. It works in every look. `mosaic`, `topo`, `thermal` and `holo` derive their backdrop from the face, so they keep some of it.
+
+<Preview>
+  <Faces names={['agent-47', 'soggy-glorp']} size={96} background={false} />
+  <Faces names={['agent-47']} size={96} look="sticker" background={false} />
+</Preview>

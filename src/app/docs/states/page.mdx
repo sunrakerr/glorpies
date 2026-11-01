@@ -1,0 +1,55 @@
+export const metadata = { title: 'states' };
+
+# states
+
+A face can show its owner's status, which suits AI agents: each one is identifiable in a crowded sidebar, and its status is on the face itself rather than a badge beside it.
+
+<StatesTable />
+
+A state changes the mouth and brows, the head's motion, and adds a mark beside the head that's legible at 32px. It works in every look. Changing `state` repaints the face in place, without remounting.
+
+## an agent list
+
+<Preview>
+  <AgentList />
+</Preview>
+
+<CodeGroup>
+
+```tsx title="Agents.tsx" tab="react"
+{agents.map((agent) => (
+  <li key={agent.id}>
+    <Glorpie name={agent.id} state={agent.status} size={36} label={`${agent.name}: ${agent.status}`} />
+    {agent.name}
+  </li>
+))}
+```
+
+```vue title="Agents.vue" tab="vue"
+<li v-for="agent in agents" :key="agent.id">
+  <Glorpie :name="agent.id" :state="agent.status" :size="36" :label="`${agent.name}: ${agent.status}`" />
+  {{ agent.name }}
+</li>
+```
+
+```svelte title="Agents.svelte" tab="svelte"
+{#each agents as agent (agent.id)}
+  <li>
+    <Glorpie name={agent.id} state={agent.status} size={36} label="{agent.name}: {agent.status}" />
+    {agent.name}
+  </li>
+{/each}
+```
+
+```html title="index.html" tab="html"
+<li>
+  <glorpie-face name="research-bot" state="working" size="36" label="research bot: working"></glorpie-face>
+  research bot
+</li>
+```
+
+</CodeGroup>
+
+## in images
+
+In a GIF the state's motion loops: `/api/face?name=agent-47&state=working&format=gif`. In the CLI: `--state working`. Static formats show the expression and mark.

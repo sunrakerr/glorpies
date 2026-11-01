@@ -1,0 +1,134 @@
+export const metadata = { title: 'server images' };
+
+# server images
+
+Serve faces as image files from your own app, for emails, Open Graph images, chat integrations and anything else that needs a URL.
+
+<Install packages="glorpies @napi-rs/canvas" />
+
+`@napi-rs/canvas` is a Skia-backed canvas for Node, shipped as prebuilt binaries, so there are no system libraries to install. It's an optional peer dependency: only `glorpies/server` and the CLI load it.
+
+## a route
+
+<CodeGroup>
+
+```ts title="app/api/face/route.ts" tab="next.js"
+import { faceRoute } from 'glorpies/server';
+
+export const { GET } = faceRoute();
+```
+
+```ts title="src/routes/api/face/+server.ts" tab="sveltekit"
+import { createFaceHandler } from 'glorpies/server';
+
+const faces = createFaceHandler();
+
+export const GET = ({ request }) => faces(request);
+```
+
+```ts title="server/api/face.ts" tab="nuxt"
+import { createFaceHandler } from 'glorpies/server';
+
+const faces = createFaceHandler();
+
+export default defineEventHandler((event) => faces(toWebRequest(event)));
+```
+
+```ts title="src/pages/api/face.ts" tab="astro"
+import { createFaceHandler } from 'glorpies/server';
+
+const faces = createFaceHandler();
+
+export const GET = ({ request }) => faces(request);
+```
+
+```ts title="server.ts" tab="express"
+import express from 'express';
+import { nodeFaceHandler } from 'glorpies/server';
+
+const app = express();
+app.get('/api/face', nodeFaceHandler());
+app.listen(3000);
+```
+
+```ts title="server.ts" tab="hono"
+import { Hono } from 'hono';
+import { createFaceHandler } from 'glorpies/server';
+
+const faces = createFaceHandler();
+const app = new Hono();
+app.get('/api/face', (c) => faces(c.req.raw));
+
+export default app;
+```
+
+```ts title="server.ts" tab="bun"
+import { createFaceHandler } from 'glorpies/server';
+
+Bun.serve({ port: 3000, fetch: createFaceHandler() });
+```
+
+```ts title="server.ts" tab="deno"
+import { createFaceHandler } from 'npm:glorpies/server';
+
+Deno.serve(createFaceHandler());
+```
+
+</CodeGroup>
+
+Then request faces by URL:
+
+```text
+/api/face?name=agent-47
+/api/face?name=agent-47&look=ink&size=128&shape=circle&format=webp
+/api/face?name=agent-47&state=thinking&format=gif
+```
+
+## query
+
+| parameter | values | default |
+| --- | --- | --- |
+| `name` | any string (required) | |
+| `look` | `auto` or a [look](/docs/looks) | `auto` |
+| `size` | 16 to 1024 pixels; gifs up to 320 | `256` |
+| `shape` | `circle`, `squircle`, `rounded`, `square`; outside is transparent | `square` |
+| `state` | `idle`, `thinking`, `working`, `waiting`, `blocked`, `done` | `idle` |
+| `background` | `false` for only the face | `true` |
+| `format` | `png`, `webp`, `jpeg`, `svg`, `gif` | `png` |
+| `loop` | seconds a gif runs before it repeats, 1 to 8 | `3` |
+| `fps` | gif frames per second, 4 to 30 | `15` |
+
+Invalid values fall back to the default rather than erroring.
+
+## options
+
+Every handler accepts defaults for the query parameters, and limits:
+
+```ts
+faceRoute({
+  look: 'ink',
+  size: 128,
+  maxSize: 512,                           // the largest ?size= (default 1024)
+  maxName: 128,                           // the longest ?name= (default 256)
+  cacheControl: 'public, max-age=86400',  // default: a year, for browsers and CDNs
+});
+```
+
+## caching and safety
+
+- Output is deterministic, so responses default to `Cache-Control: public, max-age=31536000, s-maxage=31536000, immutable`. Behind a CDN, each URL is rendered once.
+- `size` is clamped to `maxSize`, names longer than `maxName` get a 414, and a GIF's total frame pixels are capped by `FRAME_BUDGET`.
+- SVG responses carry `Content-Security-Policy: default-src 'none'; img-src data:; style-src 'unsafe-inline'`, and every response sets `X-Content-Type-Options: nosniff`.
+- Render errors are logged server-side; the client gets a bare 500.
+- Rendering is synchronous and CPU-bound. On an Apple M4, a 256px watercolour PNG takes about 100 ms, an avatar look under 2 ms, and a 3-second GIF at 128px about 160 ms. Rate-limit public routes.
+
+## without a route
+
+```ts
+import { faceGIF, renderImage } from 'glorpies/server';
+
+const { body, type } = await renderImage('agent-47', { look: 'sticker', size: 256, format: 'webp' });
+const gif = await faceGIF('agent-47', { state: 'done', size: 128, loop: 3 });
+```
+
+Everything in `glorpies/server` loads the native canvas itself. To call `faceCanvas()` or `faceSVG()` from `glorpies` on a server, `await useNativeCanvas()` once first.

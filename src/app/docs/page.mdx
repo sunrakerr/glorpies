@@ -1,0 +1,21 @@
+export const metadata = { title: { absolute: 'docs · glorpies' } };
+
+# introduction
+
+<Faces names={['ada@lovelace.dev', 'agent-47', 'soggy-glorp', 'grace@hopper.dev', 'bot-9000']} size={72} />
+
+glorpies is an avatar library. It turns any string into a hand-painted alien in watercolour and dip pen: antennae, extra eyes, horns, halos, too many teeth. The same string always gives the same face, in every browser and on every server, and the faces are alive: they breathe, blink and glance around.
+
+## why glorpies
+
+Every user, bot and agent in your app gets a face that's recognisably theirs, built from the id you already have.
+
+- **Nothing to store.** A name hashes to one of 9,007,199,254,740,992 seeds, and the seed decides everything. No database, no uploads, no API.
+- **Every framework.** Components for React, Vue, Svelte, Solid and Preact; a web component for Angular, Astro and plain HTML; image files from a server route; a CLI.
+- **29 looks.** 21 paintings for faces shown large, and 8 avatar looks that hold up at 16px.
+- **Light.** No runtime dependencies. Faces paint when they near the viewport and share one animation loop.
+- **Moods for agents.** Six states put an agent's status on its face: idle, thinking, working, waiting, blocked, done.
+
+## how it works
+
+The name is hashed to a 53-bit seed. The seed drives a deterministic random stream that builds the alien as a list of drawing operations: glazes, hatching, pen lines and fills. That list is painted in the look you choose, and the eyes are drawn live on top. [Watch one being painted](/how).

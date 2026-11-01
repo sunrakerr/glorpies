@@ -1,0 +1,18 @@
+export const metadata = { title: 'options' };
+
+# options
+
+The same options everywhere: props on the components, attributes and properties on `<glorpie-face>`, query parameters on the image route, and flags in the CLI.
+
+<PropsTable />
+
+## errors
+
+A failed paint is reported once per face, and goes to `console.error` unless handled:
+
+| where | how |
+| --- | --- |
+| React, Svelte, Solid, Preact | `onError={(error) => …}` |
+| Vue | `@error="…"` |
+| `<glorpie-face>` | a cancellable `glorpie-error` event; `preventDefault()` suppresses the log |
+| `mount()` | the `onError` option |
