@@ -1,7 +1,16 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/banner-dark.webp">
-  <img alt="glorpies: all hail the glorpies. a row of hand-painted alien faces" src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/banner-light.webp" width="100%">
-</picture>
+<p align="center">
+  <a href="https://glorpies.vercel.app"><img src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/glorpie.png" width="192" height="192" alt="sunrakerrisfriednoodlz: a purple Glorpie with a yellow crown, pointy ears and too many teeth"></a>
+</p>
+
+<h1 align="center">glorpies</h1>
+
+<p align="center"><b>Ugly little alien avatars from any string.</b></p>
+
+<p align="center">
+  <img alt="zero dependencies" src="https://img.shields.io/badge/dependencies-0-b4ff5a?style=flat-square&labelColor=0d0c13">
+  <img alt="TypeScript types included" src="https://img.shields.io/badge/TypeScript-included-b4ff5a?style=flat-square&labelColor=0d0c13">
+  <a href="https://github.com/sunrakerr/glorpies/blob/main/LICENSE"><img alt="MIT licence" src="https://img.shields.io/badge/licence-MIT-b4ff5a?style=flat-square&labelColor=0d0c13"></a>
+</p>
 
 <p align="center">
   <a href="https://glorpies.vercel.app"><b>./site</b></a> &nbsp;·&nbsp;
@@ -11,14 +20,26 @@
   <a href="https://github.com/sunrakerr/glorpies">./source</a>
 </p>
 
-# glorpies
+Hand-painted in watercolour and dip pen. Antennae, extra eyes, horns, halos, too many teeth. And they're alive: they breathe, blink and glance at you.
 
-Ugly little alien faces from any string. Antennae, extra eyes, horns, halos and too many teeth, painted in watercolour and dip pen. 9,007,199,254,740,992 of them (about 9 quadrillion), the same one for the same name every time, and alive: they breathe, blink and glance at you.
+**9,007,199,254,740,992** faces, over a million for every person on earth. A username, email or bot id always gets the same one, on every device and server. No API calls, no image downloads, nothing to store.
 
-The same name is always the same face, on every device and every server. No API calls, no storage, zero dependencies.
+## Quick start
 
 ```bash
 npm i glorpies
+```
+
+```tsx
+import { Glorpie } from 'glorpies/react';
+
+<Glorpie name="sunrakerrisfriednoodlz" size={48} />
+```
+
+By default, small avatars use the ink look; at 72px and above they use watercolour. To paint the Glorpie at the top of this page:
+
+```tsx
+<Glorpie name="sunrakerrisfriednoodlz" look="watercolour" size={192} background={false} />
 ```
 
 ## Anywhere: one tag
@@ -31,21 +52,20 @@ npm i glorpies
 
 Works in plain HTML and in any framework (Vue, Svelte, Angular, Astro…). With a bundler, `import 'glorpies/element'` registers the tag.
 
-## React
+## Photo fallbacks
+
+A photo while it's available; a Glorpie while it loads, if it fails, or if there isn't one.
 
 ```tsx
-import { Glorpie, Avatar, AvatarImage, AvatarFallback } from 'glorpies/react';
+import { Avatar, AvatarImage, AvatarFallback } from 'glorpies/react';
 
-<Glorpie name="agent-47" size={40} state="thinking" />
-
-// a photo that falls back to a face while it loads, or if it fails
 <Avatar size={40}>
   <AvatarImage src={user.photo} alt={user.name} />
   <AvatarFallback name={user.email} />
 </Avatar>
 ```
 
-It renders on the server as a soft placeholder in the face's own background colour, then paints on the client.
+The components render on the server as a soft placeholder in the face's own background colour, then paint on the client. React 18+ is supported; each framework integration uses your app's existing framework as an optional peer dependency.
 
 ## Vue, Svelte, Solid and Preact
 
@@ -79,7 +99,7 @@ Each renders a placeholder on the server (Nuxt, SvelteKit, SolidStart) and paint
 
 ## Props and attributes
 
-| | type | default | |
+| prop | type | default | what it does |
 | --- | --- | --- | --- |
 | `name` | `string \| number` | required | Any string. The same name is always the same face. |
 | `look` | look id \| `"auto"` | `"auto"` | `auto` paints watercolour, or the ink badge below 72px. |
@@ -87,13 +107,16 @@ Each renders a placeholder on the server (Nuxt, SvelteKit, SolidStart) and paint
 | `shape` | `circle` `squircle` `rounded` `square` | `circle` | The crop. None without a background. |
 | `background` | `boolean` | `true` | `false` keeps only the face: no backdrop, no pencil lines, no crop, transparent all around. |
 | `state` | `idle` `thinking` `working` `waiting` `blocked` `done` | `idle` | What the face shows besides who it is. |
-| `alive` | `boolean` | `true` | Breathing, blinking, glancing. Off by default for readers who prefer reduced motion. |
+| `alive` | `boolean` | on, unless reduced motion | Breathing, blinking, glancing. On unless the reader prefers reduced motion. |
 | `pokeable` | `boolean` | `false` | A tap makes the face wobble. |
 | `label` | `string` | `"Avatar"` | Accessible name (`role="img"`). |
+| `priority` | `number` | — | Higher values paint sooner when many faces are waiting. |
+
+These are attributes on `<glorpie-face>` too: use `background="false"` or `alive="false"` to turn those options off. See [options and error handling](https://glorpies.vercel.app/docs/options) for framework-specific callbacks.
 
 **Looks.** Paintings, for faces shown large: `watercolour`, `atkinson`, `bayer`, `plotter`, `cutout`, `neon`, `gouache`, `oil`, `sumi`, `charcoal`, `pointillism`, `linocut`, `warhol`, `stencil`, `stained`, `mosaic`, `felt`, `lowpoly`, `topo`, `thermal`, `holo`. Avatars, which still read at 16px: `blob`, `ink`, `sticker`, `cutpaper`, `pixel-icon`, `line-icon`, `glow`, `wash`.
 
-**Without a background.** Every look is painted twice, whole and bare, and kept only where the two differ, so `background={false}` works the same in every look: the face, its crown and tentacles, and the sparkles of a celestial one, on nothing. A few looks draw their background from the face itself (`mosaic`, `topo`, `thermal`, `holo`) and keep some of it.
+**Without a background.** `background={false}` keeps the face, its crown and tentacles, and the sparkles of a celestial one, on nothing. Every look supports it; the crop is removed too.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/looks-dark.webp">
@@ -104,6 +127,7 @@ Each renders a placeholder on the server (Nuxt, SvelteKit, SolidStart) and paint
 
 | state | mark | face |
 | --- | --- | --- |
+| `idle` | none | breathing, blinking and glancing |
 | `thinking` | thought bubbles | eyes up and away, one brow raised, head tilted |
 | `working` | typing bubble | eyes down reading, brows set, a steady nod |
 | `waiting` | `?` | brows up, a hopeful smile, looking at you |
@@ -126,7 +150,7 @@ Faces paint once they come near the screen, at their displayed size × devicePix
 
 ## Images, on a server
 
-Faces as image files, from a route in your own app:
+Faces as image files, from a route in your own app. Image rendering and the CLI need the optional `@napi-rs/canvas` peer dependency. Node deployments support Node 22 and newer:
 
 ```bash
 npm i glorpies @napi-rs/canvas
@@ -136,22 +160,35 @@ npm i glorpies @napi-rs/canvas
 // app/api/face/route.ts (Next.js)
 import { faceRoute } from 'glorpies/server';
 export const { GET } = faceRoute();
+```
 
-// anything that speaks fetch: SvelteKit, Nuxt, Astro, Hono, Bun, Deno
+For a fetch-based server:
+
+```ts
 import { createFaceHandler } from 'glorpies/server';
+
 Bun.serve({ fetch: createFaceHandler() });
+```
 
-// Express, or node:http
+For Express:
+
+```ts
+import express from 'express';
 import { nodeFaceHandler } from 'glorpies/server';
+
+const app = express();
 app.get('/api/face', nodeFaceHandler());
+app.listen(3000);
 ```
 
-```
+The fetch handler also fits SvelteKit, Nuxt, Astro, Hono and Deno; `nodeFaceHandler()` also fits `node:http`. [Setup for every framework](https://glorpies.vercel.app/docs/server).
+
+```text
 /api/face?name=agent-47&look=ink&size=128&shape=circle&format=png
 /api/face?name=agent-47&state=thinking&format=gif
 ```
 
-Query: `name` (required), `look`, `size` (16–1024), `shape` (outside is transparent), `state`, `background` (`false` for only the face), `format` (`png`, `webp`, `jpeg`, `svg`, `gif`), and for GIFs `loop` (seconds) and `fps`. Responses are cached for a year: the same request always gives the same image.
+Query: `name` (required), `look`, `size` (16–1024; GIFs up to 320), `shape` (outside is transparent), `state`, `background` (`false` for only the face), `format` (`png`, `webp`, `jpeg`, `svg`, `gif`), and for GIFs `loop` (seconds) and `fps`. Responses are cached for a year: the same request always gives the same image.
 
 GIFs loop seamlessly with a scripted pose, so the same name always loops the same way. Watercolour SVG is real vector paths; it's large, so prefer PNG or WebP at avatar sizes.
 
@@ -189,8 +226,8 @@ Installed in a project (`npm i glorpies @napi-rs/canvas`), it's just `npx glorpi
 
 The full guide, with every framework, is at [glorpies.vercel.app/docs](https://glorpies.vercel.app/docs).
 
-## Credits
+## Licence
 
-Made by [sunrakerr](https://github.com/sunrakerr). GIFs are encoded with [gifenc](https://github.com/mattdesl/gifenc) (MIT, bundled; see THIRD-PARTY-NOTICES.md).
+Made by [sunrakerr](https://github.com/sunrakerr).
 
-MIT
+[MIT](LICENSE). Bundled third-party licences are in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).

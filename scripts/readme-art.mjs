@@ -1,15 +1,23 @@
 // Draws the README's pictures with the site's own fonts and colours, and faces from the built library.
 // Build the library and run the site first (pnpm --filter glorpies build; pnpm dev --port 3417), then: node scripts/readme-art.mjs [base-url]
-// Writes .github/assets/: banner-{dark,light}.webp, looks-{dark,light}.webp and one GIF per state,
+// Add --hero-only to redraw just the README's single Glorpie, without the site or Chrome.
+// Writes .github/assets/: glorpie.png, banner-{dark,light}.webp, looks-{dark,light}.webp and one GIF per state,
 // and the site's link preview, src/app/opengraph-image.png.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
-import { nodeFaceHandler } from '../packages/glorpies/dist/server.js';
+import { nodeFaceHandler, renderImage } from '../packages/glorpies/dist/server.js';
 import { BASE_URL, withChrome } from './lib/chrome.mjs';
 
-const base = process.argv[2] ?? BASE_URL;
+const base = process.argv.slice(2).find((arg) => !arg.startsWith('--')) ?? BASE_URL;
 const out = new URL('../.github/assets/', import.meta.url);
 mkdirSync(out, { recursive: true });
+const { body: hero } = await renderImage('sunrakerrisfriednoodlz', {
+  look: 'watercolour', size: 512, format: 'png', background: false,
+});
+writeFileSync(new URL('glorpie.png', out), hero);
+console.log('wrote glorpie.png');
+if (process.argv.includes('--hero-only')) process.exit(0);
+
 // the library's own image handler, on a port of its own for as long as this runs
 const faces = createServer(nodeFaceHandler());
 await new Promise((resolve) => faces.listen(0, '127.0.0.1', resolve));

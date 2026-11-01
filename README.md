@@ -1,9 +1,14 @@
-# glorpies
+<p align="center">
+  <a href="https://glorpies.vercel.app"><img src=".github/assets/glorpie.png" width="192" height="192" alt="sunrakerrisfriednoodlz: a purple Glorpie with a yellow crown, pointy ears and too many teeth"></a>
+</p>
+
+<h1 align="center">glorpies</h1>
+
+<p align="center"><b>Ugly little alien avatars from any string.</b></p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/glorpies"><img alt="npm" src="https://img.shields.io/npm/v/glorpies?style=flat-square&label=npm&labelColor=0d0c13&color=b4ff5a"></a>
   <img alt="zero dependencies" src="https://img.shields.io/badge/dependencies-0-b4ff5a?style=flat-square&labelColor=0d0c13">
-  <img alt="types included" src="https://img.shields.io/npm/types/glorpies?style=flat-square&labelColor=0d0c13&color=b4ff5a">
+  <img alt="TypeScript types included" src="https://img.shields.io/badge/TypeScript-included-b4ff5a?style=flat-square&labelColor=0d0c13">
   <a href="LICENSE"><img alt="MIT licence" src="https://img.shields.io/badge/licence-MIT-b4ff5a?style=flat-square&labelColor=0d0c13"></a>
 </p>
 
@@ -14,36 +19,42 @@
   <a href="https://glorpies.vercel.app/docs">./docs</a>
 </p>
 
-Ugly little alien avatars, hand-painted in watercolour and dip pen from any string. Antennae, extra eyes, horns, halos, too many teeth.
+Hand-painted in watercolour and dip pen. Antennae, extra eyes, horns, halos, too many teeth. And they're alive: they breathe, blink and glance at you.
 
-There are **9,007,199,254,740,992** of them, over a million for every person on earth. A username, an email or a bot id gets its own, and always the same one: on every device, on every server, with nothing stored and no API to call. And they're alive: they breathe, blink and glance at you.
+**9,007,199,254,740,992** faces, over a million for every person on earth. A username, email or bot id always gets the same one, on every device and server. No API calls, no image downloads, nothing to store.
 
-## ⵣ install
+## ⵣ quick start
 
 ```bash
 npm i glorpies
 ```
 
-## ⵅ use
+```tsx
+import { Glorpie } from 'glorpies/react';
+
+<Glorpie name="sunrakerrisfriednoodlz" size={48} />
+```
+
+By default, small avatars use the ink look; at 72px and above they use watercolour. To paint the Glorpie at the top of this page:
+
+```tsx
+<Glorpie name="sunrakerrisfriednoodlz" look="watercolour" size={192} background={false} />
+```
+
+## ⵅ frameworks
 
 Every framework gets a `<Glorpie>` that takes the same options:
 
-| | |
-| --- | --- |
-| React | `import { Glorpie } from 'glorpies/react'` |
-| Vue 3, Nuxt | `import { Glorpie } from 'glorpies/vue'` |
-| Svelte 4 and 5, SvelteKit | `import { Glorpie } from 'glorpies/svelte'` |
-| Solid, SolidStart | `import { Glorpie } from 'glorpies/solid'` |
-| Preact | `import { Glorpie } from 'glorpies/preact'` |
-| Angular, Astro, Lit, plain HTML | `import 'glorpies/element'`, then `<glorpie-face>` |
+| framework | import | guide |
+| --- | --- | --- |
+| React, Next.js | `import { Glorpie } from 'glorpies/react'` | [React](https://glorpies.vercel.app/docs/react) |
+| Vue 3, Nuxt | `import { Glorpie } from 'glorpies/vue'` | [Vue](https://glorpies.vercel.app/docs/vue) |
+| Svelte 4 and 5, SvelteKit | `import { Glorpie } from 'glorpies/svelte'` | [Svelte](https://glorpies.vercel.app/docs/svelte) |
+| Solid, SolidStart | `import { Glorpie } from 'glorpies/solid'` | [Solid](https://glorpies.vercel.app/docs/solid) |
+| Preact | `import { Glorpie } from 'glorpies/preact'` | [Preact](https://glorpies.vercel.app/docs/preact) |
+| Angular, Astro, Lit, plain HTML | `import 'glorpies/element'`, then `<glorpie-face>` | [Web component](https://glorpies.vercel.app/docs/html) |
 
-```tsx
-<Glorpie name="ada@lovelace.dev" size={48} />
-```
-
-```vue
-<Glorpie :name="user.email" :size="48" />
-```
+Components render a coloured placeholder on the server, then paint on a canvas in the browser. Faces paint when they approach the screen and animate only while visible. Reduced-motion preferences are respected by default.
 
 **No build step?** One script tag:
 
@@ -53,24 +64,46 @@ Every framework gets a `<Glorpie>` that takes the same options:
 <glorpie-face name="ada@lovelace.dev" size="48"></glorpie-face>
 ```
 
-**As images, from your own server** (for emails, OG images, anything that needs a URL)
+## ⵙ looks
 
-```ts
-// app/api/face/route.ts (Next.js); SvelteKit, Nuxt, Astro, Hono, Bun and Deno take the same handler
-import { faceRoute } from 'glorpies/server';
-export const { GET } = faceRoute();
+29 of them: 21 paintings for faces shown large, and 8 avatar looks that still read at 16px. Every look works without its background too (`background={false}`): only the face, on nothing.
 
-// Express, or node:http
-app.get('/api/face', nodeFaceHandler());
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/looks-dark.webp">
+  <img alt="the same glorpie in 24 looks: watercolour, gouache, oil, sumi, charcoal, pointillism, linocut, warhol, stained glass, mosaic, neon, holo, atkinson, plotter, thermal, topo, and the avatar looks blob, ink, sticker, cutpaper, pixel icon, line icon, glow and wash" src=".github/assets/looks-light.webp" width="100%">
+</picture>
 
-// GET /api/face?name=ada@lovelace.dev&look=ink&size=128&format=png
+[Explore all 29 looks](https://glorpies.vercel.app/docs/looks), or [pick a face in the gallery](https://glorpies.vercel.app/gallery).
+
+## ⵀ moods
+
+Made for agents too: a face you can pick out of a crowded sidebar, with a status you read from the face itself. Each state changes the expression, how the head moves, and adds a mark that reads at 32px.
+
+| `idle` | `thinking` | `working` | `waiting` | `blocked` | `done` |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| <img src=".github/assets/state-idle.gif" width="96" alt="idle: breathing and blinking"> | <img src=".github/assets/state-thinking.gif" width="96" alt="thinking: eyes up, thought bubbles"> | <img src=".github/assets/state-working.gif" width="96" alt="working: eyes down, typing bubble"> | <img src=".github/assets/state-waiting.gif" width="96" alt="waiting: brows up, a question mark"> | <img src=".github/assets/state-blocked.gif" width="96" alt="blocked: a frown and a red exclamation mark"> | <img src=".github/assets/state-done.gif" width="96" alt="done: a big smile and sparkles"> |
+
+```tsx
+<Glorpie name="agent-47" state="thinking" />
 ```
 
-**From a terminal**
+## options
 
-```bash
-npx -p glorpies -p @napi-rs/canvas glorpies ada@lovelace.dev --size 256 -o ada.png
-```
+The same props on every `<Glorpie>`, or attributes on `<glorpie-face>`:
+
+| prop | default | what it does |
+| --- | --- | --- |
+| `name` | required | A string or numeric seed. The same name always gets the same face. |
+| `size` | `48` | Pixels, or a CSS length such as `"3rem"`. |
+| `look` | `"auto"` | Any of the 29 looks. `auto` uses ink below 72px and watercolour at 72px and above. |
+| `shape` | `"circle"` | `circle`, `squircle`, `rounded` or `square`. |
+| `background` | `true` | `false` removes the backdrop and crop, leaving a transparent background. |
+| `state` | `"idle"` | `idle`, `thinking`, `working`, `waiting`, `blocked` or `done`. |
+| `alive` | on, unless reduced motion | Breathing, blinking and glancing. Set `false` for a still face. |
+| `pokeable` | `false` | A tap makes the face wobble. |
+| `label` | `"Avatar"` | Accessible name for the face. |
+
+[All options and error handling](https://glorpies.vercel.app/docs/options).
 
 ## ⵔ examples
 
@@ -88,6 +121,8 @@ import { Avatar, AvatarFallback, AvatarImage } from 'glorpies/react';
 **Agents that show their status.** The face changes with the state, so a sidebar reads at a glance.
 
 ```tsx
+import { Glorpie } from 'glorpies/react';
+
 {agents.map((agent) => (
   <Glorpie key={agent.id} name={agent.id} state={agent.status} size={32} label={agent.name} />
 ))}
@@ -108,41 +143,47 @@ const { bg, accent } = faceColors(user.email);
 header.style.background = bg;
 ```
 
-**Angular, Astro or a CMS template.** Import the element once, then use the tag anywhere.
+## server images
 
-```ts
-import 'glorpies/element';
-// <glorpie-face name="ada@lovelace.dev" size="40" look="sticker"></glorpie-face>
+For emails, Open Graph images, chat integrations and anywhere else that needs an image URL, serve faces from your own app. Image rendering and the CLI need the optional `@napi-rs/canvas` peer dependency. Node deployments support Node 22 and newer.
+
+```bash
+npm i glorpies @napi-rs/canvas
 ```
 
-**Avatars for a whole team, from a terminal.**
+```ts
+// app/api/face/route.ts (Next.js)
+import { faceRoute } from 'glorpies/server';
+
+export const { GET } = faceRoute();
+```
+
+Then use your route:
+
+```text
+/api/face?name=agent-47&look=ink&size=128&format=png
+/api/face?name=agent-47&state=thinking&format=gif
+```
+
+PNG, WebP, JPEG, SVG and seamless GIF loops, cached for a year by default. `createFaceHandler()` works with fetch-based servers; `nodeFaceHandler()` works with Express and `node:http`.
+
+[Server setup for every framework, query parameters and limits](https://glorpies.vercel.app/docs/server).
+
+## CLI
+
+Write a face straight to a file:
+
+```bash
+npx -p glorpies -p @napi-rs/canvas glorpies sunrakerrisfriednoodlz --look watercolour --size 512 -o glorpie.png
+```
+
+Or a whole team, after installing `glorpies` and `@napi-rs/canvas` in your project:
 
 ```bash
 for name in ada grace linus; do npx glorpies "$name" --look sticker --size 256; done
 ```
 
-Everything else (every prop, look, state, query parameter and function) is in **[the docs](https://glorpies.vercel.app/docs)**.
-
-## ⵙ looks
-
-29 of them: 21 paintings for faces shown large, and 8 avatar looks that still read at 16px. Every look works without its background too (`background={false}`): only the face, on nothing.
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/looks-dark.webp">
-  <img alt="the same glorpie in 24 looks: watercolour, gouache, oil, sumi, charcoal, pointillism, linocut, warhol, stained glass, mosaic, neon, holo, atkinson, plotter, thermal, topo, and the avatar looks blob, ink, sticker, cutpaper, pixel icon, line icon, glow and wash" src=".github/assets/looks-light.webp" width="100%">
-</picture>
-
-## ⵀ moods
-
-Made for agents too: a face you can pick out of a crowded sidebar, with a status you read from the face itself. Each state changes the expression, how the head moves, and adds a mark that reads at 32px.
-
-| `idle` | `thinking` | `working` | `waiting` | `blocked` | `done` |
-| :---: | :---: | :---: | :---: | :---: | :---: |
-| <img src=".github/assets/state-idle.gif" width="96" alt="idle: breathing and blinking"> | <img src=".github/assets/state-thinking.gif" width="96" alt="thinking: eyes up, thought bubbles"> | <img src=".github/assets/state-working.gif" width="96" alt="working: eyes down, typing bubble"> | <img src=".github/assets/state-waiting.gif" width="96" alt="waiting: brows up, a question mark"> | <img src=".github/assets/state-blocked.gif" width="96" alt="blocked: a frown and a red exclamation mark"> | <img src=".github/assets/state-done.gif" width="96" alt="done: a big smile and sparkles"> |
-
-```tsx
-<Glorpie name="agent-47" state="thinking" />
-```
+[CLI flags and formats](https://glorpies.vercel.app/docs/cli).
 
 ## ⵚ how it's drawn
 
@@ -152,7 +193,7 @@ A name hashes to a 53-bit seed, and the seed drives a random stream (sfc32) and 
 
 ## this repo
 
-`packages/glorpies` is the library, with zero runtime dependencies. `src/` is the site, a Next.js app.
+`packages/glorpies` is the library, with zero runtime dependencies. `src/` is the site, a Next.js app. To work on the repo, use Node 26 and pnpm.
 
 ```bash
 pnpm install
@@ -160,13 +201,13 @@ pnpm dev --port 3417     # http://localhost:3417
 pnpm typecheck && pnpm test
 ```
 
-- `packages/glorpies/src/face/build.ts` turns a seed into an alien. `src/engine.ts` is the seeded randomness and noise.
-- `packages/glorpies/src/face/render.ts` paints and animates a face; `src/stage.ts` runs one animation loop for every face on a page. `src/styles.ts` and `src/small.ts` repaint faces in the other looks.
+- In `packages/glorpies/src/`, `face/build.ts` turns a seed into an alien and `engine.ts` supplies the seeded randomness and noise.
+- In that same directory, `face/render.ts` paints and animates a face; `stage.ts` runs one animation loop for every face on a page. `styles.ts` and `small.ts` repaint faces in the other looks.
 - `scripts/` holds headless Chrome checks, and `readme-art.mjs`, which draws the pictures in this README and the site's link preview.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) before a pull request. There's one rule: an existing face must never change.
 
-## credits
+## licence
 
 Made by **[sunrakerr](https://github.com/sunrakerr)**.
 
