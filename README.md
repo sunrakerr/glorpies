@@ -1,7 +1,4 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner-dark.webp">
-  <img alt="glorpies: all hail the glorpies. a row of hand-painted alien faces" src=".github/assets/banner-light.webp" width="100%">
-</picture>
+# glorpies
 
 <p align="center">
   <a href="https://www.npmjs.com/package/glorpies"><img alt="npm" src="https://img.shields.io/npm/v/glorpies?style=flat-square&label=npm&labelColor=0d0c13&color=b4ff5a"></a>
@@ -172,7 +169,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) before a pull request. There's one rule: 
 ## credits
 
 Made by **[sunrakerr](https://github.com/sunrakerr)**.
-
-The API takes its lead from [facehash](https://facehash.dev). GIFs are encoded with [gifenc](https://github.com/mattdesl/gifenc).
 
 [MIT](LICENSE)
