@@ -1,9 +1,8 @@
 'use client';
 
-import { ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { REPO_URL } from '@/lib/site';
+import { GitHubLink } from './GitHubLink';
 import { ThemeToggle } from './ThemeToggle';
 
 const LINKS = [
@@ -41,9 +40,7 @@ export function SiteHeader({ className = '' }: { className?: string }) {
             </Link>
           );
         })}
-        <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 transition hover:text-ink">
-          github <ArrowUpRight aria-hidden className="hidden size-3 text-ink-2/50 sm:block" strokeWidth={1.8} />
-        </a>
+        <GitHubLink compact />
         <ThemeToggle />
       </nav>
     </header>

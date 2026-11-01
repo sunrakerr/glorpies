@@ -2,7 +2,7 @@
 // Build the library and run the site first (pnpm --filter glorpies build; pnpm dev --port 3417), then: node scripts/readme-art.mjs [base-url]
 // Add --hero-only to redraw just the README's single Glorpie, without the site or Chrome.
 // Writes .github/assets/: glorpie.png, banner-{dark,light}.webp, looks-{dark,light}.webp and one GIF per state,
-// and the site's link preview, src/app/opengraph-image.png.
+// mirrors README images to public/readme/ for npm, and writes the site's link preview, src/app/opengraph-image.png.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { nodeFaceHandler, renderImage } from '../packages/glorpies/dist/server.js';
@@ -10,11 +10,19 @@ import { BASE_URL, withChrome } from './lib/chrome.mjs';
 
 const base = process.argv.slice(2).find((arg) => !arg.startsWith('--')) ?? BASE_URL;
 const out = new URL('../.github/assets/', import.meta.url);
+const publicOut = new URL('../public/readme/', import.meta.url);
 mkdirSync(out, { recursive: true });
+mkdirSync(publicOut, { recursive: true });
+
+function writeArt(file, bytes, to = out) {
+  writeFileSync(new URL(file, to), bytes);
+  if (to === out && /^(glorpie\.png|looks-|state-)/.test(file)) writeFileSync(new URL(file, publicOut), bytes);
+}
+
 const { body: hero } = await renderImage('sunrakerrisfriednoodlz', {
   look: 'watercolour', size: 512, format: 'png', shape: 'circle',
 });
-writeFileSync(new URL('glorpie.png', out), hero);
+writeArt('glorpie.png', hero);
 console.log('wrote glorpie.png');
 if (process.argv.includes('--hero-only')) process.exit(0);
 
@@ -124,7 +132,7 @@ async function shootOnce({ send, evaluate }, file, theme, html, { square = false
   if (!(await evaluate(`!!document.getElementById('art')`))) throw new Error('the page reloaded before the capture');
   const format = file.endsWith('.png') ? 'png' : 'webp';
   const shot = await send('Page.captureScreenshot', { format, quality: format === 'webp' ? 90 : undefined, clip: { ...box, scale } });
-  writeFileSync(new URL(file, to), Buffer.from(shot.data, 'base64'));
+  writeArt(file, Buffer.from(shot.data, 'base64'), to);
   console.log('wrote', file);
 }
 
@@ -145,7 +153,7 @@ await withChrome(async (page) => {
 for (const state of ['idle', 'thinking', 'working', 'waiting', 'blocked', 'done']) {
   const res = await fetch(face('agent-47', { state, format: 'gif', size: '160', shape: 'squircle' }));
   if (!res.ok) throw new Error(`${state}: ${res.status}`);
-  writeFileSync(new URL(`state-${state}.gif`, out), Buffer.from(await res.arrayBuffer()));
+  writeArt(`state-${state}.gif`, Buffer.from(await res.arrayBuffer()));
   console.log('wrote', `state-${state}.gif`);
 }
 faces.close();

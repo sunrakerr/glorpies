@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://glorpies.sunrakerr.dev"><img src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/glorpie.png" width="192" height="192" alt="sunrakerrisfriednoodlz: a purple Glorpie with a yellow crown, pointy ears and too many teeth, painted on a mint wash in a circle"></a>
+  <a href="https://glorpies.sunrakerr.dev"><img src="https://glorpies.sunrakerr.dev/readme/glorpie.png" width="192" height="192" alt="sunrakerrisfriednoodlz: a purple Glorpie with a yellow crown, pointy ears and too many teeth, painted on a mint wash in a circle"></a>
 </p>
 
 <h1 align="center">glorpies</h1>
@@ -121,8 +121,8 @@ These are attributes on `<glorpie-face>` too: use `background="false"` or `alive
 **Without a background, or on a colour.** `background={false}` keeps the face, its crown and tentacles, and the sparkles of a celestial one, on nothing. Every look supports it; the crop is removed too. `background="#ffe9a8"` puts the face on that colour instead of its paper, still cropped to its shape.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/looks-dark.webp">
-  <img alt="the same glorpie in 24 of its looks" src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/looks-light.webp" width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="https://glorpies.sunrakerr.dev/readme/looks-dark.webp">
+  <img alt="the same glorpie in 24 of its looks" src="https://glorpies.sunrakerr.dev/readme/looks-light.webp" width="100%">
 </picture>
 
 **States.** Made for agents: a face you can tell apart in a crowded sidebar, and a status you read from the face itself. Each state changes the expression (mouth and brows, painted in the look's own hand), how the head moves, and adds a hand-drawn mark that still reads at 32px:
@@ -136,7 +136,7 @@ These are attributes on `<glorpie-face>` too: use `background="false"` or `alive
 | `blocked` | red `!` | knitted brows, a frown, slumped, shaking now and then |
 | `done` | sparkles | a big smile, a pleased squint, a little hop |
 
-<p><img src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/state-idle.gif" width="80" alt="idle"> <img src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/state-thinking.gif" width="80" alt="thinking"> <img src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/state-working.gif" width="80" alt="working"> <img src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/state-waiting.gif" width="80" alt="waiting"> <img src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/state-blocked.gif" width="80" alt="blocked"> <img src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/state-done.gif" width="80" alt="done"></p>
+<p><img src="https://glorpies.sunrakerr.dev/readme/state-idle.gif" width="80" alt="idle"> <img src="https://glorpies.sunrakerr.dev/readme/state-thinking.gif" width="80" alt="thinking"> <img src="https://glorpies.sunrakerr.dev/readme/state-working.gif" width="80" alt="working"> <img src="https://glorpies.sunrakerr.dev/readme/state-waiting.gif" width="80" alt="waiting"> <img src="https://glorpies.sunrakerr.dev/readme/state-blocked.gif" width="80" alt="blocked"> <img src="https://glorpies.sunrakerr.dev/readme/state-done.gif" width="80" alt="done"></p>
 
 ## Your own canvas
 

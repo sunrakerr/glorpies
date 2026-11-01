@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, ArrowUpRight, Copy, Dices, FileCode, ImageDown } from 'lucide-react';
+import { ArrowRight, Copy, Dices, FileCode, ImageDown } from 'lucide-react';
 import Link from 'next/link';
 import { useDeferredValue, useEffect, useState, type ReactNode } from 'react';
 import { FACES, FULL_LOOKS, lookOf, randomName, resolveLook, seedOf, SHAPES, SMALL_LOOKS, STATES, type FaceState, type LookChoice, type LookId } from 'glorpies';
@@ -8,13 +8,13 @@ import { Glorpie } from 'glorpies/react';
 import { runAction, type ActionKind } from '../actions';
 import { CodePanel } from '../Code';
 import { Install } from '../Install';
+import { GitHubLink } from '../GitHubLink';
 import { LookThumb } from '../LookPicker';
 import { Sheet } from '../Sheet';
 import { Page, Section } from '../Page';
 import { Pick, Tabs } from '../Tabs';
 import { IconButton, ToastView, useToast } from '../ui';
 import { DOCS, docHref } from '@/lib/docs';
-import { REPO_URL } from '@/lib/site';
 import { MARKS } from '@/lib/glyphs';
 import { Crowd } from './Crowd';
 import { Transmission } from './Transmission';
@@ -78,9 +78,7 @@ function Hero({ onPick }: { onPick: (name: string) => void }) {
           <Link href="/gallery" className="text-[12.5px] text-ink-2 transition hover:text-ink">
             <span className="text-ink-2/50">./</span>gallery
           </Link>
-          <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 text-[12.5px] text-ink-2 transition hover:text-ink">
-            <span className="hidden sm:inline">source on&nbsp;</span>github <ArrowUpRight aria-hidden className="size-3 text-ink-2/50" strokeWidth={1.8} />
-          </a>
+          <GitHubLink className="text-[12.5px] text-ink-2" />
         </div>
         <nav aria-label="Frameworks" className="mt-7 flex flex-wrap items-center gap-x-1 gap-y-2 text-[12px]">
           <span className="mr-2 text-ink-2/70">works with</span>
