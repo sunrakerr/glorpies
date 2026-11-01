@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://glorpies.vercel.app"><img src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/glorpie.png" width="192" height="192" alt="sunrakerrisfriednoodlz: a purple Glorpie with a yellow crown, pointy ears and too many teeth, painted on a mint wash in a circle"></a>
+  <a href="https://glorpies.sunrakerr.dev"><img src="https://raw.githubusercontent.com/sunrakerr/glorpies/main/.github/assets/glorpie.png" width="192" height="192" alt="sunrakerrisfriednoodlz: a purple Glorpie with a yellow crown, pointy ears and too many teeth, painted on a mint wash in a circle"></a>
 </p>
 
 <h1 align="center">glorpies</h1>
@@ -13,10 +13,10 @@
 </p>
 
 <p align="center">
-  <a href="https://glorpies.vercel.app"><b>./site</b></a> &nbsp;·&nbsp;
-  <a href="https://glorpies.vercel.app/gallery">./gallery</a> &nbsp;·&nbsp;
-  <a href="https://glorpies.vercel.app/docs">./docs</a> &nbsp;·&nbsp;
-  <a href="https://glorpies.vercel.app/how">./how</a> &nbsp;·&nbsp;
+  <a href="https://glorpies.sunrakerr.dev"><b>./site</b></a> &nbsp;·&nbsp;
+  <a href="https://glorpies.sunrakerr.dev/gallery">./gallery</a> &nbsp;·&nbsp;
+  <a href="https://glorpies.sunrakerr.dev/docs">./docs</a> &nbsp;·&nbsp;
+  <a href="https://glorpies.sunrakerr.dev/how">./how</a> &nbsp;·&nbsp;
   <a href="https://github.com/sunrakerr/glorpies">./source</a>
 </p>
 
@@ -114,7 +114,7 @@ Each renders a placeholder on the server (Nuxt, SvelteKit, SolidStart) and paint
 | `label` | `string` | `"Avatar"` | Accessible name (`role="img"`). |
 | `priority` | `number` | | Higher values paint sooner when many faces are waiting. |
 
-These are attributes on `<glorpie-face>` too: use `background="false"` or `alive="false"` to turn those options off. See [options and error handling](https://glorpies.vercel.app/docs/options) for framework-specific callbacks.
+These are attributes on `<glorpie-face>` too: use `background="false"` or `alive="false"` to turn those options off. See [options and error handling](https://glorpies.sunrakerr.dev/docs/options) for framework-specific callbacks.
 
 **Looks.** Paintings, for faces shown large: `watercolour`, `atkinson`, `bayer`, `plotter`, `cutout`, `neon`, `gouache`, `oil`, `sumi`, `charcoal`, `pointillism`, `linocut`, `warhol`, `stencil`, `stained`, `mosaic`, `felt`, `lowpoly`, `topo`, `thermal`, `holo`. Avatars, which still read at 16px: `blob`, `ink`, `sticker`, `cutpaper`, `pixel-icon`, `line-icon`, `glow`, `wash`.
 
@@ -183,7 +183,7 @@ app.get('/api/face', nodeFaceHandler());
 app.listen(3000);
 ```
 
-The fetch handler also fits SvelteKit, Nuxt, Astro, Hono and Deno; `nodeFaceHandler()` also fits `node:http`. [Setup for every framework](https://glorpies.vercel.app/docs/server).
+The fetch handler also fits SvelteKit, Nuxt, Astro, Hono and Deno; `nodeFaceHandler()` also fits `node:http`. [Setup for every framework](https://glorpies.sunrakerr.dev/docs/server).
 
 ```text
 /api/face?name=agent-47&look=ink&size=128&shape=circle&format=png
@@ -226,7 +226,7 @@ Installed in a project (`npm i glorpies @napi-rs/canvas`), it's just `npx glorpi
 | `LOOKS`, `STATES`, `SHAPES` | everything there is to choose from |
 | `setCanvasFactory(f)` | draw on canvases from anywhere (the server entry does this for you) |
 
-The full guide, with every framework, is at [glorpies.vercel.app/docs](https://glorpies.vercel.app/docs).
+The full guide, with every framework, is at [glorpies.sunrakerr.dev/docs](https://glorpies.sunrakerr.dev/docs).
 
 ## Licence
 

@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://glorpies.vercel.app"><img src=".github/assets/glorpie.png" width="192" height="192" alt="sunrakerrisfriednoodlz: a purple Glorpie with a yellow crown, pointy ears and too many teeth, painted on a mint wash in a circle"></a>
+  <a href="https://glorpies.sunrakerr.dev"><img src=".github/assets/glorpie.png" width="192" height="192" alt="sunrakerrisfriednoodlz: a purple Glorpie with a yellow crown, pointy ears and too many teeth, painted on a mint wash in a circle"></a>
 </p>
 
 <h1 align="center">glorpies</h1>
@@ -13,10 +13,10 @@
 </p>
 
 <p align="center">
-  <a href="https://glorpies.vercel.app"><b>./site</b></a> &nbsp;·&nbsp;
-  <a href="https://glorpies.vercel.app/gallery">./gallery</a> &nbsp;·&nbsp;
-  <a href="https://glorpies.vercel.app/how">./how</a> &nbsp;·&nbsp;
-  <a href="https://glorpies.vercel.app/docs">./docs</a>
+  <a href="https://glorpies.sunrakerr.dev"><b>./site</b></a> &nbsp;·&nbsp;
+  <a href="https://glorpies.sunrakerr.dev/gallery">./gallery</a> &nbsp;·&nbsp;
+  <a href="https://glorpies.sunrakerr.dev/how">./how</a> &nbsp;·&nbsp;
+  <a href="https://glorpies.sunrakerr.dev/docs">./docs</a>
 </p>
 
 Hand-painted in watercolour and dip pen. Antennae, extra eyes, horns, halos, too many teeth. And they're alive: they breathe, blink and glance at you.
@@ -49,12 +49,12 @@ Every framework gets a `<Glorpie>` that takes the same options:
 
 | framework | import | guide |
 | --- | --- | --- |
-| React, Next.js | `import { Glorpie } from 'glorpies/react'` | [React](https://glorpies.vercel.app/docs/react) |
-| Vue 3, Nuxt | `import { Glorpie } from 'glorpies/vue'` | [Vue](https://glorpies.vercel.app/docs/vue) |
-| Svelte 4 and 5, SvelteKit | `import { Glorpie } from 'glorpies/svelte'` | [Svelte](https://glorpies.vercel.app/docs/svelte) |
-| Solid, SolidStart | `import { Glorpie } from 'glorpies/solid'` | [Solid](https://glorpies.vercel.app/docs/solid) |
-| Preact | `import { Glorpie } from 'glorpies/preact'` | [Preact](https://glorpies.vercel.app/docs/preact) |
-| Angular, Astro, Lit, plain HTML | `import 'glorpies/element'`, then `<glorpie-face>` | [Web component](https://glorpies.vercel.app/docs/html) |
+| React, Next.js | `import { Glorpie } from 'glorpies/react'` | [React](https://glorpies.sunrakerr.dev/docs/react) |
+| Vue 3, Nuxt | `import { Glorpie } from 'glorpies/vue'` | [Vue](https://glorpies.sunrakerr.dev/docs/vue) |
+| Svelte 4 and 5, SvelteKit | `import { Glorpie } from 'glorpies/svelte'` | [Svelte](https://glorpies.sunrakerr.dev/docs/svelte) |
+| Solid, SolidStart | `import { Glorpie } from 'glorpies/solid'` | [Solid](https://glorpies.sunrakerr.dev/docs/solid) |
+| Preact | `import { Glorpie } from 'glorpies/preact'` | [Preact](https://glorpies.sunrakerr.dev/docs/preact) |
+| Angular, Astro, Lit, plain HTML | `import 'glorpies/element'`, then `<glorpie-face>` | [Web component](https://glorpies.sunrakerr.dev/docs/html) |
 
 Components render a coloured placeholder on the server, then paint on a canvas in the browser. Faces paint when they approach the screen and animate only while visible. Reduced-motion preferences are respected by default.
 
@@ -75,7 +75,7 @@ Components render a coloured placeholder on the server, then paint on a canvas i
   <img alt="the same glorpie in 24 looks: watercolour, gouache, oil, sumi, charcoal, pointillism, linocut, warhol, stained glass, mosaic, neon, holo, atkinson, plotter, thermal, topo, and the avatar looks blob, ink, sticker, cutpaper, pixel icon, line icon, glow and wash" src=".github/assets/looks-light.webp" width="100%">
 </picture>
 
-[Explore all 29 looks](https://glorpies.vercel.app/docs/looks), or [pick a face in the gallery](https://glorpies.vercel.app/gallery).
+[Explore all 29 looks](https://glorpies.sunrakerr.dev/docs/looks), or [pick a face in the gallery](https://glorpies.sunrakerr.dev/gallery).
 
 ## ⵀ moods
 
@@ -105,7 +105,7 @@ The same props on every `<Glorpie>`, or attributes on `<glorpie-face>`:
 | `pokeable` | `false` | A tap makes the face wobble. |
 | `label` | `"Avatar"` | Accessible name for the face. |
 
-[All options and error handling](https://glorpies.vercel.app/docs/options).
+[All options and error handling](https://glorpies.sunrakerr.dev/docs/options).
 
 ## ⵔ examples
 
@@ -169,7 +169,7 @@ Then use your route:
 
 PNG, WebP, JPEG, SVG and seamless GIF loops, cached for a year by default. `createFaceHandler()` works with fetch-based servers; `nodeFaceHandler()` works with Express and `node:http`.
 
-[Server setup for every framework, query parameters and limits](https://glorpies.vercel.app/docs/server).
+[Server setup for every framework, query parameters and limits](https://glorpies.sunrakerr.dev/docs/server).
 
 ## ⵜ cli
 
@@ -185,13 +185,13 @@ Or a whole team, after installing `glorpies` and `@napi-rs/canvas` in your proje
 for name in ada grace linus; do npx glorpies "$name" --look sticker --size 256; done
 ```
 
-[CLI flags and formats](https://glorpies.vercel.app/docs/cli).
+[CLI flags and formats](https://glorpies.sunrakerr.dev/docs/cli).
 
 ## ⵚ how it's drawn
 
 A name hashes to a 53-bit seed, and the seed drives a random stream (sfc32) and a noise field. From them comes the alien, as a list of drawing operations: watercolour glazes, hatching, pen lines and solid fills, plus the parts that move (pupils, lids). That list is painted once per "line boil" frame, so the pen wobbles like hand-drawn animation, and the eyes are drawn live on top. Only the blinks and glances are left to chance; the face depends on the name alone, so it comes out the same at any size, as a PNG, as SVG paths or as a looping GIF.
 
-[Watch it paint one](https://glorpies.vercel.app/how), step by step, or read [the faq](https://glorpies.vercel.app/docs/faq) on why the same name gives the same face everywhere.
+[Watch it paint one](https://glorpies.sunrakerr.dev/how), step by step, or read [the faq](https://glorpies.sunrakerr.dev/docs/faq) on why the same name gives the same face everywhere.
 
 ## ⵛ this repo
 
