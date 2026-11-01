@@ -76,6 +76,11 @@ jobs:
         working-directory: examples/integration-lab
       - run: npm test && npm run test:frameworks
         working-directory: examples/integration-lab
+      - name: Bun and Deno image routes
+        working-directory: examples/integration-lab
+        run: |
+          npx -y bun@1.4.4 test/runtimes.mjs
+          npx -y deno@2.9.6 run --allow-net --allow-env --allow-sys --allow-ffi test/runtimes.mjs
       - uses: actions/upload-artifact@v6
         if: always()
         with:

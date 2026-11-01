@@ -48,6 +48,10 @@ All four consumers built in production mode, rendered a server placeholder, hydr
 | SvelteKit | 3.1.1 / Svelte 5.57.3 | Passed |
 | Astro | 7.4.4 / Node adapter 11.1.9 / React adapter 7.1.2 | Passed |
 
+## Additional server runtimes
+
+Bun 1.4.4 and Deno 2.9.6 both passed native rendering in PNG, WebP, JPEG, SVG and GIF, plus real HTTP PNG/SVG requests and missing/oversized-name errors. These are smoke checks, separate from the 1,314-check matrix. Deno's documented `npm:` import was tested with local dependencies and `--allow-net --allow-env --allow-sys --allow-ffi`.
+
 ## Issues fixed in 0.1.1
 
 1. Numeric seed props were stringified in element-based integrations. Components and the element now preserve numeric identity, including SSR and number/string transitions.
@@ -68,7 +72,7 @@ All four consumers built in production mode, rendered a server placeholder, hydr
 
 ## Limits
 
-This verifies the tested versions on Chrome/macOS and Node. It does not establish compatibility with every browser, operating system or historical framework release. Bun and Deno snippets use the tested fetch-handler contract, but those runtimes were not executed.
+This verifies the tested versions on Chrome/macOS and Node. It does not establish compatibility with every browser, operating system or historical framework release. Bun and Deno received the server smoke checks above; the full matrix ran on Node.
 
 The integration lab includes development toolchains for several frameworks. npm still reports low/moderate advisories in transitive Nuxt/Svelte build dependencies; automatic fixes would require unrelated version downgrades. These dependencies are absent from the published zero-runtime-dependency Glorpies package and the production website.
 

@@ -95,6 +95,14 @@ export default {
 
 Use a Node runtime for image routes; the native canvas cannot run in an edge isolate. Other server frameworks need a Node-compatible deployment too.
 
+For Deno, run from a project with both packages installed in local `node_modules`. The native canvas also needs environment, system-information and FFI permissions:
+
+```sh
+deno run --allow-net --allow-env --allow-sys --allow-ffi server.ts
+```
+
+See [Deno's Node-API setup](https://docs.deno.com/runtime/fundamentals/node/) for its native-addon requirements.
+
 Then request faces by URL:
 
 ```text

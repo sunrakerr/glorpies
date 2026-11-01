@@ -28,7 +28,18 @@ The server matrix covers every output format, look, state and shape; colour back
 
 Production Next.js, Nuxt, SvelteKit and Astro fixtures test the documented imports, SSR, hydration, rendered canvas pixels, reactive seed updates and native image routes. Astro has an isolated install so its adapter and cookie dependencies are resolved as they would be in an independent app. The fixture configurations include the native canvas externalization needed by Next.js and SvelteKit.
 
-Results and framework logs are written to `reports/`. The committed [verification report](VERIFICATION.md) records the last release run. A run is not exhaustive across browsers, operating systems or every historical framework version. Bun and Deno route snippets share the fetch handler contract, but these tests run on Node.
+Results and framework logs are written to `reports/`. The committed [verification report](VERIFICATION.md) records the last release run. A run is not exhaustive across browsers, operating systems or every historical framework version. The full integration matrix runs on Node; the optional smoke checks below also exercise Bun and Deno.
+
+## Bun and Deno
+
+Optional runtime smoke tests exercise all five image formats and real HTTP image routes:
+
+```sh
+npx -y bun@1.4.4 test/runtimes.mjs
+npx -y deno@2.9.6 run --allow-net --allow-env --allow-sys --allow-ffi test/runtimes.mjs
+```
+
+Deno uses the documented `npm:glorpies/server` import and the native canvas from this project's local `node_modules`.
 
 ## Testing a candidate before publishing
 
