@@ -1,0 +1,38 @@
+{
+  "name": "glorpies-integration-lab",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 3421",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 3421",
+    "test": "npm run build && node test/run.mjs",
+    "test:frameworks": "node test/frameworks.mjs"
+  },
+  "dependencies": {
+    "@angular/common": "22.2.4",
+    "@angular/compiler": "22.2.4",
+    "@angular/core": "22.2.4",
+    "@angular/platform-browser": "22.2.4",
+    "@napi-rs/canvas": "1.0.13",
+    "express": "5.3.0",
+    "glorpies": "0.1.1",
+    "hono": "4.13.16",
+    "lit": "^3.3.2",
+    "preact": "11.1.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "rxjs": "7.8.2",
+    "solid-js": "1.9.17",
+    "svelte": "5.57.3",
+    "vue": "3.5.44"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-node": "^6.0.1",
+    "@sveltejs/kit": "^3.1.1",
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "next": "^16.4.3",
+    "nuxt": "^4.6.3",
+    "vite": "8.3.5"
+  }
+}

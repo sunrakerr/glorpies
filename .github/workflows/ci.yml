@@ -57,3 +57,27 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm build
+
+  integration-lab:
+    name: published package integrations
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+          cache: npm
+          cache-dependency-path: |
+            examples/integration-lab/package-lock.json
+            examples/integration-lab/test/fixtures/astro/package-lock.json
+      - run: npm ci
+        working-directory: examples/integration-lab
+      - run: npm ci --prefix test/fixtures/astro
+        working-directory: examples/integration-lab
+      - run: npm test && npm run test:frameworks
+        working-directory: examples/integration-lab
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: integration-results
+          path: examples/integration-lab/reports/

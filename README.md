@@ -220,6 +220,8 @@ pnpm typecheck && pnpm test
 
 glorpies is open source, and issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) before a pull request. There's one rule: an existing face must never change. Report security issues privately, as [SECURITY.md](SECURITY.md) describes.
 
+The [integration lab](examples/integration-lab/README.md) installs the published npm package and checks every integration. See its [release verification](examples/integration-lab/VERIFICATION.md) for the tested versions and coverage.
+
 ## ⵇ licence
 
 Made by **[sunrakerr](https://github.com/sunrakerr)**.
