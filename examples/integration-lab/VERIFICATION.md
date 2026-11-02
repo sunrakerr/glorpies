@@ -63,7 +63,7 @@ Bun 1.4.4 and Deno 2.9.6 both passed native rendering in PNG, WebP, JPEG, SVG an
 
 - All 21 production pages returned 200, with valid headings and titles. Local navigation, linked assets and every README image resolved.
 - Browser checks at 1280px and 375px found no horizontal page overflow. Desktop and mobile home layouts were inspected after the faces painted.
-- Dark mode is the default; an explicit light selection persisted across navigation. The original dark selection was restored after testing.
+- The release audit verified theme persistence across navigation. A subsequent site update defaults new visits to light mode while preserving an explicitly selected light or dark theme.
 - GitHub links display the GitHub mark and outward arrow, and point to the public repository.
 - The old GitHub project homepage was replaced with `https://glorpies.sunrakerr.dev`. README and npm metadata use the custom domain.
 - GitHub private vulnerability reporting is enabled, matching the security policy.

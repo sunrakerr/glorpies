@@ -19,6 +19,6 @@ for(const path of new Set([...links,...assets,...readdirSync('public/readme').ma
  const response=await fetch(new URL(path,base));await response.arrayBuffer();assert.equal(response.status,path === '/no-such-photo.jpg' ? 404 : 200,path);
 }
 assert.equal((await fetch(new URL('/api/face?name=agent-47',base))).status,404,'the docs site does not host image rendering');
-const home=await fetch(base).then(r=>r.text());assert.match(home,/data-theme="dark"/);assert.ok(home.includes('https://glorpies.sunrakerr.dev/opengraph-image.png'));
+const home=await fetch(base).then(r=>r.text());assert.match(home,/data-theme="light"/);assert.ok(home.includes('https://glorpies.sunrakerr.dev/opengraph-image.png'));
 mkdirSync('media/release',{recursive:true});writeFileSync('media/release/site-audit.json',JSON.stringify({base,finishedAt:new Date().toISOString(),pages:results,links:links.size,assets:assets.size},null,2)+'\n');
 console.log(`${results.length} pages, ${links.size} local links, ${assets.size} assets and README images passed at ${base}`);

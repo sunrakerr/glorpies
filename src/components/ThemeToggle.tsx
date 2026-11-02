@@ -6,7 +6,10 @@ import { writePref } from '@/lib/prefs';
 import { DEFAULT_THEME, THEME_KEY, type Theme } from '@/lib/theme';
 
 const root = () => document.documentElement;
-const current = (): Theme => (root().dataset.theme === 'light' ? 'light' : DEFAULT_THEME);
+const current = (): Theme => {
+  const theme = root().dataset.theme;
+  return theme === 'light' || theme === 'dark' ? theme : DEFAULT_THEME;
+};
 const apply = (t: Theme) => { root().dataset.theme = t; };
 
 function subscribe(onChange: () => void) {
@@ -15,7 +18,7 @@ function subscribe(onChange: () => void) {
   return () => watch.disconnect();
 }
 
-/** Starts dark and remembers an explicit choice of light or dark. */
+/** Starts light and remembers an explicit choice of light or dark. */
 export function ThemeToggle({ className = '' }: { className?: string }) {
   const theme = useSyncExternalStore(subscribe, current, () => DEFAULT_THEME);
   const next: Theme = theme === 'dark' ? 'light' : 'dark';
