@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /** CSS pixels per cell. */
 const CELL = 8;
@@ -14,6 +14,18 @@ const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => 
 
 /** The page's margins as a slow Game of Life in ink: dying cells fade through a dither, and the pointer sows new ones. */
 export function PixelField() {
+  const [wide, setWide] = useState(false);
+  useEffect(() => {
+    const media = matchMedia('(min-width: 1280px)');
+    const sync = () => setWide(media.matches);
+    sync();
+    media.addEventListener('change', sync);
+    return () => media.removeEventListener('change', sync);
+  }, []);
+  return wide ? <VisiblePixelField /> : null;
+}
+
+function VisiblePixelField() {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {

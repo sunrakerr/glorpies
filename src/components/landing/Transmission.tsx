@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { alienLetter as glyph } from '@/lib/glyphs';
 
 /** What the headline says, one line at a time, forever. */
@@ -70,8 +70,6 @@ function frame(text: string, phase: Phase, e: number): Cell[] {
   return [];
 }
 
-const keyOf = (cells: Cell[]) => cells.map((c) => c.ch).join('');
-
 /** The headline: each line types out in alien, comes into focus through braille dots as English, and is erased for the next. */
 export function Transmission({
   lines = LINES,
@@ -82,52 +80,142 @@ export function Transmission({
   label?: string;
   className?: string;
 }) {
-  // nothing typed yet on the server; the lines start on the client
-  const [cells, setCells] = useState<Cell[]>([]);
-
+  const target = useRef<HTMLSpanElement>(null);
   useEffect(() => {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      let line = 0;
-      const show = () => setCells([...lines[line]!].map((en) => ({ ch: en, kind: 'letter', en })));
-      show();
-      const id = setInterval(() => {
-        line = (line + 1) % lines.length;
-        show();
-      }, HOLD + 1600);
-      return () => clearInterval(id);
-    }
-    let line = 0,
+    if (!lines.length) return;
+    const host = target.current!;
+    const motion = matchMedia('(prefers-reduced-motion: reduce)');
+    let nodes: {
+      cell: HTMLSpanElement;
+      letter: HTMLSpanElement;
+      overlay: HTMLSpanElement;
+      word: HTMLSpanElement;
+      shown?: string;
+    }[] = [];
+    let words: HTMLSpanElement[] = [];
+    let built = -1,
+      line = 0,
       phase = 0,
-      raf = 0,
-      shown = '';
-    let start = performance.now();
-    const tick = (now: number) => {
-      let len = lengths(lines[line]!.length);
-      // a hidden tab wakes up far along; whole phases are skipped until the clock catches up
-      while (now - start >= len[PHASES[phase]!]) {
-        start += len[PHASES[phase]!];
+      elapsed = 0,
+      last = 0,
+      timer = 0,
+      visible = false;
+    const cursor = document.createElement('span');
+    cursor.className = 'cursor';
+    cursor.style.setProperty('--cursor-play', 'paused');
+    const draw = (cells: Cell[]) => {
+      if (built !== line) {
+        host.replaceChildren();
+        nodes = [];
+        words = [];
+        built = line;
+        let word = document.createElement('span');
+        word.className = 'inline-block whitespace-nowrap';
+        words.push(word);
+        host.append(word);
+        for (const en of lines[line]!) {
+          if (en === ' ') {
+            const space = document.createElement('span');
+            space.className = 'inline-block w-[0.45ch]';
+            space.textContent = ' ';
+            word.append(space);
+            nodes.push({ cell: space, letter: space, overlay: space, word });
+            word = document.createElement('span');
+            word.className = 'inline-block whitespace-nowrap';
+            words.push(word);
+            host.append(word);
+          } else {
+            const cell = document.createElement('span');
+            cell.className = 'relative inline-block w-[1ch] text-center';
+            const letter = document.createElement('span');
+            letter.textContent = en;
+            const overlay = document.createElement('span');
+            cell.append(letter, overlay);
+            word.append(cell);
+            nodes.push({ cell, letter, overlay, word });
+          }
+        }
+      }
+      const visibleWords = new Set<HTMLSpanElement>();
+      let parent: HTMLElement = host;
+      nodes.forEach((node, index) => {
+        const current = cells[index];
+        if (current) {
+          visibleWords.add(node.word);
+          parent = node.word;
+        }
+        const key = current ? `${current.kind}:${current.ch}` : 'hidden';
+        if (node.shown === key) return;
+        node.shown = key;
+        node.cell.style.display = current ? 'inline-block' : 'none';
+        if (!current) return;
+        if (current.en === ' ') return;
+        node.letter.style.visibility = current.kind === 'letter' ? 'visible' : 'hidden';
+        node.overlay.className = `absolute inset-0 flex items-center justify-center leading-none text-accent ${current.kind === 'glyph' ? 'font-alien text-[0.92em]' : 'font-braille text-[1.2em]'}`;
+        node.overlay.style.display = current.kind === 'letter' ? 'none' : 'flex';
+        node.overlay.textContent = current.ch;
+      });
+      for (const word of words)
+        word.style.display = visibleWords.has(word) ? 'inline-block' : 'none';
+      if (cursor.parentElement !== parent) parent.append(cursor);
+    };
+    const pause = () => {
+      cursor.style.setProperty('--cursor-play', 'paused');
+      clearTimeout(timer);
+      timer = 0;
+      last = 0;
+    };
+    const tick = () => {
+      timer = 0;
+      if (!visible || document.hidden) return;
+      const now = performance.now();
+      if (last) elapsed += now - last;
+      last = now;
+      if (motion.matches) {
+        line = 0;
+        draw(frame(lines[0]!, 'hold', 0));
+        return;
+      }
+      let duration = lengths(lines[line]!.length);
+      while (elapsed >= duration[PHASES[phase]!]) {
+        elapsed -= duration[PHASES[phase]!];
         if (++phase === PHASES.length) {
           phase = 0;
           line = (line + 1) % lines.length;
-          len = lengths(lines[line]!.length);
+          duration = lengths(lines[line]!.length);
         }
       }
-      // a single line is typed once and kept
-      if (lines.length === 1 && PHASES[phase] === 'hold') {
-        setCells(frame(lines[0]!, 'hold', 0));
-        return;
-      }
-      const next = frame(lines[line]!, PHASES[phase]!, now - start);
-      // only a change on screen is a render; holding still costs nothing
-      const key = `${line}:${keyOf(next)}:${next.map((c) => c.kind[0]).join('')}`;
-      if (key !== shown) {
-        shown = key;
-        setCells(next);
-      }
-      raf = requestAnimationFrame(tick);
+      cursor.style.setProperty('--cursor-play', 'running');
+      const current = PHASES[phase]!;
+      draw(frame(lines[line]!, current, elapsed));
+      if (lines.length === 1 && current === 'hold') return;
+      const cadence =
+        current === 'type'
+          ? TYPE
+          : current === 'turn'
+            ? STEP
+            : current === 'erase'
+              ? ERASE
+              : duration[current] - elapsed;
+      timer = window.setTimeout(tick, Math.max(16, Math.min(cadence, duration[current] - elapsed)));
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    const resume = () => {
+      pause();
+      if (visible && !document.hidden) tick();
+    };
+    const observer = new IntersectionObserver((entries) => {
+      visible = entries[0]!.isIntersecting;
+      resume();
+    });
+    observer.observe(host);
+    document.addEventListener('visibilitychange', resume);
+    motion.addEventListener('change', resume);
+    return () => {
+      pause();
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', resume);
+      motion.removeEventListener('change', resume);
+    };
   }, [lines]);
 
   return (
@@ -142,9 +230,7 @@ export function Transmission({
             <Words cells={frame(line, 'hold', 0)} />
           </span>
         ))}
-        <span className="col-start-1 row-start-1">
-          <Words cells={cells} />
-        </span>
+        <span ref={target} className="col-start-1 row-start-1" />
       </span>
     </h1>
   );

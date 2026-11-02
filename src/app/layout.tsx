@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
-import { Geist_Mono, Geist_Pixel, Noto_Sans_Symbols_2, Noto_Sans_Tifinagh } from 'next/font/google';
+import localFont from 'next/font/local';
+import { Geist_Mono, Geist_Pixel, Noto_Sans_Tifinagh } from 'next/font/google';
 import { SITE_URL } from '@/lib/site';
 import { SITE_DESCRIPTION as description } from '@/lib/metadata';
 import { DEFAULT_THEME, THEME_SCRIPT } from '@/lib/theme';
@@ -15,9 +16,11 @@ const tifinagh = Noto_Sans_Tifinagh({
   variable: '--font-tifinagh',
   preload: false,
 });
-const braille = Noto_Sans_Symbols_2({
-  subsets: ['braille'],
+const braille = localFont({
+  src: './fonts/braille.woff2',
   weight: '400',
+  style: 'normal',
+  display: 'swap',
   variable: '--font-braille-dots',
   preload: false,
 });

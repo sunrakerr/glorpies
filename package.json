@@ -18,7 +18,9 @@
     "format:check": "prettier . --check",
     "readme:sync": "node scripts/sync-readme.mjs",
     "readme:check": "node scripts/sync-readme.mjs --check",
-    "check": "pnpm lint && pnpm format:check && pnpm readme:check && pnpm typecheck && pnpm --filter glorpies typecheck && pnpm test"
+    "check": "pnpm lint && pnpm format:check && pnpm readme:check && pnpm typecheck && pnpm --filter glorpies typecheck && pnpm test",
+    "test:landing": "node scripts/landing-check.mjs",
+    "perf": "node scripts/performance-audit.mjs"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",
@@ -46,5 +48,11 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.72.1"
-  }
+  },
+  "browserslist": [
+    "Chrome >= 120",
+    "Edge >= 120",
+    "Firefox >= 121",
+    "Safari >= 17.4"
+  ]
 }

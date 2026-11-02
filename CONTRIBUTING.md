@@ -52,6 +52,7 @@ Additional checks depend on the change:
 
 ```sh
 pnpm build                              # website and MDX changes
+pnpm test:landing                       # production landing page; run build first
 pnpm --filter glorpies test:browser      # framework components and browser behaviour
 pnpm --filter glorpies lint:package      # create and validate the npm tarball
 pnpm --filter glorpies test:packed       # install that tarball in an isolated consumer
@@ -61,7 +62,7 @@ npm --prefix examples/vanilla ci
 npm --prefix examples/vanilla run build
 ```
 
-CI runs the library and tarball checks on Node 22, 24 and 26, the browser regressions on Node 26, the source checks, both starter builds and a production website build. The tarball check covers public imports, numeric seed identity, native PNG rendering, a secured SVG route, CLI output and the CDN entry.
+CI runs the library and tarball checks on Node 22, 24 and 26, the browser regressions on Node 26, the source checks, both starter builds and a production website build with landing-page browser regressions. The tarball check covers public imports, numeric seed identity, native PNG rendering, a secured SVG route, CLI output and the CDN entry.
 
 Use `pnpm format` to format changes. After editing the root README, run `pnpm readme:sync`; the npm README is generated with absolute links. Do not edit the generated copy directly.
 
@@ -76,6 +77,20 @@ If a change is intended to alter existing faces, describe it as breaking in the 
 Keep examples small and independently runnable. Update the relevant MDX guide when public behaviour changes, and add a library changelog entry when appropriate.
 
 `scripts/readme-art.mjs` redraws shared README artwork from the built library and a running site; `scripts/social-art.mjs` generates the section link-preview cards. Preserve the documented seed and painting style of the README hero.
+
+## Landing-page performance
+
+The website uses one shared OffscreenCanvas worker for visible faces and lazy style thumbnails. The crowd starts as a cached image atlas, with only two living faces on touch devices or three on desktop; reduced motion keeps it still. The published library components retain their existing renderer and defaults. Unsupported browsers fall back to those components.
+
+After `pnpm build`, `pnpm test:landing` starts a temporary production server and checks selection, rapid name changes, motion preferences, offscreen headline pauses, unsupported browsers and worker startup failure. To check a deployed site, set `BASE_URL`.
+
+```sh
+pnpm perf after https://glorpies.sunrakerr.dev
+```
+
+This runs Lighthouse 13.6.0 three times each on mobile and desktop, then measures idle main-thread activity for ten seconds after a twenty-second warm-up. The mobile idle check uses a 390×844 viewport and 4× CPU throttling; reduced motion is checked separately. JSON reports and screenshots go to ignored `media/performance/`. Compare medians on the same machine, Chrome version and network, with other heavy work stopped. Lighthouse scores can vary across machines; inspect TBT, long tasks and layout shift as well.
+
+`scripts/crowd-art.mjs` rebuilds `public/landing/crowd.webp` and its matching name list from the built library. Keep both outputs together. The braille-only display font and its license are in `src/app/fonts/`.
 
 ## Releases
 

@@ -67,6 +67,14 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm build
+      - uses: browser-actions/setup-chrome@v2
+        id: chrome
+        with:
+          chrome-version: stable
+      - name: worker rendering, motion and browser fallback
+        run: pnpm test:landing
+        env:
+          CHROME: ${{ steps.chrome.outputs.chrome-path }}
 
   examples:
     name: ${{ matrix.example }} starter
