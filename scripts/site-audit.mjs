@@ -30,7 +30,7 @@ for(const path of paths) {
  assert.ok(!socialDescriptions.has(description),path+' unique description');socialDescriptions.add(description);
  const image=meta(html,'og:image');assert.equal(meta(html,'twitter:image'),image,path+' matching card images');
  const section=path.startsWith('/docs')?'/docs':path==='/'?'':path;
- if(path.startsWith('/docs/')) assert.match(new URL(image).pathname,/^\/_next\/static\/media\/opengraph-image\.[\w.-]+\.png$/,path+' versioned docs image');
+ if(path.startsWith('/docs/')) assert.match(new URL(image).pathname,/^\/_next\/static\/(?:immutable\/)?media\/opengraph-image\.[\w.-]+\.png$/,path+' versioned docs image');
  else assert.equal(new URL(image).pathname,section+'/opengraph-image.png',path+' section image');
  assert.equal(meta(html,'og:image:width'),'1280');assert.equal(meta(html,'og:image:height'),'640');
  assert.ok(meta(html,'og:image:alt')?.length>30,path+' image description');
