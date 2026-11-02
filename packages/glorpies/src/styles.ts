@@ -176,7 +176,13 @@ export function drawFlatEyes(ctx: Ctx, face: Face, ink: number | null, inkCol?: 
     if (st.line && ink !== null) {
       ctx.fillStyle = inkCol ?? face.pal.ink;
       ctx.beginPath();
-      addPath(ctx, ribbon(st.line.pts, st.line.widths.map((w) => (w * ink) / 2.2)));
+      addPath(
+        ctx,
+        ribbon(
+          st.line.pts,
+          st.line.widths.map((w) => (w * ink) / 2.2),
+        ),
+      );
       ctx.fill();
     }
   }
@@ -195,12 +201,18 @@ export function paletteOf(face: Face): RGB[] {
 }
 
 export function nearest(p: RGB[], r: number, g: number, b: number): RGB {
-  let best = p[0]!, bd = Infinity;
+  let best = p[0]!,
+    bd = Infinity;
   for (const c of p) {
     // weighted RGB distance: close enough to perceptual for snapping
-    const dr = r - c[0], dg = g - c[1], db = b - c[2];
+    const dr = r - c[0],
+      dg = g - c[1],
+      db = b - c[2];
     const d = 2 * dr * dr + 4 * dg * dg + 3 * db * db;
-    if (d < bd) { bd = d; best = c; }
+    if (d < bd) {
+      bd = d;
+      best = c;
+    }
   }
   return best;
 }
@@ -226,7 +238,8 @@ function luminanceOf(face: Face, E: Engine, n: number): Float32Array {
 function oneBit(n: number, on: (i: number) => boolean, ink: string, paper: string, px: number) {
   const [c, g] = canvas(n);
   const img = g.createImageData(n, n);
-  const a = rgb(ink), b = rgb(paper);
+  const a = rgb(ink),
+    b = rgb(paper);
   for (let i = 0; i < n * n; i++) {
     const p = on(i) ? a : b;
     img.data.set([p[0], p[1], p[2], 255], i * 4);
@@ -242,12 +255,21 @@ function atkinson(face: Face, E: Engine, px: number) {
   for (let y = 0; y < n; y++) {
     for (let x = 0; x < n; x++) {
       const i = y * n + x;
-      const old = L[i]!, v = old < 0.5 ? 0 : 1;
+      const old = L[i]!,
+        v = old < 0.5 ? 0 : 1;
       out[i] = v ? 0 : 1;
       // Atkinson spreads only 6/8 of the error, which keeps highlights clean
       const err = (old - v) / 8;
-      for (const [dx, dy] of [[1, 0], [2, 0], [-1, 1], [0, 1], [1, 1], [0, 2]] as const) {
-        const xx = x + dx, yy = y + dy;
+      for (const [dx, dy] of [
+        [1, 0],
+        [2, 0],
+        [-1, 1],
+        [0, 1],
+        [1, 1],
+        [0, 2],
+      ] as const) {
+        const xx = x + dx,
+          yy = y + dy;
         if (xx >= 0 && xx < n && yy < n) L[yy * n + xx]! += err;
       }
     }
@@ -256,17 +278,21 @@ function atkinson(face: Face, E: Engine, px: number) {
 }
 
 const BAYER8 = (() => {
-  const m = [[0, 2], [3, 1]];
+  const m = [
+    [0, 2],
+    [3, 1],
+  ];
   let cur = m;
   for (let s = 2; s < 8; s *= 2) {
     const next: number[][] = Array.from({ length: s * 2 }, () => Array<number>(s * 2).fill(0));
-    for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) {
-      const v = cur[y]![x]! * 4;
-      next[y]![x] = v;
-      next[y]![x + s] = v + 2;
-      next[y + s]![x] = v + 3;
-      next[y + s]![x + s] = v + 1;
-    }
+    for (let y = 0; y < s; y++)
+      for (let x = 0; x < s; x++) {
+        const v = cur[y]![x]! * 4;
+        next[y]![x] = v;
+        next[y]![x + s] = v + 2;
+        next[y + s]![x] = v + 3;
+        next[y + s]![x + s] = v + 1;
+      }
     cur = next;
   }
   return cur.map((r) => r.map((v) => (v + 0.5) / 64));
@@ -275,7 +301,13 @@ const BAYER8 = (() => {
 function bayer(face: Face, E: Engine, px: number) {
   const n = 192;
   const L = luminanceOf(face, E, n);
-  return oneBit(n, (i) => L[i]! < BAYER8[Math.floor(i / n) % 8]![(i % n) % 8]!, '#1f2347', '#ece6d4', px);
+  return oneBit(
+    n,
+    (i) => L[i]! < BAYER8[Math.floor(i / n) % 8]![(i % n) % 8]!,
+    '#1f2347',
+    '#ece6d4',
+    px,
+  );
 }
 
 // ---- ASCII
@@ -299,9 +331,12 @@ function plotter(face: Face, E: Engine, px: number) {
     g.clip();
     g.strokeStyle = `rgba(${r * 0.8},${gg * 0.8},${b * 0.8},0.95)`;
     g.lineWidth = 0.75;
-    const bb = bbox(pts), cx = (bb.x0 + bb.x1) / 2, cy = (bb.y0 + bb.y1) / 2;
+    const bb = bbox(pts),
+      cx = (bb.x0 + bb.x1) / 2,
+      cy = (bb.y0 + bb.y1) / 2;
     const reach = Math.hypot(bb.x1 - bb.x0, bb.y1 - bb.y0) / 2 + 2;
-    const dx = Math.cos(ang), dy = Math.sin(ang);
+    const dx = Math.cos(ang),
+      dy = Math.sin(ang);
     g.beginPath();
     for (let s = -reach; s < reach; s += gap) {
       g.moveTo(cx - dy * s - dx * reach, cy + dx * s - dy * reach);
@@ -313,31 +348,44 @@ function plotter(face: Face, E: Engine, px: number) {
   const pen = '#1d2147';
   for (const op of opsOf(face)) {
     const col = resolveColor(op.k === 'paper' ? 'paper' : op.col, face.pal, 'back');
-    if (op.k === 'wash' && col !== face.pal.paper) hatchFill(op.pts, col, op.seed, op.clip, op.exclude);
-    else if (op.k === 'solid') hatchFill(op.pts, col === face.pal.paper ? '#ffffff' : pen, 3, op.clip);
+    if (op.k === 'wash' && col !== face.pal.paper)
+      hatchFill(op.pts, col, op.seed, op.clip, op.exclude);
+    else if (op.k === 'solid')
+      hatchFill(op.pts, col === face.pal.paper ? '#ffffff' : pen, 3, op.clip);
     else if (op.k === 'hatch') {
       g.save();
       applyClip(g, op.region, op.exclude);
       g.strokeStyle = rgba(pen, 0.8);
       g.lineWidth = 0.55;
-      for (const l of hatchLines(op, E)) { polyline(g, l.pts, false); g.stroke(); }
+      for (const l of hatchLines(op, E)) {
+        polyline(g, l.pts, false);
+        g.stroke();
+      }
       g.restore();
     }
   }
   // white eye solids can't be hatched, so the paper shows; clear them back to paper first
-  for (const op of face.figure) if (op.k === 'solid' && op.col === 'paper') {
-    g.save(); applyClip(g, op.clip); g.fillStyle = '#fbfaf5'; g.beginPath(); addPath(g, op.pts); g.fill(); g.restore();
-  }
-  for (const op of face.figure) if (op.k === 'ink' && op.col !== 'paper') {
-    g.save();
-    applyClip(g, op.clip);
-    g.strokeStyle = pen;
-    g.lineWidth = 1.15;
-    g.lineCap = g.lineJoin = 'round';
-    polyline(g, op.pts, op.closed);
-    g.stroke();
-    g.restore();
-  }
+  for (const op of face.figure)
+    if (op.k === 'solid' && op.col === 'paper') {
+      g.save();
+      applyClip(g, op.clip);
+      g.fillStyle = '#fbfaf5';
+      g.beginPath();
+      addPath(g, op.pts);
+      g.fill();
+      g.restore();
+    }
+  for (const op of face.figure)
+    if (op.k === 'ink' && op.col !== 'paper') {
+      g.save();
+      applyClip(g, op.clip);
+      g.strokeStyle = pen;
+      g.lineWidth = 1.15;
+      g.lineCap = g.lineJoin = 'round';
+      polyline(g, op.pts, op.closed);
+      g.stroke();
+      g.restore();
+    }
   drawFlatEyes(g, face, 1.15, pen);
   return c;
 }
@@ -398,9 +446,13 @@ function neon(face: Face, E: Engine, px: number) {
   drawFlat(rg, face, E, { ink: null, eyes: false });
   const refData = rg.getImageData(0, 0, W, W).data;
   const tubeCol = (p: Pt) => {
-    const i = (Math.min(W - 1, Math.max(0, Math.round(p.y))) * W + Math.min(W - 1, Math.max(0, Math.round(p.x)))) * 4;
+    const i =
+      (Math.min(W - 1, Math.max(0, Math.round(p.y))) * W +
+        Math.min(W - 1, Math.max(0, Math.round(p.x)))) *
+      4;
     const [r, gg, b] = [refData[i]!, refData[i + 1]!, refData[i + 2]!];
-    const mx = Math.max(r, gg, b), mn = Math.min(r, gg, b);
+    const mx = Math.max(r, gg, b),
+      mn = Math.min(r, gg, b);
     if (mx - mn < 30) return '#ff4fa8';
     const s = (v: number) => Math.round(clamp01((v - mn) / (mx - mn)) * 200 + 55);
     return `rgb(${s(r)},${s(gg)},${s(b)})`;
@@ -431,25 +483,44 @@ function neon(face: Face, E: Engine, px: number) {
     // sample just inside the line so outlines pick up the shape they wrap
     const mid = op.pts[Math.floor(op.pts.length / 2)]!;
     const bb = bbox(op.pts);
-    const inner = { x: mid.x + ((bb.x0 + bb.x1) / 2 - mid.x) * 0.12, y: mid.y + ((bb.y0 + bb.y1) / 2 - mid.y) * 0.12 };
+    const inner = {
+      x: mid.x + ((bb.x0 + bb.x1) / 2 - mid.x) * 0.12,
+      y: mid.y + ((bb.y0 + bb.y1) / 2 - mid.y) * 0.12,
+    };
     tube(op.pts, op.closed, tubeCol(inner), Math.max(1.4, op.w * 0.6));
   }
   for (const e of face.eyes) {
     const st = eyeState(e, face.gaze, 1);
     // a closing eye becomes a single glowing lid line
     if (st.line && st.open < 0.4) tube(st.line.pts, false, '#7cf6ff', 1.6);
-    else if (e.spiral) tube(e.spiral.pts.map((q) => ({ x: q.x + e.x, y: q.y + e.y })), false, '#7cf6ff', 1.6);
-    else tube([...e.pupil, e.pupil[0]!].map((q) => ({ x: q.x + st.dx, y: q.y + st.dy })), true, '#7cf6ff', 1.8);
+    else if (e.spiral)
+      tube(
+        e.spiral.pts.map((q) => ({ x: q.x + e.x, y: q.y + e.y })),
+        false,
+        '#7cf6ff',
+        1.6,
+      );
+    else
+      tube(
+        [...e.pupil, e.pupil[0]!].map((q) => ({ x: q.x + st.dx, y: q.y + st.dy })),
+        true,
+        '#7cf6ff',
+        1.8,
+      );
   }
   return c;
 }
 
 const RENDER: Record<StyleId, (face: Face, E: Engine, px: number) => HTMLCanvasElement> = {
-  watercolour, atkinson, bayer, plotter, cutout, neon,
+  watercolour,
+  atkinson,
+  bayer,
+  plotter,
+  cutout,
+  neon,
 };
 
 export function renderStyle(style: StyleId, face: Face, E: Engine, px: number): HTMLCanvasElement {
   E.noiseSeed(face.seed);
   return RENDER[style](face, E, px);
 }
-

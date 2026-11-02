@@ -30,16 +30,24 @@ export function pathData(pts: readonly Pt[], closed = true): string {
 export type Box = { x0: number; y0: number; x1: number; y1: number };
 
 export function bbox(pts: readonly Pt[]): Box {
-  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  let x0 = Infinity,
+    y0 = Infinity,
+    x1 = -Infinity,
+    y1 = -Infinity;
   for (const q of pts) {
-    x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y);
-    x1 = Math.max(x1, q.x); y1 = Math.max(y1, q.y);
+    x0 = Math.min(x0, q.x);
+    y0 = Math.min(y0, q.y);
+    x1 = Math.max(x1, q.x);
+    y1 = Math.max(y1, q.y);
   }
   return { x0, y0, x1, y1 };
 }
 
 function centroid(pts: readonly Pt[]): Pt {
-  return pts.reduce((a, q) => ({ x: a.x + q.x / pts.length, y: a.y + q.y / pts.length }), { x: 0, y: 0 });
+  return pts.reduce((a, q) => ({ x: a.x + q.x / pts.length, y: a.y + q.y / pts.length }), {
+    x: 0,
+    y: 0,
+  });
 }
 
 export function shrink(pts: readonly Pt[], k: number): Pt[] {
@@ -58,8 +66,10 @@ export function sparse(pts: readonly Pt[], n: number): Pt[] {
 export function inside(pt: Pt, poly: readonly Pt[]): boolean {
   let c = false;
   for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-    const a = poly[i]!, b = poly[j]!;
-    if (a.y > pt.y !== b.y > pt.y && pt.x < ((b.x - a.x) * (pt.y - a.y)) / (b.y - a.y) + a.x) c = !c;
+    const a = poly[i]!,
+      b = poly[j]!;
+    if (a.y > pt.y !== b.y > pt.y && pt.x < ((b.x - a.x) * (pt.y - a.y)) / (b.y - a.y) + a.x)
+      c = !c;
   }
   return c;
 }
@@ -89,8 +99,15 @@ export function resample(pts: readonly Pt[], step: number): Pt[] {
 }
 
 function catmull(p0: number, p1: number, p2: number, p3: number, t: number): number {
-  const t2 = t * t, t3 = t2 * t;
-  return 0.5 * (2 * p1 + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3);
+  const t2 = t * t,
+    t3 = t2 * t;
+  return (
+    0.5 *
+    (2 * p1 +
+      (-p0 + p2) * t +
+      (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 +
+      (-p0 + 3 * p1 - 3 * p2 + p3) * t3)
+  );
 }
 
 export function spline(ctrl: readonly Pt[], closed = false, steps = 10): Pt[] {
@@ -112,18 +129,26 @@ export function spline(ctrl: readonly Pt[], closed = false, steps = 10): Pt[] {
 export function ribbon(c: readonly Pt[], w: readonly number[]): Pt[] {
   const n = c.length;
   if (n < 2) return [];
-  const L: Pt[] = [], Rt: Pt[] = [], norms: Pt[] = [];
+  const L: Pt[] = [],
+    Rt: Pt[] = [],
+    norms: Pt[] = [];
   let prev = { x: 0, y: -1 };
   for (let i = 0; i < n; i++) {
-    const a = c[Math.max(0, i - 1)]!, b = c[Math.min(n - 1, i + 1)]!;
-    let tx = b.x - a.x, ty = b.y - a.y;
+    const a = c[Math.max(0, i - 1)]!,
+      b = c[Math.min(n - 1, i + 1)]!;
+    let tx = b.x - a.x,
+      ty = b.y - a.y;
     const len = Math.hypot(tx, ty);
     if (len < 1e-6) ({ x: tx, y: ty } = { x: -prev.y, y: prev.x });
-    else { tx /= len; ty /= len; }
+    else {
+      tx /= len;
+      ty /= len;
+    }
     const nrm = { x: -ty, y: tx };
     prev = nrm;
     norms.push(nrm);
-    const h = w[i]! / 2, q = c[i]!;
+    const h = w[i]! / 2,
+      q = c[i]!;
     L.push({ x: q.x + nrm.x * h, y: q.y + nrm.y * h });
     Rt.push({ x: q.x - nrm.x * h, y: q.y - nrm.y * h });
   }
@@ -132,7 +157,8 @@ export function ribbon(c: readonly Pt[], w: readonly number[]): Pt[] {
       const a = from - ((k + 1) * Math.PI) / 6;
       return { x: q.x + Math.cos(a) * h, y: q.y + Math.sin(a) * h };
     });
-  const ne = norms[n - 1]!, n0 = norms[0]!;
+  const ne = norms[n - 1]!,
+    n0 = norms[0]!;
   const endCap = cap(c[n - 1]!, Math.atan2(ne.y, ne.x), w[n - 1]! / 2);
   const startCap = cap(c[0]!, Math.atan2(n0.y, n0.x) + Math.PI, w[0]! / 2);
   return [...L, ...endCap, ...Rt.reverse(), ...startCap];

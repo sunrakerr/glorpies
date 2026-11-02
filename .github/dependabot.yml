@@ -10,7 +10,7 @@ updates:
       site:
         dependency-type: production
     ignore:
-      - dependency-name: "@types/node"
+      - dependency-name: '@types/node'
         update-types: [version-update:semver-major]
       # TypeScript 7 ships no compiler API, which tsup needs to bundle the library's type declarations
       - dependency-name: typescript

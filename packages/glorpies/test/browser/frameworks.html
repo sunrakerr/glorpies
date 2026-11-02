@@ -1,23 +1,48 @@
-<!doctype html><meta charset="utf-8">
-<script type="importmap">{ "imports": {
-  "vue": "/node_modules/vue/dist/vue.esm-browser.prod.js",
-  "preact": "/node_modules/preact/dist/preact.mjs",
-  "solid-js": "/node_modules/solid-js/dist/solid.js",
-  "solid-js/web": "/node_modules/solid-js/web/dist/web.js"
-} }</script>
-<div id="vue"></div><div id="preact"></div><div id="solid"></div>
+<!doctype html><meta charset="utf-8" />
+<script type="importmap">
+  {
+    "imports": {
+      "vue": "/node_modules/vue/dist/vue.esm-browser.prod.js",
+      "preact": "/node_modules/preact/dist/preact.mjs",
+      "solid-js": "/node_modules/solid-js/dist/solid.js",
+      "solid-js/web": "/node_modules/solid-js/web/dist/web.js"
+    }
+  }
+</script>
+<div id="vue"></div>
+<div id="preact"></div>
+<div id="solid"></div>
 <script type="module">
   const results = {};
-  const ready = (root) => new Promise((resolve) => { const t0 = performance.now(); const tick = () => { const el = root.querySelector('glorpie-face'); el?.hasAttribute('data-ready') ? resolve(el) : performance.now() - t0 > 15000 ? resolve(null) : setTimeout(tick, 50); }; tick(); });
+  const ready = (root) =>
+    new Promise((resolve) => {
+      const t0 = performance.now();
+      const tick = () => {
+        const el = root.querySelector('glorpie-face');
+        el?.hasAttribute('data-ready')
+          ? resolve(el)
+          : performance.now() - t0 > 15000
+            ? resolve(null)
+            : setTimeout(tick, 50);
+      };
+      tick();
+    });
 
   const Vue = await import('vue');
   const { Glorpie: VueGlorpie } = await import('/dist/vue.js');
   const state = Vue.ref('idle');
   const vueName = Vue.ref('agent-47');
-  Vue.createApp({ setup: () => () => Vue.h(VueGlorpie, { name: vueName.value, size: 64, state: state.value }) }).mount('#vue');
+  Vue.createApp({
+    setup: () => () => Vue.h(VueGlorpie, { name: vueName.value, size: 64, state: state.value }),
+  }).mount('#vue');
   let el = await ready(document.getElementById('vue'));
-  state.value = 'done'; await Vue.nextTick();
-  results.vue = { painted: !!el, upgraded: el?.shadowRoot !== null, state: el?.getAttribute('state') };
+  state.value = 'done';
+  await Vue.nextTick();
+  results.vue = {
+    painted: !!el,
+    upgraded: el?.shadowRoot !== null,
+    state: el?.getAttribute('state'),
+  };
 
   const { h, render } = await import('preact');
   const { Glorpie: PreactGlorpie } = await import('/dist/preact.js');
@@ -25,7 +50,11 @@
   render(h(PreactGlorpie, { name: 'agent-47', size: 64 }), root);
   el = await ready(root);
   render(h(PreactGlorpie, { name: 'agent-47', size: 64, state: 'blocked' }), root);
-  results.preact = { painted: !!el, upgraded: el?.shadowRoot !== null, state: el?.getAttribute('state') };
+  results.preact = {
+    painted: !!el,
+    upgraded: el?.shadowRoot !== null,
+    state: el?.getAttribute('state'),
+  };
 
   const { createSignal } = await import('solid-js');
   const { render: solidRender, createComponent } = await import('solid-js/web');
@@ -33,10 +62,26 @@
   const [look, setLook] = createSignal('watercolour');
   const [solidName, setSolidName] = createSignal('agent-47');
   const solidRoot = document.getElementById('solid');
-  solidRender(() => createComponent(SolidGlorpie, { get name() { return solidName(); }, size: 64, get look() { return look(); } }), solidRoot);
+  solidRender(
+    () =>
+      createComponent(SolidGlorpie, {
+        get name() {
+          return solidName();
+        },
+        size: 64,
+        get look() {
+          return look();
+        },
+      }),
+    solidRoot,
+  );
   el = await ready(solidRoot);
   setLook('ink');
-  results.solid = { painted: !!el, upgraded: el?.shadowRoot !== null, look: el?.getAttribute('look') };
+  results.solid = {
+    painted: !!el,
+    upgraded: el?.shadowRoot !== null,
+    look: el?.getAttribute('look'),
+  };
 
   // Preact clears reflected properties with an empty string: restore the default motion policy.
   render(h(PreactGlorpie, { name: 'agent-47', size: 64, alive: false }), root);
@@ -45,12 +90,19 @@
 
   // a colour is the element's own background, kept inside its crop, and changing it doesn't repaint
   const tinted = document.createElement('div');
-  tinted.innerHTML = '<glorpie-face name="agent-47" size="64" shape="circle" background="#ffe9a8"></glorpie-face>';
+  tinted.innerHTML =
+    '<glorpie-face name="agent-47" size="64" shape="circle" background="#ffe9a8"></glorpie-face>';
   document.body.append(tinted);
   el = await ready(tinted);
   const { backgroundColor: colour, borderRadius: radius } = getComputedStyle(el);
   el.setAttribute('background', 'tomato');
-  results.colour = { painted: !!el, colour, radius, stillPainted: el.hasAttribute('data-ready'), changed: getComputedStyle(el).backgroundColor };
+  results.colour = {
+    painted: !!el,
+    colour,
+    radius,
+    stillPainted: el.hasAttribute('data-ready'),
+    changed: getComputedStyle(el).backgroundColor,
+  };
 
   // A number is a seed, while a numeric string is a name: all wrappers preserve both across updates.
   const { mount: mountReference } = await import('/dist/index.js');
@@ -58,48 +110,89 @@
   reference.style.cssText = 'width:64px;height:64px';
   document.body.append(reference);
   let referencePainted = false;
-  const referenceHandle = mountReference(reference, { name: 'reference', look: 'ink', alive: false, background: false, morph: false, onPaint: () => { referencePainted = true; } });
-  const pixels = (canvas) => Array.from(canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data).join(',');
+  const referenceHandle = mountReference(reference, {
+    name: 'reference',
+    look: 'ink',
+    alive: false,
+    background: false,
+    morph: false,
+    onPaint: () => {
+      referencePainted = true;
+    },
+  });
+  const pixels = (canvas) =>
+    Array.from(canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data).join(
+      ',',
+    );
   results.seeds = {};
   const direct = document.createElement('glorpie-face');
-  direct.size = '64'; direct.look = 'ink'; direct.alive = 'false'; direct.background = 'false';
+  direct.size = '64';
+  direct.look = 'ink';
+  direct.alive = 'false';
+  direct.background = 'false';
   document.body.append(direct);
   for (const name of [42, '42', 43, '', 42]) {
-    referencePainted = false; referenceHandle.update({ name });
-    vueName.value = name; state.value = 'idle';
-    setSolidName(name); setLook('ink');
+    referencePainted = false;
+    referenceHandle.update({ name });
+    vueName.value = name;
+    state.value = 'idle';
+    setSolidName(name);
+    setLook('ink');
     // Use identical still rendering options for comparisons.
     const updates = [
       ['vue', document.querySelector('#vue glorpie-face')],
       ['solid', document.querySelector('#solid glorpie-face')],
     ];
-    render(h(PreactGlorpie, { name, size: 64, look: 'ink', alive: false, background: false }), root);
+    render(
+      h(PreactGlorpie, { name, size: 64, look: 'ink', alive: false, background: false }),
+      root,
+    );
     direct.name = name;
     await Vue.nextTick();
     updates.push(['preact', root.querySelector('glorpie-face')], ['element', direct]);
-    for (const [, host] of updates) { host.look = 'ink'; host.alive = 'false'; host.background = 'false'; }
+    for (const [, host] of updates) {
+      host.look = 'ink';
+      host.alive = 'false';
+      host.background = 'false';
+    }
     const deadline = performance.now() + 15000;
-    while ((!referencePainted || updates.some(([, host]) => !host.hasAttribute('data-ready'))) && performance.now() < deadline) await new Promise(r => setTimeout(r, 20));
+    while (
+      (!referencePainted || updates.some(([, host]) => !host.hasAttribute('data-ready'))) &&
+      performance.now() < deadline
+    )
+      await new Promise((r) => setTimeout(r, 20));
     const expected = pixels(reference);
-    for (const [kind, host] of updates) results.seeds[kind] = (results.seeds[kind] ?? true) && pixels(host.shadowRoot.querySelector('canvas')) === expected;
+    for (const [kind, host] of updates)
+      results.seeds[kind] =
+        (results.seeds[kind] ?? true) &&
+        pixels(host.shadowRoot.querySelector('canvas')) === expected;
   }
 
   // a failure after the first painting (an eye pose, a layer) still reaches onError
   const { mount, setCanvasFactory } = await import('/dist/index.js');
-  const canvas = Object.assign(document.createElement('canvas'), { style: 'width:64px;height:64px' });
+  const canvas = Object.assign(document.createElement('canvas'), {
+    style: 'width:64px;height:64px',
+  });
   document.body.append(canvas);
   const failures = [];
   let painted = false;
   mount(canvas, {
-    name: 'deferred-failure', look: 'ink',
+    name: 'deferred-failure',
+    look: 'ink',
     onPaint: () => {
       painted = true;
-      setCanvasFactory({ canvas: () => { throw new Error('no canvas'); }, path: () => new Path2D() });
+      setCanvasFactory({
+        canvas: () => {
+          throw new Error('no canvas');
+        },
+        path: () => new Path2D(),
+      });
     },
     onError: (error) => failures.push(String(error)),
   });
   const t0 = performance.now();
-  while (!failures.length && performance.now() - t0 < 10000) await new Promise((r) => setTimeout(r, 50));
+  while (!failures.length && performance.now() - t0 < 10000)
+    await new Promise((r) => setTimeout(r, 50));
   results.deferred = { painted, reported: failures.length > 0 };
 
   window.__results = results;

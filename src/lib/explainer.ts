@@ -3,7 +3,15 @@ import { addPath, bbox, resample, TAU, type Pt } from 'glorpies/internal/geometr
 import { rgba, type Palette } from 'glorpies/internal/palettes';
 import { buildFace } from 'glorpies/internal/face/build';
 import { seedOf } from 'glorpies/internal/seed';
-import { applyClip, drawEyes, play, rasterizeFace, vignette, type FaceRaster, type Pose } from 'glorpies/internal/face/render';
+import {
+  applyClip,
+  drawEyes,
+  play,
+  rasterizeFace,
+  vignette,
+  type FaceRaster,
+  type Pose,
+} from 'glorpies/internal/face/render';
 import { hatchLines, inkRibbons, type HatchLine } from 'glorpies/internal/face/strokes';
 import type { HatchOp, InkOp, Op, WashOp } from 'glorpies/internal/face/types';
 import { GRAPHITE, W } from 'glorpies/internal/face/types';
@@ -25,29 +33,110 @@ export type Theme = { page: string; ink: string; ink2: string; accent: string };
 /** Notes drawn on the face's own sheet, which stays cream in either theme. */
 const S = { ink: '#2b231d', ink2: '#75685c', accent: '#2f7d24' };
 
-type SceneId = 'title' | 'seed' | 'paper' | 'pencil' | 'glaze' | 'glazes' | 'hatch' | 'ink' | 'eyes' | 'sheets' | 'boil' | 'outro';
+type SceneId =
+  | 'title'
+  | 'seed'
+  | 'paper'
+  | 'pencil'
+  | 'glaze'
+  | 'glazes'
+  | 'hatch'
+  | 'ink'
+  | 'eyes'
+  | 'sheets'
+  | 'boil'
+  | 'outro';
 /** A step: how long it plays, what it's called, what it says, and the line of real code it comes down to. */
-type Scene = { id: SceneId; dur: number; title: string; body: string; code?: (f: { name: string; seed: number }) => string };
+type Scene = {
+  id: SceneId;
+  dur: number;
+  title: string;
+  body: string;
+  code?: (f: { name: string; seed: number }) => string;
+};
 
 const SCENES: Scene[] = [
-  { id: 'title', dur: 3.6, title: 'how a glorpie\ngets painted', body: 'a name goes in, an alien comes out. drawn live, by the same code your app runs.', code: (f) => `<Glorpie name="${f.name}" />` },
-  { id: 'seed', dur: 4.2, title: 'a name becomes a number', body: 'the name hashes to a seed, and the seed decides everything: colours, shape, eyes, mouth.', code: (f) => `seedOf("${f.name}") = ${f.seed}` },
-  { id: 'paper', dur: 2.6, title: 'paper', body: 'cream paper, with a bit of grain.', code: () => `{ k: "paper" }` },
-  { id: 'pencil', dur: 2.8, title: 'pencil', body: 'faint guides for the head and eyes.', code: () => `{ k: "ink", col: GRAPHITE } × 3` },
-  { id: 'glaze', dur: 10, title: 'one glaze', body: '', code: () => `{ k: "wash", layers: 30, alpha: 0.06 }` },
-  { id: 'glazes', dur: 3.8, title: 'more glazes', body: 'skin, shadows and cheeks get the same treatment. where they overlap, they darken, like real paint.', code: () => `ctx.globalCompositeOperation = "multiply"` },
-  { id: 'hatch', dur: 3.2, title: 'hatching', body: 'wobbly lines shade the side away from the light.', code: () => `{ k: "hatch", angle, gap }` },
-  { id: 'ink', dur: 7, title: 'dip-pen ink', body: 'each line is a ribbon, not a stroke. it swells and thins, tapers at the ends, and sometimes the pen runs dry.', code: () => `{ k: "ink", taper: true, ghost: 1.8 }` },
-  { id: 'eyes', dur: 4.4, title: 'live eyes', body: 'the eyes are never painted in. they\'re drawn every frame, so it can blink and follow your cursor.', code: (f) => `mount(canvas, { name: "${f.name}" })` },
+  {
+    id: 'title',
+    dur: 3.6,
+    title: 'how a glorpie\ngets painted',
+    body: 'a name goes in, an alien comes out. drawn live, by the same code your app runs.',
+    code: (f) => `<Glorpie name="${f.name}" />`,
+  },
+  {
+    id: 'seed',
+    dur: 4.2,
+    title: 'a name becomes a number',
+    body: 'the name hashes to a seed, and the seed decides everything: colours, shape, eyes, mouth.',
+    code: (f) => `seedOf("${f.name}") = ${f.seed}`,
+  },
+  {
+    id: 'paper',
+    dur: 2.6,
+    title: 'paper',
+    body: 'cream paper, with a bit of grain.',
+    code: () => `{ k: "paper" }`,
+  },
+  {
+    id: 'pencil',
+    dur: 2.8,
+    title: 'pencil',
+    body: 'faint guides for the head and eyes.',
+    code: () => `{ k: "ink", col: GRAPHITE } × 3`,
+  },
+  {
+    id: 'glaze',
+    dur: 10,
+    title: 'one glaze',
+    body: '',
+    code: () => `{ k: "wash", layers: 30, alpha: 0.06 }`,
+  },
+  {
+    id: 'glazes',
+    dur: 3.8,
+    title: 'more glazes',
+    body: 'skin, shadows and cheeks get the same treatment. where they overlap, they darken, like real paint.',
+    code: () => `ctx.globalCompositeOperation = "multiply"`,
+  },
+  {
+    id: 'hatch',
+    dur: 3.2,
+    title: 'hatching',
+    body: 'wobbly lines shade the side away from the light.',
+    code: () => `{ k: "hatch", angle, gap }`,
+  },
+  {
+    id: 'ink',
+    dur: 7,
+    title: 'dip-pen ink',
+    body: 'each line is a ribbon, not a stroke. it swells and thins, tapers at the ends, and sometimes the pen runs dry.',
+    code: () => `{ k: "ink", taper: true, ghost: 1.8 }`,
+  },
+  {
+    id: 'eyes',
+    dur: 4.4,
+    title: 'live eyes',
+    body: "the eyes are never painted in. they're drawn every frame, so it can blink and follow your cursor.",
+    code: (f) => `mount(canvas, { name: "${f.name}" })`,
+  },
   { id: 'sheets', dur: 5, title: 'three layers', body: '' },
-  { id: 'boil', dur: 5, title: 'line boil', body: 'it\'s inked three times, each a little different, and they swap 8 times a second. that\'s the hand-drawn shimmer.', code: () => `figures[floor(t × 8) % 3]` },
+  {
+    id: 'boil',
+    dur: 5,
+    title: 'line boil',
+    body: "it's inked three times, each a little different, and they swap 8 times a second. that's the hand-drawn shimmer.",
+    code: () => `figures[floor(t × 8) % 3]`,
+  },
   { id: 'outro', dur: 4.6, title: 'one drawing,\nany format', body: '' },
 ];
 
 /** The steps that are numbered: everything but the title and the end. */
 const STEPS = SCENES.filter((s) => s.id !== 'title' && s.id !== 'outro');
 
-const STARTS = SCENES.reduce<number[]>((acc, s, i) => [...acc, (acc[i - 1] ?? 0) + (SCENES[i - 1]?.dur ?? 0)], []);
+const STARTS = SCENES.reduce<number[]>(
+  (acc, s, i) => [...acc, (acc[i - 1] ?? 0) + (SCENES[i - 1]?.dur ?? 0)],
+  [],
+);
 export const DURATION = SCENES.reduce((s, c) => s + c.dur, 0);
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
@@ -89,7 +178,11 @@ class Progressive {
   private temp: HTMLCanvasElement;
   private tctx: Ctx;
 
-  constructor(private base: HTMLCanvasElement, readonly ops: Op[], private paint: (ctx: Ctx, op: Op) => void) {
+  constructor(
+    private base: HTMLCanvasElement,
+    readonly ops: Op[],
+    private paint: (ctx: Ctx, op: Op) => void,
+  ) {
     [this.acc, this.actx] = canvas(base.width);
     [this.temp, this.tctx] = canvas(base.width);
     this.reset();
@@ -131,10 +224,20 @@ class Progressive {
 
 export type Fonts = { display: string; text: string };
 
-export type Explainer = { draw: (ctx: Ctx, t: number) => void; seed: number; setTheme: (theme: Theme) => void };
+export type Explainer = {
+  draw: (ctx: Ctx, t: number) => void;
+  seed: number;
+  setTheme: (theme: Theme) => void;
+};
 
 /** Builds the face for `name` and pre-paints the stages. `k` is output pixels per layout pixel (1.5 → 1920×1080). */
-export function prepareExplainer(name: string, E: Engine, k: number, fonts: Fonts, T: Theme): Explainer {
+export function prepareExplainer(
+  name: string,
+  E: Engine,
+  k: number,
+  fonts: Fonts,
+  T: Theme,
+): Explainer {
   const seed = seedOf(name);
   const face = buildFace(seed, E);
   const pal = face.pal;
@@ -166,14 +269,22 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
   const skyInks = face.back.filter((o) => o.k === 'ink' && o.col !== GRAPHITE);
   const washes = (ops: Op[]) => ops.filter((o): o is WashOp => o.k === 'wash');
   const figureWashes = washes(face.figure);
-  const showWash = figureWashes.find((o) => o.col === pal.skin && o.layers === 30)
-    ?? figureWashes.reduce((a, b) => (area(b.pts) > area(a.pts) ? b : a), figureWashes[0]!);
-  const glazeOps: Op[] = [...face.back.filter((o) => o.k === 'wash' || o.k === 'solid'), ...skyInks, ...figureWashes.filter((o) => o !== showWash)];
+  const showWash =
+    figureWashes.find((o) => o.col === pal.skin && o.layers === 30) ??
+    figureWashes.reduce((a, b) => (area(b.pts) > area(a.pts) ? b : a), figureWashes[0]!);
+  const glazeOps: Op[] = [
+    ...face.back.filter((o) => o.k === 'wash' || o.k === 'solid'),
+    ...skyInks,
+    ...figureWashes.filter((o) => o !== showWash),
+  ];
   const hatchOps = face.figure.filter((o): o is HatchOp => o.k === 'hatch');
   const inkish = face.figure.filter((o) => o.k === 'ink' || o.k === 'solid');
   const figureInks = inkish.filter((o): o is InkOp => o.k === 'ink' && o.col !== 'paper');
-  const showInk = figureInks.filter((o) => o.w > 3.9 && o.w < 4.4).reduce<InkOp | null>((a, b) => (!a || area(b.pts) > area(a.pts) ? b : a), null)
-    ?? figureInks.reduce((a, b) => (area(b.pts) > area(a.pts) ? b : a), figureInks[0]!);
+  const showInk =
+    figureInks
+      .filter((o) => o.w > 3.9 && o.w < 4.4)
+      .reduce<InkOp | null>((a, b) => (!a || area(b.pts) > area(a.pts) ? b : a), null) ??
+    figureInks.reduce((a, b) => (area(b.pts) > area(a.pts) ? b : a), figureInks[0]!);
   const inkOps: Op[] = [showInk, ...inkish.filter((o) => o !== showInk)];
 
   // ---- stage snapshots
@@ -196,8 +307,11 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
 
   // ---- the glaze, step by step: the same random stream plan() uses, one subdivision at a time
   E.seed(showWash.seed);
-  const dx = E.random(-showWash.shift, showWash.shift), dy = E.random(-showWash.shift, showWash.shift);
-  const levels: VPt[][] = [showWash.pts.map((q) => ({ x: q.x + dx, y: q.y + dy, v: showWash.v * E.random(0.5, 1.5) }))];
+  const dx = E.random(-showWash.shift, showWash.shift),
+    dy = E.random(-showWash.shift, showWash.shift);
+  const levels: VPt[][] = [
+    showWash.pts.map((q) => ({ x: q.x + dx, y: q.y + dy, v: showWash.v * E.random(0.5, 1.5) })),
+  ];
   for (let i = 0; i < 2 + showWash.depth; i++) levels.push(deform(levels[i]!, 1, E));
   const glazePlan: Plan = plan(showWash, E);
   const [work, workG] = sheet();
@@ -206,7 +320,17 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
 
   // ---- sample strokes for the pen inset
   const sample = (seedN: number, dry: boolean): InkOp => ({
-    k: 'ink', seed: seedN, col: pal.ink, w: 4.4, passes: dry ? 1 : 2, jit: 1, alpha: 0.9, ghost: 1.8, taper: true, dry, closed: false,
+    k: 'ink',
+    seed: seedN,
+    col: pal.ink,
+    w: 4.4,
+    passes: dry ? 1 : 2,
+    jit: 1,
+    alpha: 0.9,
+    ghost: 1.8,
+    taper: true,
+    dry,
+    closed: false,
     pts: Array.from({ length: 24 }, (_, i) => ({ x: i * 8.4, y: Math.sin(i * 0.28) * 7 })),
   });
   const samples = [sample(41, false), sample(97, true)];
@@ -228,16 +352,25 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
   const dabs = swatches(pal, k, seed);
 
   const eyeCentre = face.eyes.length
-    ? { x: face.eyes.reduce((s, e) => s + e.x, 0) / face.eyes.length, y: face.eyes.reduce((s, e) => s + e.y, 0) / face.eyes.length }
+    ? {
+        x: face.eyes.reduce((s, e) => s + e.x, 0) / face.eyes.length,
+        y: face.eyes.reduce((s, e) => s + e.y, 0) / face.eyes.length,
+      }
     : { x: W / 2, y: W * 0.45 };
   const opCount = face.back.length + face.figure.length + face.eyes.length;
 
   // ================= drawing =================
-  const toFace = (ctx: Ctx) => ctx.setTransform((k * FACE.s) / W, 0, 0, (k * FACE.s) / W, k * FACE.x, k * FACE.y);
+  const toFace = (ctx: Ctx) =>
+    ctx.setTransform((k * FACE.s) / W, 0, 0, (k * FACE.s) / W, k * FACE.x, k * FACE.y);
   const layout = (ctx: Ctx) => ctx.setTransform(k, 0, 0, k, 0, 0);
   const hair = W / FACE.s;
 
-  function blit(ctx: Ctx, src: HTMLCanvasElement, alpha = 1, op: GlobalCompositeOperation = 'source-over') {
+  function blit(
+    ctx: Ctx,
+    src: HTMLCanvasElement,
+    alpha = 1,
+    op: GlobalCompositeOperation = 'source-over',
+  ) {
     if (alpha <= 0) return;
     layout(ctx);
     ctx.globalAlpha = alpha;
@@ -284,7 +417,8 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
   function sequence(ctx: Ctx, prog: Progressive, u: number, partial: (op: Op, f: number) => void) {
     const lens = prog.ops.map(opLength);
     const total = lens.reduce((s, l) => s + l, 0) || 1;
-    let acc = 0, i = 0;
+    let acc = 0,
+      i = 0;
     for (; i < lens.length; i++) {
       const f = lens[i]! / total;
       if (u < acc + f) break;
@@ -327,7 +461,14 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
     });
   }
 
-  function outline(ctx: Ctx, pts: Pt[], color: string, alpha: number, width = 1.3, dash: number[] = []) {
+  function outline(
+    ctx: Ctx,
+    pts: Pt[],
+    color: string,
+    alpha: number,
+    width = 1.3,
+    dash: number[] = [],
+  ) {
     if (alpha <= 0) return;
     withFace(ctx, () => {
       ctx.strokeStyle = rgba(color, alpha);
@@ -360,15 +501,22 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
 
   /** A scripted glance around the room, with saccades and blinks. */
   function gazeAt(t: number): { look: Pt; blink: number } {
-    const keys: Pt[] = [face.gaze, { x: -0.95, y: 0.05 }, { x: 0.9, y: -0.45 }, { x: 0.15, y: 0.6 }, { x: 0, y: 0 }];
+    const keys: Pt[] = [
+      face.gaze,
+      { x: -0.95, y: 0.05 },
+      { x: 0.9, y: -0.45 },
+      { x: 0.15, y: 0.6 },
+      { x: 0, y: 0 },
+    ];
     const hold = 1.15;
     const i = Math.floor(t / hold);
-    const from = keys[i % keys.length]!, to = keys[(i + 1) % keys.length]!;
+    const from = keys[i % keys.length]!,
+      to = keys[(i + 1) % keys.length]!;
     const look = lerpPt(from, to, ease(prog(t - i * hold, hold - 0.22, hold)));
     const blinkTimes = [0.9, 2.6, 2.95, 4.6];
     let blink = 1;
     for (const b of blinkTimes) {
-      const u = (t % 5.2 - b) / 0.2;
+      const u = ((t % 5.2) - b) / 0.2;
       if (u >= 0 && u <= 1) blink = Math.min(blink, u < 0.4 ? 1 - u / 0.4 : (u - 0.4) / 0.6);
     }
     return { look, blink };
@@ -398,7 +546,18 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
   }
 
   // ---- left column type
-  function text(ctx: Ctx, s: string, x: number, y: number, font: string, color: string, alpha: number, maxW = COL.w, lh = 0, align: CanvasTextAlign = 'left'): number {
+  function text(
+    ctx: Ctx,
+    s: string,
+    x: number,
+    y: number,
+    font: string,
+    color: string,
+    alpha: number,
+    maxW = COL.w,
+    lh = 0,
+    align: CanvasTextAlign = 'left',
+  ): number {
     layout(ctx);
     ctx.font = font;
     ctx.fillStyle = rgba(color, alpha);
@@ -428,16 +587,36 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
     let y = top + lift;
     const n = STEPS.findIndex((st) => st.id === sc.id);
     if (n >= 0) {
-      text(ctx, `step ${String(n + 1).padStart(2, '0')} / ${String(STEPS.length).padStart(2, '0')}`, COL.x, y, `500 13px ${fonts.text}`, T.accent, a);
+      text(
+        ctx,
+        `step ${String(n + 1).padStart(2, '0')} / ${String(STEPS.length).padStart(2, '0')}`,
+        COL.x,
+        y,
+        `500 13px ${fonts.text}`,
+        T.accent,
+        a,
+      );
       layout(ctx);
       ctx.fillStyle = rgba(T.ink, a * 0.18);
       for (let x = COL.x + 112; x < COL.x + COL.w; x += 8) ctx.fillRect(x, y - 5, 4, 1);
       y += 46;
     }
     const big = sc.id === 'title' || sc.id === 'outro';
-    y = text(ctx, sc.title, COL.x - 2, y, `500 ${big ? 54 : 40}px ${fonts.display}`, T.ink, a, COL.w + 40, big ? 58 : 46);
-    if (sc.body) y = text(ctx, sc.body, COL.x, y + 8, `400 17px ${fonts.text}`, T.ink2, a, COL.w - 20, 27);
-    if (withCode && sc.code) y = prompt(ctx, sc.code({ name, seed }), y + 16, a * ease(prog(local, 0.5, 1.1)));
+    y = text(
+      ctx,
+      sc.title,
+      COL.x - 2,
+      y,
+      `500 ${big ? 54 : 40}px ${fonts.display}`,
+      T.ink,
+      a,
+      COL.w + 40,
+      big ? 58 : 46,
+    );
+    if (sc.body)
+      y = text(ctx, sc.body, COL.x, y + 8, `400 17px ${fonts.text}`, T.ink2, a, COL.w - 20, 27);
+    if (withCode && sc.code)
+      y = prompt(ctx, sc.code({ name, seed }), y + 16, a * ease(prog(local, 0.5, 1.1)));
     return y;
   }
 
@@ -445,7 +624,17 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
   function prompt(ctx: Ctx, code: string, y: number, a: number): number {
     if (a <= 0) return y;
     text(ctx, '❯', COL.x, y + 16, `500 15px ${fonts.text}`, T.accent, a);
-    return text(ctx, code, COL.x + 22, y + 16, `500 15px ${fonts.text}`, T.ink, a * 0.9, COL.w - 22, 22);
+    return text(
+      ctx,
+      code,
+      COL.x + 22,
+      y + 16,
+      `500 15px ${fonts.text}`,
+      T.ink,
+      a * 0.9,
+      COL.w - 22,
+      22,
+    );
   }
 
   /** A small label under the sheet, like a note pinned beside a drawing. */
@@ -454,7 +643,8 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
     layout(ctx);
     ctx.font = `500 13px ${fonts.text}`;
     const w = ctx.measureText(s).width + 26;
-    const x = FACE.x + FACE.s / 2 - w / 2, y = FACE.y + FACE.s + 22;
+    const x = FACE.x + FACE.s / 2 - w / 2,
+      y = FACE.y + FACE.s + 22;
     ctx.globalAlpha = alpha;
     ctx.fillStyle = rgba(T.ink, 0.86);
     roundRect(ctx, x, y, w, 26, 13);
@@ -494,7 +684,8 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
       ctx.globalCompositeOperation = 'multiply';
       ctx.fillStyle = s.col;
       ctx.beginPath();
-      const w = 150, h = 30;
+      const w = 150,
+        h = 30;
       ctx.moveTo(-w / 2, -h / 2);
       for (let i = 0; i <= 6; i++) ctx.lineTo(-w / 2 + (w * i) / 6, -h / 2 + (i % 2 ? 1.5 : 0));
       for (let i = 0; i <= 5; i++) ctx.lineTo(w / 2 + (i % 2 ? -2.5 : 0), -h / 2 + (h * i) / 5);
@@ -511,7 +702,11 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
       case 'title': {
         card(ctx, 1);
         const g = gazeAt(t);
-        liveFrame(ctx, pose(t, { move: 1, look: g.look, blink: g.blink, boil: true }), 1 - ease(prog(local, sc.dur - 0.7, sc.dur)));
+        liveFrame(
+          ctx,
+          pose(t, { move: 1, look: g.look, blink: g.blink, boil: true }),
+          1 - ease(prog(local, sc.dur - 0.7, sc.dur)),
+        );
         tape(ctx, 1);
         caption(ctx, sc, local, 236);
         break;
@@ -521,7 +716,13 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
         const y = caption(ctx, sc, local, 190, false);
         // the hash running: digits flicker, then settle one by one into the seed
         const settle = prog(local, 0.4, 1.8);
-        const digits = String(seed).split('').map((d, i) => (settle >= (i + 1) / String(seed).length ? d : String(Math.floor(rng(Math.floor(t * 24) * 31 + i)() * 10))));
+        const digits = String(seed)
+          .split('')
+          .map((d, i) =>
+            settle >= (i + 1) / String(seed).length
+              ? d
+              : String(Math.floor(rng(Math.floor(t * 24) * 31 + i)() * 10)),
+          );
         const da = ease(prog(local, 0.3, 0.8)) * (1 - ease(prog(local, sc.dur - 0.45, sc.dur)));
         text(ctx, `"${name}"`, COL.x, y + 40, `500 22px ${fonts.text}`, T.ink2, da);
         text(ctx, '↓ cyrb53', COL.x, y + 74, `500 14px ${fonts.text}`, T.accent, da);
@@ -531,8 +732,10 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
         dabs.forEach((d, i) => {
           const a = ease(prog(local, 1.2 + i * 0.12, 1.6 + i * 0.12)) * out;
           if (a <= 0) return;
-          const col = i % 4, row = Math.floor(i / 4);
-          const cx = FACE.x + 92 + col * 125, cy = FACE.y + 120 + row * 158;
+          const col = i % 4,
+            row = Math.floor(i / 4);
+          const cx = FACE.x + 92 + col * 125,
+            cy = FACE.y + 120 + row * 158;
           layout(ctx);
           ctx.globalAlpha = a;
           ctx.globalCompositeOperation = 'multiply';
@@ -553,7 +756,8 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
             const a = (i / 60) * TAU;
             const w = rr * (1 + 0.06 * Math.sin(a * 5 + 1.3) + 0.04 * Math.sin(a * 9 + local * 3));
             const q = { x: W / 2 + Math.cos(a) * w, y: W / 2 + Math.sin(a) * w };
-            if (i) ctx.lineTo(q.x, q.y); else ctx.moveTo(q.x, q.y);
+            if (i) ctx.lineTo(q.x, q.y);
+            else ctx.moveTo(q.x, q.y);
           }
           ctx.clip();
           ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -563,7 +767,11 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
         vignetteOver(ctx, ease(prog(local, 1, 2.2)));
         tape(ctx, 1);
         caption(ctx, sc, local);
-        chip(ctx, '6,000 specks · 60 fibres', ease(prog(local, 0.6, 1)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))));
+        chip(
+          ctx,
+          '6,000 specks · 60 fibres',
+          ease(prog(local, 0.6, 1)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))),
+        );
         break;
       }
       case 'pencil': {
@@ -572,7 +780,11 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
         vignetteOver(ctx);
         tape(ctx, 1);
         caption(ctx, sc, local);
-        chip(ctx, `${pencilOps.length} graphite lines`, ease(prog(local, 0.4, 0.8)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))));
+        chip(
+          ctx,
+          `${pencilOps.length} graphite lines`,
+          ease(prog(local, 0.4, 0.8)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))),
+        );
         break;
       }
       case 'glaze': {
@@ -604,8 +816,12 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
         const levelT = prog(local, 0.4, 3.4) * (levels.length - 1);
         const li = Math.min(levels.length - 1, Math.floor(levelT));
         const morph = ease((levelT - li) * 1.6);
-        const prev = levels[li]!, next = levels[Math.min(levels.length - 1, li + 1)]!;
-        const shown = li === levels.length - 1 ? prev : next.map((q, j) => (j % 2 === 0 ? q : lerpPt(midpoint(prev, (j - 1) / 2), q, morph)));
+        const prev = levels[li]!,
+          next = levels[Math.min(levels.length - 1, li + 1)]!;
+        const shown =
+          li === levels.length - 1
+            ? prev
+            : next.map((q, j) => (j % 2 === 0 ? q : lerpPt(midpoint(prev, (j - 1) / 2), q, morph)));
         const lineA = (1 - ease(prog(local, 4.2, 5.4))) * ease(prog(local, 0, 0.4));
         outline(ctx, [...shown, shown[0]!], S.ink, 0.75 * lineA, 1.2);
         if (shown.length <= 140) {
@@ -621,8 +837,17 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
         }
         // finishing touches, pointed out
         const finA = ease(prog(local, 7, 7.6)) * (1 - ease(prog(local, 9.2, 9.8)));
-        if (glazePlan.edge) outline(ctx, [...glazePlan.edge.pts, glazePlan.edge.pts[0]!], S.accent, finA * 0.85, 1.4, [5, 5]);
-        if (glazePlan.bloom) outline(ctx, [...glazePlan.bloom, glazePlan.bloom[0]!], S.accent, finA, 1.6, [3, 4]);
+        if (glazePlan.edge)
+          outline(
+            ctx,
+            [...glazePlan.edge.pts, glazePlan.edge.pts[0]!],
+            S.accent,
+            finA * 0.85,
+            1.4,
+            [5, 5],
+          );
+        if (glazePlan.bloom)
+          outline(ctx, [...glazePlan.bloom, glazePlan.bloom[0]!], S.accent, finA, 1.6, [3, 4]);
 
         const body =
           local < 3.6
@@ -631,16 +856,44 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
               ? `stack ${showWash.layers} slightly different copies at ${Math.round(showWash.alpha * 100)}% each. soft edges, deep middle.`
               : 'then lift a little pigment for grain, maybe add a bloom, and darken the edge where paint pools.';
         const step = local < 3.6 ? 0 : local < 6.6 ? 1 : 2;
-        const stepStart = [0, 3.6, 6.6][step]!, stepEnd = [3.6, 6.6, sc.dur][step]!;
+        const stepStart = [0, 3.6, 6.6][step]!,
+          stepEnd = [3.6, 6.6, sc.dur][step]!;
         const y = caption(ctx, { ...sc, body: '' }, local, 214, false);
-        const yb = text(ctx, body, COL.x, y + 10 + (1 - ease(prog(local, stepStart + 0.05, stepStart + 0.6))) * 8, `400 18px ${fonts.text}`, T.ink2,
-          ease(prog(local, stepStart + 0.05, stepStart + 0.6)) * (1 - ease(prog(local, stepEnd - 0.4, stepEnd - 0.05))), COL.w - 20, 27);
-        prompt(ctx, sc.code!({ name, seed }), yb + 6, ease(prog(local, 0.5, 1.1)) * (1 - ease(prog(local, sc.dur - 0.45, sc.dur - 0.05))));
+        const yb = text(
+          ctx,
+          body,
+          COL.x,
+          y + 10 + (1 - ease(prog(local, stepStart + 0.05, stepStart + 0.6))) * 8,
+          `400 18px ${fonts.text}`,
+          T.ink2,
+          ease(prog(local, stepStart + 0.05, stepStart + 0.6)) *
+            (1 - ease(prog(local, stepEnd - 0.4, stepEnd - 0.05))),
+          COL.w - 20,
+          27,
+        );
+        prompt(
+          ctx,
+          sc.code!({ name, seed }),
+          yb + 6,
+          ease(prog(local, 0.5, 1.1)) * (1 - ease(prog(local, sc.dur - 0.45, sc.dur - 0.05))),
+        );
         const label =
-          local < 3.6 ? `split + nudge · depth ${li} · ${shown.length} points`
-            : local < 6.6 ? `layer ${nLayers} / ${glazePlan.layers.length} · ${Math.round(showWash.alpha * 100)}% each`
-              : [glazePlan.lifts.size ? 'grain lifted' : '', glazePlan.bloom ? 'bloom' : '', glazePlan.edge ? 'dark edge' : ''].filter(Boolean).join(' · ');
-        chip(ctx, label, ease(prog(local, 0.3, 0.7)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))));
+          local < 3.6
+            ? `split + nudge · depth ${li} · ${shown.length} points`
+            : local < 6.6
+              ? `layer ${nLayers} / ${glazePlan.layers.length} · ${Math.round(showWash.alpha * 100)}% each`
+              : [
+                  glazePlan.lifts.size ? 'grain lifted' : '',
+                  glazePlan.bloom ? 'bloom' : '',
+                  glazePlan.edge ? 'dark edge' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' · ');
+        chip(
+          ctx,
+          label,
+          ease(prog(local, 0.3, 0.7)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))),
+        );
         tape(ctx, 1);
         break;
       }
@@ -650,7 +903,11 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
         vignetteOver(ctx);
         tape(ctx, 1);
         caption(ctx, sc, local);
-        chip(ctx, `${glazeOps.length - skyInks.length + 1} glazes`, ease(prog(local, 0.4, 0.8)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))));
+        chip(
+          ctx,
+          `${glazeOps.length - skyInks.length + 1} glazes`,
+          ease(prog(local, 0.4, 0.8)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))),
+        );
         break;
       }
       case 'hatch': {
@@ -658,11 +915,23 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
         sequence(ctx, hatch, ease(prog(local, 0.5, sc.dur - 0.4)), partialOp(ctx, hatch));
         vignetteOver(ctx);
         const region = hatchOps[0]?.region;
-        if (region) outline(ctx, [...region, region[0]!], S.accent, ease(prog(local, 0, 0.4)) * (1 - ease(prog(local, 1.2, 1.9))) * 0.9, 1.5, [6, 5]);
+        if (region)
+          outline(
+            ctx,
+            [...region, region[0]!],
+            S.accent,
+            ease(prog(local, 0, 0.4)) * (1 - ease(prog(local, 1.2, 1.9))) * 0.9,
+            1.5,
+            [6, 5],
+          );
         tape(ctx, 1);
         caption(ctx, sc, local);
         const lines = hatchOps.reduce((s, o) => s + (hatchLinesFor.get(o)?.length ?? 0), 0);
-        chip(ctx, `${lines} hand-wobbled lines`, ease(prog(local, 0.4, 0.8)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))));
+        chip(
+          ctx,
+          `${lines} hand-wobbled lines`,
+          ease(prog(local, 0.4, 0.8)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))),
+        );
         break;
       }
       case 'ink': {
@@ -673,7 +942,14 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
           blit(ctx, afterHatch);
           vignetteOver(ctx);
           const path = resample(showInk.pts, 1.8);
-          outline(ctx, showInk.closed ? [...path, path[0]!] : path, S.accent, ease(prog(local, 0.1, 0.6)) * (1 - ease(prog(local, 2.6, 3.4))) * 0.9, 1.2, [2, 4]);
+          outline(
+            ctx,
+            showInk.closed ? [...path, path[0]!] : path,
+            S.accent,
+            ease(prog(local, 0.1, 0.6)) * (1 - ease(prog(local, 2.6, 3.4))) * 0.9,
+            1.2,
+            [2, 4],
+          );
           if (pen > 0) {
             inkPartial(ctx, showInk, ease(pen));
             const tip = nibAt(showInk, ease(pen));
@@ -693,7 +969,8 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
           const others = inks.ops.slice(1);
           const lens = others.map(opLength);
           const total = lens.reduce((s, l) => s + l, 0) || 1;
-          let acc = 0, i = 0;
+          let acc = 0,
+            i = 0;
           for (; i < lens.length; i++) {
             const f = lens[i]! / total;
             if (rest < acc + f) break;
@@ -721,9 +998,22 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
             ctx.fill();
           }
           ctx.restore();
-          text(ctx, i ? 'running dry' : 'pressure · taper · a second pass', COL.x, sy + 34, `500 12px ${fonts.text}`, T.ink2, insetA, 400);
+          text(
+            ctx,
+            i ? 'running dry' : 'pressure · taper · a second pass',
+            COL.x,
+            sy + 34,
+            `500 12px ${fonts.text}`,
+            T.ink2,
+            insetA,
+            400,
+          );
         });
-        chip(ctx, local < 3.4 ? 'one line, as a ribbon' : `${inkOps.length} lines and dots`, ease(prog(local, 0.4, 0.8)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))));
+        chip(
+          ctx,
+          local < 3.4 ? 'one line, as a ribbon' : `${inkOps.length} lines and dots`,
+          ease(prog(local, 0.4, 0.8)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))),
+        );
         break;
       }
       case 'eyes': {
@@ -731,7 +1021,11 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
         blit(ctx, afterInk);
         vignetteOver(ctx);
         const g = gazeAt(Math.max(0, local - 0.6));
-        liveFrame(ctx, pose(t, { move: 0, look: g.look, blink: g.blink, boil: false }), ease(prog(local, 0.1, 0.9)));
+        liveFrame(
+          ctx,
+          pose(t, { move: 0, look: g.look, blink: g.blink, boil: false }),
+          ease(prog(local, 0.1, 0.9)),
+        );
         // ring the eyes while they come alive
         const ringA = ease(prog(local, 0.5, 1)) * (1 - ease(prog(local, 2.2, 2.8)));
         withFace(ctx, () => {
@@ -746,7 +1040,11 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
         });
         tape(ctx, 1);
         caption(ctx, sc, local);
-        chip(ctx, 'drawn every frame', ease(prog(local, 0.4, 0.8)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))));
+        chip(
+          ctx,
+          'drawn every frame',
+          ease(prog(local, 0.4, 0.8)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))),
+        );
         break;
       }
       case 'sheets': {
@@ -800,7 +1098,9 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
         legend.forEach(([name, what], i) => {
           const m = plates[2 - i]!;
           const corner = { x: m.e + m.c * W, y: m.f + m.d * W };
-          const a = ease(prog(local, 1 + i * 0.25, 1.6 + i * 0.25)) * (1 - ease(prog(local, sc.dur - 1.5, sc.dur - 1)));
+          const a =
+            ease(prog(local, 1 + i * 0.25, 1.6 + i * 0.25)) *
+            (1 - ease(prog(local, sc.dur - 1.5, sc.dur - 1)));
           if (a <= 0) return;
           const ly = corner.y;
           text(ctx, name, COL.x, ly - 4, `500 26px ${fonts.display}`, T.ink, a, 300);
@@ -830,9 +1130,15 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
         const y = caption(ctx, sc, local);
         const a = ease(prog(local, 0.6, 1.1)) * (1 - ease(prog(local, sc.dur - 0.45, sc.dur)));
         const size = W * 0.3;
-        const src = { x: (eyeCentre.x - size / 2) * scale, y: (eyeCentre.y - size * 0.4) * scale, s: size * scale };
+        const src = {
+          x: (eyeCentre.x - size / 2) * scale,
+          y: (eyeCentre.y - size * 0.4) * scale,
+          s: size * scale,
+        };
         raster.figures.forEach((fig, i) => {
-          const x = COL.x + i * 128, ty = y + 30, s = 112;
+          const x = COL.x + i * 128,
+            ty = y + 30,
+            s = 112;
           const on = ps.phase % raster.figures.length === i;
           layout(ctx);
           ctx.globalAlpha = a;
@@ -845,9 +1151,24 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
           ctx.lineWidth = on ? 2.5 : 1;
           ctx.strokeRect(x, ty, s, s);
           ctx.globalAlpha = 1;
-          text(ctx, `sheet ${'ABC'[i]}`, x + s / 2, ty + s + 20, `500 12px ${fonts.text}`, on ? T.accent : T.ink2, a, 120, 0, 'center');
+          text(
+            ctx,
+            `sheet ${'ABC'[i]}`,
+            x + s / 2,
+            ty + s + 20,
+            `500 12px ${fonts.text}`,
+            on ? T.accent : T.ink2,
+            a,
+            120,
+            0,
+            'center',
+          );
         });
-        chip(ctx, '3 inkings · 8 fps', ease(prog(local, 0.4, 0.8)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))));
+        chip(
+          ctx,
+          '3 inkings · 8 fps',
+          ease(prog(local, 0.4, 0.8)) * (1 - ease(prog(local, sc.dur - 0.4, sc.dur))),
+        );
         break;
       }
       case 'outro': {
@@ -856,7 +1177,9 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
         liveFrame(ctx, pose(t, { move: 1, look: g.look, blink: g.blink, boil: true }));
         tape(ctx, 1);
         const y = caption(ctx, sc, local, 230);
-        const a = (k: number) => ease(prog(local, 0.6 + k * 0.35, 1.1 + k * 0.35)) * (1 - ease(prog(local, sc.dur - 0.5, sc.dur - 0.05)));
+        const a = (k: number) =>
+          ease(prog(local, 0.6 + k * 0.35, 1.1 + k * 0.35)) *
+          (1 - ease(prog(local, sc.dur - 0.5, sc.dur - 0.05)));
         const row = [`"${name}"`, `seed ${seed}`, `${opCount} ops`];
         let x = COL.x;
         layout(ctx);
@@ -866,7 +1189,18 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
           pill(ctx, x, y + 14, w, s, a(i), i === 0);
           x += w;
           if (i < row.length - 1) {
-            text(ctx, '→', x + 14, y + 33, `400 18px ${fonts.text}`, T.ink2, a(i + 0.5), 40, 0, 'center');
+            text(
+              ctx,
+              '→',
+              x + 14,
+              y + 33,
+              `400 18px ${fonts.text}`,
+              T.ink2,
+              a(i + 0.5),
+              40,
+              0,
+              'center',
+            );
             x += 28;
           }
         });
@@ -878,7 +1212,17 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
           pill(ctx, ox, y + 64, w, s, a(2 + i * 0.4), false);
           ox += w + 10;
         });
-        text(ctx, 'the same drawing becomes this screen, a 2K png, an svg or a looping gif.', COL.x, y + 142, `400 18px ${fonts.text}`, T.ink2, a(3), COL.w - 20, 28);
+        text(
+          ctx,
+          'the same drawing becomes this screen, a 2K png, an svg or a looping gif.',
+          COL.x,
+          y + 142,
+          `400 18px ${fonts.text}`,
+          T.ink2,
+          a(3),
+          COL.w - 20,
+          28,
+        );
         break;
       }
     }
@@ -904,10 +1248,26 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
   function plateMatrix(p: number, h: number): M {
     const s = FACE.s / W;
     const flat: M = { a: s, b: 0, c: 0, d: s, e: FACE.x, f: FACE.y };
-    const ia = s * 0.52, ib = s * 0.25;
-    const cx = FACE.x + FACE.s / 2, cy = FACE.y + FACE.s / 2 + 20 - h;
-    const iso: M = { a: ia, b: ib, c: -ia, d: ib, e: cx - ((ia - ia) * W) / 2, f: cy - ((ib + ib) * W) / 2 };
-    return { a: lerp(flat.a, iso.a, p), b: lerp(flat.b, iso.b, p), c: lerp(flat.c, iso.c, p), d: lerp(flat.d, iso.d, p), e: lerp(flat.e, iso.e, p), f: lerp(flat.f, iso.f, p) };
+    const ia = s * 0.52,
+      ib = s * 0.25;
+    const cx = FACE.x + FACE.s / 2,
+      cy = FACE.y + FACE.s / 2 + 20 - h;
+    const iso: M = {
+      a: ia,
+      b: ib,
+      c: -ia,
+      d: ib,
+      e: cx - ((ia - ia) * W) / 2,
+      f: cy - ((ib + ib) * W) / 2,
+    };
+    return {
+      a: lerp(flat.a, iso.a, p),
+      b: lerp(flat.b, iso.b, p),
+      c: lerp(flat.c, iso.c, p),
+      d: lerp(flat.d, iso.d, p),
+      e: lerp(flat.e, iso.e, p),
+      f: lerp(flat.f, iso.f, p),
+    };
   }
 
   function setPlate(ctx: Ctx, m: M) {
@@ -966,7 +1326,8 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
 }
 
 function midpoint(pts: Pt[], i: number): Pt {
-  const a = pts[i % pts.length]!, b = pts[(i + 1) % pts.length]!;
+  const a = pts[i % pts.length]!,
+    b = pts[(i + 1) % pts.length]!;
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
 }
 
@@ -978,7 +1339,8 @@ function area(pts: Pt[]): number {
 function opLength(op: Op): number {
   if (op.k === 'ink') {
     let l = 0;
-    for (let i = 1; i < op.pts.length; i++) l += Math.hypot(op.pts[i]!.x - op.pts[i - 1]!.x, op.pts[i]!.y - op.pts[i - 1]!.y);
+    for (let i = 1; i < op.pts.length; i++)
+      l += Math.hypot(op.pts[i]!.x - op.pts[i - 1]!.x, op.pts[i]!.y - op.pts[i - 1]!.y);
     return 18 + l;
   }
   if (op.k === 'hatch') return 400;
@@ -997,9 +1359,17 @@ function roundRect(ctx: Ctx, x: number, y: number, w: number, h: number, r: numb
 }
 
 const SWATCH_NAMES: [keyof Palette, string][] = [
-  ['skin', 'skin'], ['shade', 'shade'], ['blush', 'blush'], ['hair', 'hair'],
-  ['hair2', 'hair, dark'], ['accent', 'accent'], ['accent2', 'accent 2'], ['bg', 'ground'],
-  ['bg2', 'ground 2'], ['ink', 'ink'], ['paper', 'paper'],
+  ['skin', 'skin'],
+  ['shade', 'shade'],
+  ['blush', 'blush'],
+  ['hair', 'hair'],
+  ['hair2', 'hair, dark'],
+  ['accent', 'accent'],
+  ['accent2', 'accent 2'],
+  ['bg', 'ground'],
+  ['bg2', 'ground 2'],
+  ['ink', 'ink'],
+  ['paper', 'paper'],
 ];
 
 /** Each palette colour as a little watercolour dab: wobbly translucent discs with a darker rim. */
@@ -1015,9 +1385,15 @@ function swatches(pal: Palette, k: number, seed: number) {
       const o = r() * TAU;
       for (let j = 0; j <= 28; j++) {
         const a = (j / 28) * TAU;
-        const rad = 30 * (1 + 0.1 * Math.sin(a * 3 + o) + 0.06 * Math.sin(a * 7 + o * 2) + (r() - 0.5) * 0.05);
-        const q = { x: 48 + Math.cos(a) * rad + (r() - 0.5) * 2, y: 48 + Math.sin(a) * rad + (r() - 0.5) * 2 };
-        if (j) g.lineTo(q.x, q.y); else g.moveTo(q.x, q.y);
+        const rad =
+          30 *
+          (1 + 0.1 * Math.sin(a * 3 + o) + 0.06 * Math.sin(a * 7 + o * 2) + (r() - 0.5) * 0.05);
+        const q = {
+          x: 48 + Math.cos(a) * rad + (r() - 0.5) * 2,
+          y: 48 + Math.sin(a) * rad + (r() - 0.5) * 2,
+        };
+        if (j) g.lineTo(q.x, q.y);
+        else g.moveTo(q.x, q.y);
       }
       g.fill();
     }

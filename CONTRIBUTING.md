@@ -24,17 +24,17 @@ CI installs Chrome for Testing explicitly. Browser checks use a fresh temporary 
 
 ## Repository map
 
-| Path | Purpose |
-| --- | --- |
-| `packages/glorpies/src/` | The library, framework adapters, server renderer and CLI. |
-| `packages/glorpies/test/` | Unit, pixel, packaging and browser regressions; an isolated tarball consumer smoke check. |
-| `src/app/` | The Next.js website: landing page, gallery, painting explainer and MDX documentation. |
-| `src/app/docs/` | User-facing guides and API documentation. |
-| `src/components/`, `src/lib/` | Website UI and shared helpers. |
-| `examples/react/`, `examples/vanilla/` | Standalone consumers of the published package, with separate npm lockfiles. |
-| `public/readme/` | The single source of README artwork for GitHub, npm and the website. |
-| `scripts/` | README synchronization, artwork generators, screenshots and site checks. |
-| `.github/` | CI, release automation, dependency updates and contribution templates. |
+| Path                                   | Purpose                                                                                   |
+| -------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `packages/glorpies/src/`               | The library, framework adapters, server renderer and CLI.                                 |
+| `packages/glorpies/test/`              | Unit, pixel, packaging and browser regressions; an isolated tarball consumer smoke check. |
+| `src/app/`                             | The Next.js website: landing page, gallery, painting explainer and MDX documentation.     |
+| `src/app/docs/`                        | User-facing guides and API documentation.                                                 |
+| `src/components/`, `src/lib/`          | Website UI and shared helpers.                                                            |
+| `examples/react/`, `examples/vanilla/` | Standalone consumers of the published package, with separate npm lockfiles.               |
+| `public/readme/`                       | The single source of README artwork for GitHub, npm and the website.                      |
+| `scripts/`                             | README synchronization, artwork generators, screenshots and site checks.                  |
+| `.github/`                             | CI, release automation, dependency updates and contribution templates.                    |
 
 The site lives at the repository root; the library is the pnpm workspace package. Examples deliberately install from npm rather than linking workspace source. Build outputs, local reports and marketing exports are ignored.
 

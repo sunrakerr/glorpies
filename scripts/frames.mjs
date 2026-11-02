@@ -19,7 +19,9 @@ await withChrome(async ({ evaluate, waitFor, goto, errors }) => {
 
   const duration = await evaluate('window.__explainer.duration');
   const fps = timesArg.startsWith('fps:') ? Number(timesArg.slice(4)) : 0;
-  const times = fps ? Array.from({ length: Math.round(duration * fps) }, (_, i) => i / fps) : timesArg.split(',').map(Number);
+  const times = fps
+    ? Array.from({ length: Math.round(duration * fps) }, (_, i) => i / fps)
+    : timesArg.split(',').map(Number);
   const mime = format === 'png' ? 'image/png' : 'image/jpeg';
   let slowest = 0;
   for (const [i, t] of times.entries()) {
@@ -30,7 +32,10 @@ await withChrome(async ({ evaluate, waitFor, goto, errors }) => {
     })()`);
     slowest = Math.max(slowest, Date.now() - start);
     const file = fps ? `f${String(i).padStart(5, '0')}` : `t${t.toFixed(2)}`;
-    writeFileSync(`${outDir}/${file}.${format === 'png' ? 'png' : 'jpg'}`, Buffer.from(url.split(',')[1], 'base64'));
+    writeFileSync(
+      `${outDir}/${file}.${format === 'png' ? 'png' : 'jpg'}`,
+      Buffer.from(url.split(',')[1], 'base64'),
+    );
     if (i % 150 === 0) console.log('frame', i, '/', times.length);
   }
   console.log('done:', times.length, 'frames of', duration, 's; slowest frame', slowest, 'ms');

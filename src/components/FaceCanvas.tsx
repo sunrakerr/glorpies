@@ -25,7 +25,16 @@ type Status = 'empty' | 'restyling' | 'ready';
 
 const CROSSFADE_MS = 650;
 
-export function FaceCanvas({ seed, look, priority, maxPx, label, pokeable = false, background = true, caption }: Props) {
+export function FaceCanvas({
+  seed,
+  look,
+  priority,
+  maxPx,
+  label,
+  pokeable = false,
+  background = true,
+  caption,
+}: Props) {
   const ref = useRef<HTMLCanvasElement>(null);
   const ghostRef = useRef<HTMLCanvasElement>(null);
   const handle = useRef<FaceHandle | null>(null);
@@ -79,7 +88,11 @@ export function FaceCanvas({ seed, look, priority, maxPx, label, pokeable = fals
         aria-busy={status !== 'ready'}
         className={`absolute inset-0 h-full w-full transition-opacity duration-700 ${status === 'empty' ? 'opacity-0' : 'opacity-100'} ${status === 'restyling' ? 'face-restyling' : ''} ${pokeable ? 'cursor-pointer touch-manipulation' : ''}`}
       />
-      <canvas ref={ghostRef} aria-hidden className="face-restyling pointer-events-none absolute inset-0 h-full w-full opacity-0" />
+      <canvas
+        ref={ghostRef}
+        aria-hidden
+        className="face-restyling pointer-events-none absolute inset-0 h-full w-full opacity-0"
+      />
       {status === 'empty' && <FaceSkeleton caption={caption} />}
       {status === 'restyling' && <Restyling caption={caption} />}
     </div>
@@ -94,7 +107,10 @@ function crossfade(from: HTMLCanvasElement, ghost: HTMLCanvasElement | null) {
   ghost.width = from.width;
   ghost.height = from.height;
   ghost.getContext('2d')?.drawImage(from, 0, 0);
-  ghost.animate([{ opacity: 1 }, { opacity: 0 }], { duration: CROSSFADE_MS, easing: 'ease-out' }).onfinish = () => {
+  ghost.animate([{ opacity: 1 }, { opacity: 0 }], {
+    duration: CROSSFADE_MS,
+    easing: 'ease-out',
+  }).onfinish = () => {
     // release the copy's pixels once it has faded
     ghost.width = ghost.height = 0;
   };

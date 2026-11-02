@@ -7,7 +7,11 @@ setCanvasFactory({
 });
 
 addEventListener('message', (e: MessageEvent<{ name: string; px: number }>) => {
-  const face = faceCanvas(e.data.name, { look: 'watercolour', size: e.data.px, background: false }) as unknown as OffscreenCanvas;
+  const face = faceCanvas(e.data.name, {
+    look: 'watercolour',
+    size: e.data.px,
+    background: false,
+  }) as unknown as OffscreenCanvas;
   const bitmap = face.transferToImageBitmap();
   postMessage(bitmap, { transfer: [bitmap] });
 });

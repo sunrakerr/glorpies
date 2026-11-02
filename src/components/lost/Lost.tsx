@@ -42,7 +42,11 @@ export function Lost() {
     const tint = () => {
       const css = getComputedStyle(document.documentElement);
       const read = (v: string) => css.getPropertyValue(v).trim();
-      colours = { ink: read('--color-ink'), paper: read('--color-paper'), accent: read('--color-accent') };
+      colours = {
+        ink: read('--color-ink'),
+        paper: read('--color-paper'),
+        accent: read('--color-accent'),
+      };
     };
     tint();
     const theme = new MutationObserver(tint);
@@ -61,11 +65,13 @@ export function Lost() {
         last = { x: e.clientX, y: e.clientY, t: now };
         return;
       }
-      const dx = e.clientX - last.x, dy = e.clientY - last.y;
+      const dx = e.clientX - last.x,
+        dy = e.clientY - last.y;
       if (Math.hypot(dx, dy) < SPACING) return;
       // a glorpie leaves at a share of the pointer's speed, so a flick flings it
       const seconds = Math.max(0.016, (now - last.t) / 1000);
-      if (arrive(e.clientX, e.clientY, (dx / seconds) * 0.25, (dy / seconds) * 0.25)) last = { x: e.clientX, y: e.clientY, t: now };
+      if (arrive(e.clientX, e.clientY, (dx / seconds) * 0.25, (dy / seconds) * 0.25))
+        last = { x: e.clientX, y: e.clientY, t: now };
     };
     const leave = () => {
       last = null;
@@ -76,7 +82,14 @@ export function Lost() {
     const tick = (now: number) => {
       const dt = Math.min(1 / 30, (now - before) / 1000);
       before = now;
-      if (waiting && arrive(space.width * (0.15 + 0.7 * Math.random()), space.height * (0.55 + 0.35 * Math.random()))) waiting--;
+      if (
+        waiting &&
+        arrive(
+          space.width * (0.15 + 0.7 * Math.random()),
+          space.height * (0.55 + 0.35 * Math.random()),
+        )
+      )
+        waiting--;
       step(space, dt, still);
       draw(g, space, now / 1000, colours);
       frame = requestAnimationFrame(tick);
@@ -99,11 +112,22 @@ export function Lost() {
   return (
     <div className="relative grid min-h-dvh touch-none select-none place-items-center overflow-hidden px-6">
       <PixelField />
-      <canvas ref={ref} aria-hidden className="pointer-events-none fixed inset-0 z-20 h-full w-full" />
+      <canvas
+        ref={ref}
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-20 h-full w-full"
+      />
       <main className="relative z-10 flex flex-col items-center text-center">
-        <Transmission lines={LINES} label="page not found" className="font-display text-[clamp(6rem,24vw,13rem)] leading-none [&_.cursor]:hidden" />
+        <Transmission
+          lines={LINES}
+          label="page not found"
+          className="font-display text-[clamp(6rem,24vw,13rem)] leading-none [&_.cursor]:hidden"
+        />
         <p className="mt-5 text-[13px] text-ink-2">this page drifted off into space.</p>
-        <Link href="/" className="mt-8 inline-flex items-center gap-1.5 rounded-md bg-ink px-3.5 py-2 text-[12.5px] text-paper transition hover:bg-accent">
+        <Link
+          href="/"
+          className="mt-8 inline-flex items-center gap-1.5 rounded-md bg-ink px-3.5 py-2 text-[12.5px] text-paper transition hover:bg-accent"
+        >
           <ArrowLeft className="size-3.5" strokeWidth={1.8} /> take me home
         </Link>
       </main>

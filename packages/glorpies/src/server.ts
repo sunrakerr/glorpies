@@ -17,9 +17,17 @@ export type ImageOptions = AnimationOptions & {
   quality?: number;
 };
 
-const TYPES: Record<ImageFormat, string> = { png: 'image/png', webp: 'image/webp', jpeg: 'image/jpeg', svg: 'image/svg+xml', gif: 'image/gif' };
+const TYPES: Record<ImageFormat, string> = {
+  png: 'image/png',
+  webp: 'image/webp',
+  jpeg: 'image/jpeg',
+  svg: 'image/svg+xml',
+  gif: 'image/gif',
+};
 
-type NativeCanvas = { encode(format: 'png' | 'webp' | 'jpeg', quality?: number): Promise<Uint8Array> };
+type NativeCanvas = {
+  encode(format: 'png' | 'webp' | 'jpeg', quality?: number): Promise<Uint8Array>;
+};
 
 let native: Promise<void> | null = null;
 
@@ -33,25 +41,38 @@ export function useNativeCanvas(): Promise<void> {
       });
     },
     () => {
-      throw new Error('glorpies/server draws with @napi-rs/canvas; install it next to glorpies (npm i @napi-rs/canvas)');
+      throw new Error(
+        'glorpies/server draws with @napi-rs/canvas; install it next to glorpies (npm i @napi-rs/canvas)',
+      );
     },
   );
   return native;
 }
 
 /** One face as an image file: its bytes (or SVG text) and content type. */
-export async function renderImage(name: FaceName, o: ImageOptions = {}): Promise<{ body: Uint8Array | string; type: string }> {
+export async function renderImage(
+  name: FaceName,
+  o: ImageOptions = {},
+): Promise<{ body: Uint8Array | string; type: string }> {
   await useNativeCanvas();
   const format = o.format ?? 'png';
   if (format === 'svg') return { body: faceSVG(name, o), type: TYPES.svg };
   if (format === 'gif') return { body: gif(name, o), type: TYPES.gif };
   // jpeg has no transparency to crop or cut with, so it is always square, on its paper or its colour
-  const c = faceCanvas(name, format === 'jpeg' ? { ...o, shape: 'square', background: backdropOf(o.background).colour ?? true } : o) as unknown as NativeCanvas;
+  const c = faceCanvas(
+    name,
+    format === 'jpeg'
+      ? { ...o, shape: 'square', background: backdropOf(o.background).colour ?? true }
+      : o,
+  ) as unknown as NativeCanvas;
   return { body: await c.encode(format, o.quality ?? 90), type: TYPES[format] };
 }
 
 /** `?background=`: false (or 0, no, none), true, or a colour; a hex colour may leave out the # that a url would otherwise have to escape. Anything else is the default. */
-function backgroundFrom(v: string | null, fallback: ImageOptions['background']): ImageOptions['background'] {
+function backgroundFrom(
+  v: string | null,
+  fallback: ImageOptions['background'],
+): ImageOptions['background'] {
   if (v === null) return fallback;
   if (['false', '0', 'no', 'none'].includes(v)) return false;
   if (['true', '1', 'yes', ''].includes(v)) return true;
@@ -75,20 +96,32 @@ const SVG_CSP = "default-src 'none'; img-src data:; style-src 'unsafe-inline'";
  * A fetch handler, `(Request) => Response`, for Next.js, Remix, Hono, Bun, Deno and the like:
  * `GET /api/face?name=agent-47&look=ink&size=128&format=png`.
  */
-export function createFaceHandler(defaults: HandlerOptions = {}): (request: Request) => Promise<Response> {
-  const { cacheControl = 'public, max-age=31536000, s-maxage=31536000, immutable', maxSize = 1024, maxName = 256, ...base } = defaults;
-  if (!(maxSize >= 16)) throw new RangeError(`glorpies: maxSize must be at least 16, not ${maxSize}`);
+export function createFaceHandler(
+  defaults: HandlerOptions = {},
+): (request: Request) => Promise<Response> {
+  const {
+    cacheControl = 'public, max-age=31536000, s-maxage=31536000, immutable',
+    maxSize = 1024,
+    maxName = 256,
+    ...base
+  } = defaults;
+  if (!(maxSize >= 16))
+    throw new RangeError(`glorpies: maxSize must be at least 16, not ${maxSize}`);
   if (!(maxName >= 1)) throw new RangeError(`glorpies: maxName must be at least 1, not ${maxName}`);
   return async (request) => {
     const q = new URL(request.url).searchParams;
     const name = q.get('name');
     if (!name) return new Response('Missing ?name=', { status: 400 });
-    if (name.length > maxName) return new Response(`?name= is longer than ${maxName} characters`, { status: 414 });
+    if (name.length > maxName)
+      return new Response(`?name= is longer than ${maxName} characters`, { status: 414 });
     const num = (k: string, fallback: number, lo: number, hi: number) => {
       const v = q.has(k) ? Number(q.get(k)) : NaN;
       return Math.min(hi, Math.max(lo, Number.isFinite(v) ? v : fallback));
     };
-    const look = q.get('look'), shape = q.get('shape'), state = q.get('state'), format = q.get('format');
+    const look = q.get('look'),
+      shape = q.get('shape'),
+      state = q.get('state'),
+      format = q.get('format');
     // a colour is checked by canvas, which loads on first use
     await useNativeCanvas();
     const o: ImageOptions = {
@@ -97,7 +130,9 @@ export function createFaceHandler(defaults: HandlerOptions = {}): (request: Requ
       shape: isShape(shape) ? shape : base.shape,
       state: isState(state) ? state : base.state,
       background: backgroundFrom(q.get('background'), base.background),
-      format: (FORMATS as readonly string[]).includes(format ?? '') ? (format as ImageFormat) : base.format,
+      format: (FORMATS as readonly string[]).includes(format ?? '')
+        ? (format as ImageFormat)
+        : base.format,
       size: Math.round(num('size', base.size ?? 256, 16, maxSize)),
       loop: num('loop', base.loop ?? 3, 1, 8),
       fps: Math.round(num('fps', base.fps ?? 15, 4, 30)),
@@ -106,7 +141,10 @@ export function createFaceHandler(defaults: HandlerOptions = {}): (request: Requ
     if (o.format === 'gif') o.size = Math.min(o.size!, 320);
     try {
       const { body, type } = await renderImage(name, o);
-      const headers: Record<string, string> = { 'Content-Type': type, 'X-Content-Type-Options': 'nosniff' };
+      const headers: Record<string, string> = {
+        'Content-Type': type,
+        'X-Content-Type-Options': 'nosniff',
+      };
       if (type === TYPES.svg) headers['Content-Security-Policy'] = SVG_CSP;
       if (cacheControl) headers['Cache-Control'] = cacheControl;
       return new Response(body as BodyInit, { headers });
@@ -119,7 +157,9 @@ export function createFaceHandler(defaults: HandlerOptions = {}): (request: Requ
 }
 
 /** The handler for Node's own servers: `node:http`, Express, or anything that hands you `(req, res)`. */
-export function nodeFaceHandler(defaults?: HandlerOptions): (req: IncomingMessage, res: ServerResponse) => Promise<void> {
+export function nodeFaceHandler(
+  defaults?: HandlerOptions,
+): (req: IncomingMessage, res: ServerResponse) => Promise<void> {
   const handle = createFaceHandler(defaults);
   return async (req, res) => {
     const response = await handle(new Request(new URL(req.url ?? '/', 'http://localhost')));
@@ -140,7 +180,10 @@ export async function faceGIF(name: FaceName, o: AnimationOptions = {}): Promise
 }
 
 /** Every frame of a loop as RGBA pixels, for an encoder of your own. */
-export async function animationFrames(name: FaceName, o: AnimationOptions = {}): Promise<ReturnType<typeof frames>> {
+export async function animationFrames(
+  name: FaceName,
+  o: AnimationOptions = {},
+): Promise<ReturnType<typeof frames>> {
   await useNativeCanvas();
   return frames(name, o);
 }

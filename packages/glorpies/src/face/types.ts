@@ -87,7 +87,17 @@ export type EyeSpec = {
 };
 
 /** What grows out of the top of the head. Only spines and brain cover it; the rest are parts. */
-export type HairKind = 'antennae' | 'horns' | 'spines' | 'brain' | 'frill' | 'halo' | 'crystals' | 'tentacles' | 'stalks' | 'bald';
+export type HairKind =
+  | 'antennae'
+  | 'horns'
+  | 'spines'
+  | 'brain'
+  | 'frill'
+  | 'halo'
+  | 'crystals'
+  | 'tentacles'
+  | 'stalks'
+  | 'bald';
 export type MouthKind = 'smile' | 'frown' | 'wavy' | 'open' | 'grin' | 'o' | 'smirk';
 
 /**

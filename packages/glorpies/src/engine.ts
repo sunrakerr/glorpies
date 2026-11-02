@@ -21,7 +21,9 @@ const TWO_32 = 4294967296;
 const halves = (n: number): [number, number] => [n >>> 0, Math.floor(n / TWO_32) >>> 0];
 
 /** The noise lattice: how many heights there are (a power of two), how many to a row, and how many octaves are summed. */
-const HEIGHTS = 4096, ROW = 16, OCTAVES = 4;
+const HEIGHTS = 4096,
+  ROW = 16,
+  OCTAVES = 4;
 
 /** Eases 0..1 into 0..1 along half a cosine, so the noise has no corners at lattice points. */
 const ease = (t: number) => 0.5 * (1 - Math.cos(t * Math.PI));
@@ -29,7 +31,10 @@ const mix = (a: number, b: number, t: number) => a + t * (b - a);
 
 export function createEngine(): Engine {
   // sfc32: three words of state and a counter
-  let a = 0, b = 0, c = 0, d = 1;
+  let a = 0,
+    b = 0,
+    c = 0,
+    d = 1;
   let spare: number | null = null;
   const heights = new Float64Array(HEIGHTS);
   let noiseFor: number | null = null;
@@ -93,14 +98,25 @@ export function createEngine(): Engine {
       x = Math.abs(x);
       y = Math.abs(y);
       let sum = 0;
-      for (let octave = 0, scale = 1, weight = 0.5; octave < OCTAVES; octave++, scale *= 2, weight *= 0.5) {
+      for (
+        let octave = 0, scale = 1, weight = 0.5;
+        octave < OCTAVES;
+        octave++, scale *= 2, weight *= 0.5
+      ) {
         // scaling by a power of two is exact, so every octave lands on the lattice the same way at any size
-        const px = x * scale, py = y * scale;
-        const col = Math.floor(px), row = Math.floor(py);
-        const u = ease(px - col), v = ease(py - row);
+        const px = x * scale,
+          py = y * scale;
+        const col = Math.floor(px),
+          row = Math.floor(py);
+        const u = ease(px - col),
+          v = ease(py - row);
         const at = col + row * ROW;
         const top = mix(heights[at & (HEIGHTS - 1)]!, heights[(at + 1) & (HEIGHTS - 1)]!, u);
-        const bottom = mix(heights[(at + ROW) & (HEIGHTS - 1)]!, heights[(at + ROW + 1) & (HEIGHTS - 1)]!, u);
+        const bottom = mix(
+          heights[(at + ROW) & (HEIGHTS - 1)]!,
+          heights[(at + ROW + 1) & (HEIGHTS - 1)]!,
+          u,
+        );
         sum += mix(top, bottom, v) * weight;
       }
       return sum;

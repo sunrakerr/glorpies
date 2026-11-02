@@ -26,4 +26,9 @@
   }
 </script>
 
-<glorpie-face {...attributesOf(options)} class={className} style={styleText(hostStyle(options))} on:glorpie-error={failed}></glorpie-face>
+<glorpie-face
+  {...attributesOf(options)}
+  class={className}
+  style={styleText(hostStyle(options))}
+  on:glorpie-error={failed}
+></glorpie-face>

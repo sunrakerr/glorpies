@@ -21,7 +21,7 @@ type Props = {
 export function FaceCard({ name, look, onOpen, onRepaint, onAction }: Props) {
   const seed = seedOf(name);
   // pinned slightly askew; they settle straighter when you reach for one
-  const tilt = (((seed % 997) / 997) - 0.5) * 2.4;
+  const tilt = ((seed % 997) / 997 - 0.5) * 2.4;
   return (
     <li className="group relative list-none">
       <Sheet seed={seed} tilt={tilt}>
@@ -31,12 +31,20 @@ export function FaceCard({ name, look, onOpen, onRepaint, onAction }: Props) {
           aria-label={`Open ${name}`}
           className="relative block aspect-square w-full overflow-hidden bg-paper-2/50"
         >
-          <FaceCanvas seed={seed} look={look} priority={PRIORITY.gallery} maxPx={900} label={`${name}, ${lookOf(look).name}`} />
+          <FaceCanvas
+            seed={seed}
+            look={look}
+            priority={PRIORITY.gallery}
+            maxPx={900}
+            label={`${name}, ${lookOf(look).name}`}
+          />
         </button>
       </Sheet>
       <p className="mt-3 flex items-baseline justify-center gap-2 truncate text-[11.5px] text-ink-2">
         {name}
-        <span aria-hidden className="truncate font-alien text-[12px] text-accent/80">{inAlien(name)}</span>
+        <span aria-hidden className="truncate font-alien text-[12px] text-accent/80">
+          {inAlien(name)}
+        </span>
       </p>
       <div className="pointer-events-none absolute inset-x-0 bottom-10 flex translate-y-1 justify-center opacity-0 transition duration-300 ease-soft group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 [@media(hover:none)]:translate-y-0 [@media(hover:none)]:opacity-100">
         <Pill className="pointer-events-auto">

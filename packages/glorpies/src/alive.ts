@@ -38,7 +38,8 @@ const THRESHOLD = 24;
 const GUTTER = 1;
 
 export function pixelsOf(c: HTMLCanvasElement): Uint8ClampedArray {
-  return c.getContext('2d', { willReadFrequently: true })!.getImageData(0, 0, c.width, c.height).data;
+  return c.getContext('2d', { willReadFrequently: true })!.getImageData(0, 0, c.width, c.height)
+    .data;
 }
 
 /**
@@ -48,15 +49,24 @@ export function pixelsOf(c: HTMLCanvasElement): Uint8ClampedArray {
  * runs can be drawn straight over it without seams. Returns null when the pose
  * changes nothing (a style whose eyes don't move).
  */
-export function eyePatch(rest: Uint8ClampedArray, posedStill: HTMLCanvasElement, face: Face, pose: EyePose, mask: HTMLCanvasElement | null = null): EyePatch | null {
-  const w = posedStill.width, h = posedStill.height;
+export function eyePatch(
+  rest: Uint8ClampedArray,
+  posedStill: HTMLCanvasElement,
+  face: Face,
+  pose: EyePose,
+  mask: HTMLCanvasElement | null = null,
+): EyePatch | null {
+  const w = posedStill.width,
+    h = posedStill.height;
   const data = pixelsOf(posedStill);
   const tile = Math.max(8, Math.round(w / 40));
-  const cols = Math.ceil(w / tile), rows = Math.ceil(h / tile);
+  const cols = Math.ceil(w / tile),
+    rows = Math.ceil(h / tile);
 
   const spans: { x: number; y: number; w: number; h: number }[] = [];
   for (let ty = 0; ty < rows; ty++) {
-    const y = ty * tile, th = Math.min(tile, h - y);
+    const y = ty * tile,
+      th = Math.min(tile, h - y);
     let from = -1;
     for (let tx = 0; tx <= cols; tx++) {
       const x = tx * tile;
@@ -71,16 +81,22 @@ export function eyePatch(rest: Uint8ClampedArray, posedStill: HTMLCanvasElement,
   if (!spans.length) return null;
 
   // each run is copied with a pixel of its surroundings, so scaling never blends in the atlas's empty space
-  const atlas = makeCanvas(Math.max(...spans.map((r) => r.w)) + 2 * GUTTER, spans.reduce((sum, r) => sum + r.h + 2 * GUTTER, 0));
+  const atlas = makeCanvas(
+    Math.max(...spans.map((r) => r.w)) + 2 * GUTTER,
+    spans.reduce((sum, r) => sum + r.h + 2 * GUTTER, 0),
+  );
   const g = atlas.getContext('2d')!;
   // a face cut from its background gets its patches cut the same way, so they never paste background along
   const trim = mask ? makeCanvas(atlas.width, atlas.height) : null;
   const tg = trim?.getContext('2d');
   let top = 0;
   const runs = spans.map((r) => {
-    const x0 = Math.max(0, r.x - GUTTER), y0 = Math.max(0, r.y - GUTTER);
-    const x1 = Math.min(w, r.x + r.w + GUTTER), y1 = Math.min(h, r.y + r.h + GUTTER);
-    const dx = GUTTER - (r.x - x0), dy = top + GUTTER - (r.y - y0);
+    const x0 = Math.max(0, r.x - GUTTER),
+      y0 = Math.max(0, r.y - GUTTER);
+    const x1 = Math.min(w, r.x + r.w + GUTTER),
+      y1 = Math.min(h, r.y + r.h + GUTTER);
+    const dx = GUTTER - (r.x - x0),
+      dy = top + GUTTER - (r.y - y0);
     g.drawImage(posedStill, x0, y0, x1 - x0, y1 - y0, dx, dy, x1 - x0, y1 - y0);
     if (mask && tg) tg.drawImage(mask, x0, y0, x1 - x0, y1 - y0, dx, dy, x1 - x0, y1 - y0);
     const run = { sx: GUTTER, sy: top + GUTTER, x: r.x, y: r.y, w: r.w, h: r.h };
@@ -95,8 +111,15 @@ export function eyePatch(rest: Uint8ClampedArray, posedStill: HTMLCanvasElement,
   return { look: pose.look ?? face.gaze, blink: pose.blink, atlas, runs };
 }
 
-
-function tileDiffers(a: Uint8ClampedArray, b: Uint8ClampedArray, w: number, x: number, y: number, tw: number, th: number): boolean {
+function tileDiffers(
+  a: Uint8ClampedArray,
+  b: Uint8ClampedArray,
+  w: number,
+  x: number,
+  y: number,
+  tw: number,
+  th: number,
+): boolean {
   for (let j = y; j < y + th; j++) {
     for (let i = (j * w + x) * 4, end = i + tw * 4; i < end; i++) {
       if (Math.abs(a[i]! - b[i]!) > THRESHOLD) return true;

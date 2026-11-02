@@ -1,6 +1,10 @@
 import { pageMetadata } from '@/lib/metadata';
 
-export const metadata = pageMetadata("/docs/quick-start", "quick start", "Install glorpies and give your first user an alien avatar in minutes. Start with React, another framework, plain HTML or a self-hosted image route.");
+export const metadata = pageMetadata(
+  '/docs/quick-start',
+  'quick start',
+  'Install glorpies and give your first user an alien avatar in minutes. Start with React, another framework, plain HTML or a self-hosted image route.',
+);
 
 # quick start
 
@@ -15,7 +19,6 @@ One package for every framework, with an entry point per framework, so you only 
 </Step>
 
 <Step title="Put a face on the page">
-
 
 <CodeGroup>
 
@@ -132,7 +135,13 @@ Every framework takes the same [options](/docs/options): a look, a shape, a stat
 ```
 
 ```html title="template" tab="angular"
-<glorpie-face name="agent-47" size="64" look="sticker" shape="squircle" state="thinking"></glorpie-face>
+<glorpie-face
+  name="agent-47"
+  size="64"
+  look="sticker"
+  shape="squircle"
+  state="thinking"
+></glorpie-face>
 ```
 
 ```astro title="Page.astro" tab="astro"
@@ -140,7 +149,13 @@ Every framework takes the same [options](/docs/options): a look, a shape, a stat
 ```
 
 ```html title="index.html" tab="html"
-<glorpie-face name="agent-47" size="64" look="sticker" shape="squircle" state="thinking"></glorpie-face>
+<glorpie-face
+  name="agent-47"
+  size="64"
+  look="sticker"
+  shape="squircle"
+  state="thinking"
+></glorpie-face>
 ```
 
 </CodeGroup>
@@ -156,4 +171,3 @@ Every framework takes the same [options](/docs/options): a look, a shape, a stat
 Your framework's page covers server rendering, errors and, in React, photo avatars.
 
 <Frameworks />
-

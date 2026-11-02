@@ -38,7 +38,7 @@ npm i glorpies
 ```tsx
 import { Glorpie } from 'glorpies/react';
 
-<Glorpie name="sunrakerrisfriednoodlz" size={48} />
+<Glorpie name="sunrakerrisfriednoodlz" size={48} />;
 ```
 
 By default, small avatars use the ink look; at 72px and above they use watercolour. To paint the Glorpie at the top of this page:
@@ -53,13 +53,13 @@ A numeric `name` is a seed; a string is hashed into one. `name={42}` and `name="
 
 Framework components and the web component share the same options:
 
-| framework | import | guide |
-| --- | --- | --- |
-| React, Next.js | `import { Glorpie } from 'glorpies/react'` | [React](https://glorpies.sunrakerr.dev/docs/react) |
-| Vue 3, Nuxt | `import { Glorpie } from 'glorpies/vue'` | [Vue](https://glorpies.sunrakerr.dev/docs/vue) |
-| Svelte 4 and 5, SvelteKit | `import { Glorpie } from 'glorpies/svelte'` | [Svelte](https://glorpies.sunrakerr.dev/docs/svelte) |
-| Solid, SolidStart | `import { Glorpie } from 'glorpies/solid'` | [Solid](https://glorpies.sunrakerr.dev/docs/solid) |
-| Preact | `import { Glorpie } from 'glorpies/preact'` | [Preact](https://glorpies.sunrakerr.dev/docs/preact) |
+| framework                       | import                                             | guide                                                     |
+| ------------------------------- | -------------------------------------------------- | --------------------------------------------------------- |
+| React, Next.js                  | `import { Glorpie } from 'glorpies/react'`         | [React](https://glorpies.sunrakerr.dev/docs/react)        |
+| Vue 3, Nuxt                     | `import { Glorpie } from 'glorpies/vue'`           | [Vue](https://glorpies.sunrakerr.dev/docs/vue)            |
+| Svelte 4 and 5, SvelteKit       | `import { Glorpie } from 'glorpies/svelte'`        | [Svelte](https://glorpies.sunrakerr.dev/docs/svelte)      |
+| Solid, SolidStart               | `import { Glorpie } from 'glorpies/solid'`         | [Solid](https://glorpies.sunrakerr.dev/docs/solid)        |
+| Preact                          | `import { Glorpie } from 'glorpies/preact'`        | [Preact](https://glorpies.sunrakerr.dev/docs/preact)      |
 | Angular, Astro, Lit, plain HTML | `import 'glorpies/element'`, then `<glorpie-face>` | [Web component](https://glorpies.sunrakerr.dev/docs/html) |
 
 Components render a coloured placeholder on the server, then paint on a canvas in the browser. Faces paint when they approach the screen and animate only while visible. Reduced-motion preferences are respected by default.
@@ -87,8 +87,8 @@ Components render a coloured placeholder on the server, then paint on a canvas i
 
 Made for agents too: a face you can pick out of a crowded sidebar, with a status you read from the face itself. Each state changes the expression, how the head moves, and adds a mark that reads at 32px.
 
-| `idle` | `thinking` | `working` | `waiting` | `blocked` | `done` |
-| :---: | :---: | :---: | :---: | :---: | :---: |
+|                                         `idle`                                         |                                            `thinking`                                            |                                           `working`                                            |                                            `waiting`                                            |                                                `blocked`                                                 |                                          `done`                                          |
+| :------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------: |
 | <img src="public/readme/state-idle.gif" width="96" alt="idle: breathing and blinking"> | <img src="public/readme/state-thinking.gif" width="96" alt="thinking: eyes up, thought bubbles"> | <img src="public/readme/state-working.gif" width="96" alt="working: eyes down, typing bubble"> | <img src="public/readme/state-waiting.gif" width="96" alt="waiting: brows up, a question mark"> | <img src="public/readme/state-blocked.gif" width="96" alt="blocked: a frown and a red exclamation mark"> | <img src="public/readme/state-done.gif" width="96" alt="done: a big smile and sparkles"> |
 
 ```tsx
@@ -99,17 +99,17 @@ Made for agents too: a face you can pick out of a crowded sidebar, with a status
 
 The same props on every `<Glorpie>`, or attributes on `<glorpie-face>`:
 
-| prop | default | what it does |
-| --- | --- | --- |
-| `name` | required | A string or numeric seed. The same name always gets the same face. |
-| `size` | `48` | Pixels, or a CSS length such as `"3rem"`. |
-| `look` | `"auto"` | Any of the 29 looks. `auto` uses ink below 72px and watercolour at 72px and above. |
-| `shape` | `"circle"` | `circle`, `squircle`, `rounded` or `square`. |
-| `background` | `true` | `false` removes the backdrop and crop, leaving a transparent background. A colour (`"#ffe9a8"`) puts the face on it instead, inside the crop. |
-| `state` | `"idle"` | `idle`, `thinking`, `working`, `waiting`, `blocked` or `done`. |
-| `alive` | on, unless reduced motion | Breathing, blinking and glancing. Set `false` for a still face. |
-| `pokeable` | `false` | A tap makes the face wobble. |
-| `label` | `"Avatar"` | Accessible name for the face. |
+| prop         | default                   | what it does                                                                                                                                  |
+| ------------ | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`       | required                  | A string or numeric seed. The same name always gets the same face.                                                                            |
+| `size`       | `48`                      | Pixels, or a CSS length such as `"3rem"`.                                                                                                     |
+| `look`       | `"auto"`                  | Any of the 29 looks. `auto` uses ink below 72px and watercolour at 72px and above.                                                            |
+| `shape`      | `"circle"`                | `circle`, `squircle`, `rounded` or `square`.                                                                                                  |
+| `background` | `true`                    | `false` removes the backdrop and crop, leaving a transparent background. A colour (`"#ffe9a8"`) puts the face on it instead, inside the crop. |
+| `state`      | `"idle"`                  | `idle`, `thinking`, `working`, `waiting`, `blocked` or `done`.                                                                                |
+| `alive`      | on, unless reduced motion | Breathing, blinking and glancing. Set `false` for a still face.                                                                               |
+| `pokeable`   | `false`                   | A tap makes the face wobble.                                                                                                                  |
+| `label`      | `"Avatar"`                | Accessible name for the face.                                                                                                                 |
 
 [All options and error handling](https://glorpies.sunrakerr.dev/docs/options).
 
@@ -123,7 +123,7 @@ import { Avatar, AvatarFallback, AvatarImage } from 'glorpies/react';
 <Avatar size={40}>
   <AvatarImage src={user.photoUrl} alt={user.name} />
   <AvatarFallback name={user.email} />
-</Avatar>
+</Avatar>;
 ```
 
 **Agents that show their status.** The face changes with the state, so a sidebar reads at a glance.
@@ -131,15 +131,22 @@ import { Avatar, AvatarFallback, AvatarImage } from 'glorpies/react';
 ```tsx
 import { Glorpie } from 'glorpies/react';
 
-{agents.map((agent) => (
-  <Glorpie key={agent.id} name={agent.id} state={agent.status} size={32} label={agent.name} />
-))}
+{
+  agents.map((agent) => (
+    <Glorpie key={agent.id} name={agent.id} state={agent.status} size={32} label={agent.name} />
+  ));
+}
 ```
 
 **Faces in emails and link previews**, where there's no JavaScript: an image from your own route.
 
 ```html
-<img src="https://your.app/api/face?name=ada@lovelace.dev&size=96&shape=circle" width="48" height="48" alt="">
+<img
+  src="https://your.app/api/face?name=ada@lovelace.dev&size=96&shape=circle"
+  width="48"
+  height="48"
+  alt=""
+/>
 ```
 
 **A page themed to its face.** `faceColors` is the palette a face is painted in.
@@ -172,7 +179,6 @@ For Next.js, keep the native canvas outside the server bundle:
 // next.config.mjs
 export default { serverExternalPackages: ['@napi-rs/canvas'] };
 ```
-
 
 Then use your route:
 

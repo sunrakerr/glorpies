@@ -1,9 +1,21 @@
 'use client';
 
 import { Check, CircleAlert, LoaderCircle } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+  type ReactNode,
+} from 'react';
 
-export function IconButton({ label, children, className = '', ...rest }: ComponentProps<'button'> & { label: string }) {
+export function IconButton({
+  label,
+  children,
+  className = '',
+  ...rest
+}: ComponentProps<'button'> & { label: string }) {
   return (
     <button
       type="button"
@@ -25,13 +37,20 @@ export function IconButton({ label, children, className = '', ...rest }: Compone
 
 export function Pill({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`flex items-center gap-0.5 rounded-full border border-ink/10 bg-paper/90 p-1 shadow-pill backdrop-blur-md ${className}`}>
+    <div
+      className={`flex items-center gap-0.5 rounded-full border border-ink/10 bg-paper/90 p-1 shadow-pill backdrop-blur-md ${className}`}
+    >
       {children}
     </div>
   );
 }
 
-export function TextButton({ children, tone = 'plain', className = '', ...rest }: ComponentProps<'button'> & { tone?: 'plain' | 'ink' }) {
+export function TextButton({
+  children,
+  tone = 'plain',
+  className = '',
+  ...rest
+}: ComponentProps<'button'> & { tone?: 'plain' | 'ink' }) {
   const look =
     tone === 'ink'
       ? 'bg-ink text-paper hover:bg-ink/90 shadow-pill'
@@ -57,7 +76,11 @@ export function useToast() {
     clearTimeout(timer.current);
     const id = ++seq.current;
     setToast({ id, text, tone });
-    if (tone !== 'busy') timer.current = setTimeout(() => setToast((t) => (t?.id === id ? null : t)), tone === 'error' ? 4200 : 2200);
+    if (tone !== 'busy')
+      timer.current = setTimeout(
+        () => setToast((t) => (t?.id === id ? null : t)),
+        tone === 'error' ? 4200 : 2200,
+      );
   }, []);
   useEffect(() => () => clearTimeout(timer.current), []);
   return { toast, show };
@@ -65,9 +88,15 @@ export function useToast() {
 
 export function ToastView({ toast }: { toast: Toast | null }) {
   return (
-    <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-20 z-50 flex justify-center px-4">
+    <div
+      aria-live="polite"
+      className="pointer-events-none fixed inset-x-0 bottom-20 z-50 flex justify-center px-4"
+    >
       {toast && (
-        <div key={toast.id} className="toast-in flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-[13px] text-paper shadow-pill">
+        <div
+          key={toast.id}
+          className="toast-in flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-[13px] text-paper shadow-pill"
+        >
           {toast.tone === 'busy' && <LoaderCircle className="size-4 animate-spin opacity-80" />}
           {toast.tone === 'ok' && <Check className="size-4 text-[#9fd3b5]" />}
           {toast.tone === 'error' && <CircleAlert className="size-4 text-[#f0a58f]" />}

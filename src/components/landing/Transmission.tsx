@@ -22,13 +22,26 @@ const LINES = [
 const DITHER = ['⡀', '⣀', '⣄', '⣤', '⣦', '⣶', '⣷', '⣿', '⢿', '⠿', '⠛', '⠉'];
 
 /** Milliseconds: per glyph typed, before the alien text turns, per dither step, between cells turning, holding, per letter erased, between lines. */
-const TYPE = 55, WAIT = 450, STEP = 30, STAGGER = 24, HOLD = 2800, ERASE = 26, GAP = 380;
+const TYPE = 55,
+  WAIT = 450,
+  STEP = 30,
+  STAGGER = 24,
+  HOLD = 2800,
+  ERASE = 26,
+  GAP = 380;
 
 const PHASES = ['type', 'wait', 'turn', 'hold', 'erase', 'gap'] as const;
 type Phase = (typeof PHASES)[number];
 
 function lengths(n: number): Record<Phase, number> {
-  return { type: n * TYPE, wait: WAIT, turn: (n - 1) * STAGGER + DITHER.length * STEP, hold: HOLD, erase: n * ERASE, gap: GAP };
+  return {
+    type: n * TYPE,
+    wait: WAIT,
+    turn: (n - 1) * STAGGER + DITHER.length * STEP,
+    hold: HOLD,
+    erase: n * ERASE,
+    gap: GAP,
+  };
 }
 
 /** What a cell shows, and the letter it stands for (which holds its place, so every cell is a letter's size). */
@@ -38,7 +51,8 @@ type Cell = { ch: string; kind: 'glyph' | 'dots' | 'letter'; en: string };
 function frame(text: string, phase: Phase, e: number): Cell[] {
   const n = text.length;
   const chars = [...text];
-  const alien = (en: string): Cell => (en === ' ' ? { ch: en, kind: 'letter', en } : { ch: glyph(en), kind: 'glyph', en });
+  const alien = (en: string): Cell =>
+    en === ' ' ? { ch: en, kind: 'letter', en } : { ch: glyph(en), kind: 'glyph', en };
   const plain = (en: string): Cell => ({ ch: en, kind: 'letter', en });
   if (phase === 'type') return chars.slice(0, Math.min(n, Math.floor(e / TYPE) + 1)).map(alien);
   if (phase === 'wait') return chars.map(alien);
@@ -51,14 +65,23 @@ function frame(text: string, phase: Phase, e: number): Cell[] {
     });
   }
   if (phase === 'hold') return chars.map(plain);
-  if (phase === 'erase') return chars.slice(0, Math.max(0, n - Math.floor(e / ERASE) - 1)).map(plain);
+  if (phase === 'erase')
+    return chars.slice(0, Math.max(0, n - Math.floor(e / ERASE) - 1)).map(plain);
   return [];
 }
 
 const keyOf = (cells: Cell[]) => cells.map((c) => c.ch).join('');
 
 /** The headline: each line types out in alien, comes into focus through braille dots as English, and is erased for the next. */
-export function Transmission({ lines = LINES, label = 'glorpies', className = '' }: { lines?: readonly string[]; label?: string; className?: string }) {
+export function Transmission({
+  lines = LINES,
+  label = 'glorpies',
+  className = '',
+}: {
+  lines?: readonly string[];
+  label?: string;
+  className?: string;
+}) {
   // nothing typed yet on the server; the lines start on the client
   const [cells, setCells] = useState<Cell[]>([]);
 
@@ -73,7 +96,10 @@ export function Transmission({ lines = LINES, label = 'glorpies', className = ''
       }, HOLD + 1600);
       return () => clearInterval(id);
     }
-    let line = 0, phase = 0, raf = 0, shown = '';
+    let line = 0,
+      phase = 0,
+      raf = 0,
+      shown = '';
     let start = performance.now();
     const tick = (now: number) => {
       let len = lengths(lines[line]!.length);
@@ -106,7 +132,9 @@ export function Transmission({ lines = LINES, label = 'glorpies', className = ''
 
   return (
     <h1 className={className}>
-      <span className="sr-only">{label}: {lines.join(' ')}</span>
+      <span className="sr-only">
+        {label}: {lines.join(' ')}
+      </span>
       {/* every line is laid out unseen in the same place, so the headline is always as tall as the longest one wraps to and nothing below it moves */}
       <span aria-hidden className="grid">
         {lines.map((line, i) => (
@@ -138,7 +166,11 @@ function Words({ cells }: { cells: Cell[] }) {
         <span key={ci} className="relative inline-block w-[1ch] text-center">
           <span className={c.kind === 'letter' ? '' : 'invisible'}>{c.en}</span>
           {c.kind !== 'letter' && (
-            <span className={`absolute inset-0 flex items-center justify-center leading-none text-accent ${c.kind === 'glyph' ? 'font-alien text-[0.92em]' : 'font-braille text-[1.2em]'}`}>{c.ch}</span>
+            <span
+              className={`absolute inset-0 flex items-center justify-center leading-none text-accent ${c.kind === 'glyph' ? 'font-alien text-[0.92em]' : 'font-braille text-[1.2em]'}`}
+            >
+              {c.ch}
+            </span>
           )}
         </span>
       ))}

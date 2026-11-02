@@ -1,6 +1,10 @@
 import { pageMetadata } from '@/lib/metadata';
 
-export const metadata = pageMetadata("/docs/states", "states", "Give AI agents a face that shows their status. Six animated Glorpie moods: idle, thinking, working, waiting, blocked and done.");
+export const metadata = pageMetadata(
+  '/docs/states',
+  'states',
+  'Give AI agents a face that shows their status. Six animated Glorpie moods: idle, thinking, working, waiting, blocked and done.',
+);
 
 # states
 
@@ -19,12 +23,19 @@ A state changes the mouth and brows, the head's motion, and adds a mark beside t
 <CodeGroup>
 
 ```tsx title="Agents.tsx" tab="react"
-{agents.map((agent) => (
-  <li key={agent.id}>
-    <Glorpie name={agent.id} state={agent.status} size={36} label={`${agent.name}: ${agent.status}`} />
-    {agent.name}
-  </li>
-))}
+{
+  agents.map((agent) => (
+    <li key={agent.id}>
+      <Glorpie
+        name={agent.id}
+        state={agent.status}
+        size={36}
+        label={`${agent.name}: ${agent.status}`}
+      />
+      {agent.name}
+    </li>
+  ));
+}
 ```
 
 ```vue title="Agents.vue" tab="vue"
@@ -45,7 +56,12 @@ A state changes the mouth and brows, the head's motion, and adds a mark beside t
 
 ```html title="index.html" tab="html"
 <li>
-  <glorpie-face name="research-bot" state="working" size="36" label="research bot: working"></glorpie-face>
+  <glorpie-face
+    name="research-bot"
+    state="working"
+    size="36"
+    label="research bot: working"
+  ></glorpie-face>
   research bot
 </li>
 ```

@@ -20,7 +20,8 @@ import { Viewer } from './Viewer';
 const BATCH = 12;
 /** Batches that load on their own as you scroll before the wall asks whether to keep going. */
 const RUN = 8;
-const GRID = 'grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 sm:gap-x-7 sm:gap-y-10 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-11';
+const GRID =
+  'grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 sm:gap-x-7 sm:gap-y-10 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-11';
 const ALIVE_KEY = 'faces:alive';
 const LOOK_KEY = 'faces:look';
 
@@ -28,7 +29,9 @@ const LOOK_KEY = 'faces:look';
 function viewerIn(state: unknown, wall: string, count: number): number | null {
   const s = state as { viewer?: unknown; wall?: unknown } | null;
   const i = s?.viewer;
-  return s?.wall === wall && typeof i === 'number' && Number.isInteger(i) && i >= 0 && i < count ? i : null;
+  return s?.wall === wall && typeof i === 'number' && Number.isInteger(i) && i >= 0 && i < count
+    ? i
+    : null;
 }
 
 const newWall = () => Math.random().toString(36).slice(2);
@@ -97,7 +100,8 @@ export function Studio() {
     else history.replaceState(state, '');
     setOpen(i);
   };
-  const closeFace = () => (viewerIn(history.state, wall.current, names.length) !== null ? history.back() : setOpen(null));
+  const closeFace = () =>
+    viewerIn(history.state, wall.current, names.length) !== null ? history.back() : setOpen(null);
 
   const toggleAlive = () => {
     setAlive(!alive);
@@ -108,7 +112,9 @@ export function Studio() {
     setLook(next);
     writePref(LOOK_KEY, next);
     // faces already in the new style rejoin the gallery
-    setOverrides((m) => ([...m.values()].includes(next) ? new Map([...m].filter(([, l]) => l !== next)) : m));
+    setOverrides((m) =>
+      [...m.values()].includes(next) ? new Map([...m].filter(([, l]) => l !== next)) : m,
+    );
   };
 
   const lookFor = (name: string) => overrides.get(name) ?? look;
@@ -157,7 +163,12 @@ export function Studio() {
 
   return (
     <Page className="pb-16 pt-12">
-      <Heading as="h1" title="gallery" mark={MARKS.gallery} aside={names.length ? `${names.length} glorpies, each one named` : undefined} />
+      <Heading
+        as="h1"
+        title="gallery"
+        mark={MARKS.gallery}
+        aside={names.length ? `${names.length} glorpies, each one named` : undefined}
+      />
       {names.length ? (
         <Wall>
           {Array.from({ length: batches }, (_, b) => (
@@ -181,7 +192,10 @@ export function Studio() {
       ) : (
         <ul className={GRID}>
           {Array.from({ length: BATCH }, (_, i) => (
-            <li key={i} className="aspect-square list-none rounded-[3px] bg-paper-2/50 shadow-sheet" />
+            <li
+              key={i}
+              className="aspect-square list-none rounded-[3px] bg-paper-2/50 shadow-sheet"
+            />
           ))}
         </ul>
       )}
@@ -203,16 +217,32 @@ export function Studio() {
           <Nearing key={names.length} onNear={more} />
         ))}
 
-      <nav aria-label="Gallery controls" className="pointer-events-none fixed inset-x-0 bottom-5 z-30 flex justify-center">
+      <nav
+        aria-label="Gallery controls"
+        className="pointer-events-none fixed inset-x-0 bottom-5 z-30 flex justify-center"
+      >
         <Pill className="pointer-events-auto">
-          <IconButton label={alive ? 'Hold still' : 'Bring them to life'} role="switch" aria-checked={alive} onClick={toggleAlive}>
+          <IconButton
+            label={alive ? 'Hold still' : 'Bring them to life'}
+            role="switch"
+            aria-checked={alive}
+            onClick={toggleAlive}
+          >
             <span className="relative flex size-2.5">
-              {alive && <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent/60" />}
-              <span className={`relative inline-flex size-2.5 rounded-full transition ${alive ? 'bg-accent' : 'bg-ink/30'}`} />
+              {alive && (
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent/60" />
+              )}
+              <span
+                className={`relative inline-flex size-2.5 rounded-full transition ${alive ? 'bg-accent' : 'bg-ink/30'}`}
+              />
             </span>
           </IconButton>
           <span className="mx-0.5 h-5 w-px bg-ink/10" aria-hidden />
-          <StylePicker seed={names[0] === undefined ? undefined : seedOf(names[0])} value={look} onChange={chooseLook} />
+          <StylePicker
+            seed={names[0] === undefined ? undefined : seedOf(names[0])}
+            value={look}
+            onChange={chooseLook}
+          />
           <span className="mx-0.5 h-5 w-px bg-ink/10" aria-hidden />
           <IconButton label="New faces" onClick={shuffleAll}>
             <Shuffle className="size-[17px]" strokeWidth={1.8} />
@@ -240,7 +270,6 @@ export function Studio() {
   );
 }
 
-
 /** Every full batch is the same height, so one measured on screen stands in for all the ones that aren't. */
 let batchHeight = 0;
 
@@ -258,11 +287,14 @@ function Batch({ children }: { children: ReactNode }) {
   const [near, setNear] = useState(true);
   useEffect(() => {
     const el = ref.current!;
-    const seen = new IntersectionObserver(([e]) => {
-      if (!e) return;
-      if (!e.isIntersecting && el.offsetHeight) batchHeight = el.offsetHeight;
-      setNear(e.isIntersecting);
-    }, { rootMargin: '120% 0px' });
+    const seen = new IntersectionObserver(
+      ([e]) => {
+        if (!e) return;
+        if (!e.isIntersecting && el.offsetHeight) batchHeight = el.offsetHeight;
+        setNear(e.isIntersecting);
+      },
+      { rootMargin: '120% 0px' },
+    );
     const sized = new ResizeObserver(() => {
       if (el.childElementCount === BATCH) batchHeight = el.offsetHeight;
     });
@@ -286,9 +318,12 @@ function Nearing({ onNear }: { onNear: () => void }) {
   const call = useRef(onNear);
   call.current = onNear;
   useEffect(() => {
-    const seen = new IntersectionObserver(([e]) => {
-      if (e?.isIntersecting) call.current();
-    }, { rootMargin: '0px 0px 150% 0px' });
+    const seen = new IntersectionObserver(
+      ([e]) => {
+        if (e?.isIntersecting) call.current();
+      },
+      { rootMargin: '0px 0px 150% 0px' },
+    );
     seen.observe(ref.current!);
     return () => seen.disconnect();
   }, []);

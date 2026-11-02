@@ -12,21 +12,38 @@ export type GlorpieProps = GlorpieOptions & {
   class?: string;
 };
 
-const ATTRIBUTES = ['name', 'data-seed', 'look', 'size', 'shape', 'state', 'background', 'alive', 'pokeable', 'label', 'priority'] as const;
+const ATTRIBUTES = [
+  'name',
+  'data-seed',
+  'look',
+  'size',
+  'shape',
+  'state',
+  'background',
+  'alive',
+  'pokeable',
+  'label',
+  'priority',
+] as const;
 
 /** A living face for Solid: `<Glorpie name="ada@lovelace.dev" size={40} />`. */
 export function Glorpie(props: GlorpieProps): JSX.Element {
   // getters keep every attribute reactive to the props it comes from
   const element: Record<string, unknown> = {
     component: 'glorpie-face',
-    get class() { return props.class; },
-    get style() { return hostStyle(props); },
+    get class() {
+      return props.class;
+    },
+    get style() {
+      return hostStyle(props);
+    },
     'on:glorpie-error': (event: CustomEvent) => {
       if (!props.onError) return;
       event.preventDefault();
       props.onError(event.detail);
     },
   };
-  for (const key of ATTRIBUTES) Object.defineProperty(element, key, { enumerable: true, get: () => attributesOf(props)[key] });
+  for (const key of ATTRIBUTES)
+    Object.defineProperty(element, key, { enumerable: true, get: () => attributesOf(props)[key] });
   return createComponent(Dynamic, element as Parameters<typeof Dynamic>[0]);
 }

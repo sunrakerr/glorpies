@@ -36,7 +36,9 @@ export function CodeTabs({ snippets }: { snippets: Snippet[] }) {
           <div className="min-w-0 overflow-x-auto pr-6 [mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent)] [scrollbar-width:none] [&>div]:flex-nowrap">
             <Tabs options={tabs} value={shown.tab} onChange={pick} dark />
           </div>
-          {shown.title !== shown.tab && <span className="ml-auto hidden shrink-0 lg:inline">{shown.title}</span>}
+          {shown.title !== shown.tab && (
+            <span className="ml-auto hidden shrink-0 lg:inline">{shown.title}</span>
+          )}
         </div>
       }
     />

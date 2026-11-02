@@ -9,8 +9,18 @@ import './globals.css';
 const pixel = Geist_Pixel({ subsets: ['latin'], variable: '--font-pixel' });
 const mono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' });
 /** The alien alphabet (Tifinagh: dots, rings and strokes), and braille dots for it coming into focus. Decoration, so neither is preloaded. */
-const tifinagh = Noto_Sans_Tifinagh({ subsets: ['tifinagh'], weight: '400', variable: '--font-tifinagh', preload: false });
-const braille = Noto_Sans_Symbols_2({ subsets: ['braille'], weight: '400', variable: '--font-braille-dots', preload: false });
+const tifinagh = Noto_Sans_Tifinagh({
+  subsets: ['tifinagh'],
+  weight: '400',
+  variable: '--font-tifinagh',
+  preload: false,
+});
+const braille = Noto_Sans_Symbols_2({
+  subsets: ['braille'],
+  weight: '400',
+  variable: '--font-braille-dots',
+  preload: false,
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -33,7 +43,12 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     // the theme is set before paint by the script below, so the attribute is allowed to differ on hydration
-    <html lang="en" data-theme={DEFAULT_THEME} suppressHydrationWarning className={[pixel, mono, tifinagh, braille].map((f) => f.variable).join(' ')}>
+    <html
+      lang="en"
+      data-theme={DEFAULT_THEME}
+      suppressHydrationWarning
+      className={[pixel, mono, tifinagh, braille].map((f) => f.variable).join(' ')}
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>

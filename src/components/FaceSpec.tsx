@@ -11,15 +11,43 @@ const KINDS = ['react', 'vue', 'svelte', 'html', 'url', 'cli'] as const;
 type Kind = (typeof KINDS)[number];
 
 /** What it takes to show this exact face in your own app: its name and its look, with the code for each way in. */
-export function FaceSpec({ name, look, background, onClose, className = '' }: { name: string; look: LookId; background: boolean; onClose: () => void; className?: string }) {
+export function FaceSpec({
+  name,
+  look,
+  background,
+  onClose,
+  className = '',
+}: {
+  name: string;
+  look: LookId;
+  background: boolean;
+  onClose: () => void;
+  className?: string;
+}) {
   const [kind, setKind] = useState<Kind>('react');
   const l = lookOf(look);
-  const c: Choice = { name, look, shape: 'circle', state: 'idle', background, alive: true, size: 48 };
+  const c: Choice = {
+    name,
+    look,
+    shape: 'circle',
+    state: 'idle',
+    background,
+    alive: true,
+    size: 48,
+  };
   return (
-    <aside aria-label="Use this face" className={`rounded-2xl border border-ink/10 bg-paper p-5 shadow-pill ${className}`}>
+    <aside
+      aria-label="Use this face"
+      className={`rounded-2xl border border-ink/10 bg-paper p-5 shadow-pill ${className}`}
+    >
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="font-display text-[15px]">use this face</h2>
-        <button type="button" onClick={onClose} aria-label="Close" className="-mr-2 -mt-1 grid size-8 place-items-center rounded-full text-ink/60 transition hover:bg-ink/[0.07] hover:text-ink">
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="-mr-2 -mt-1 grid size-8 place-items-center rounded-full text-ink/60 transition hover:bg-ink/[0.07] hover:text-ink"
+        >
           <X className="size-4" strokeWidth={1.8} />
         </button>
       </div>
@@ -37,7 +65,14 @@ export function FaceSpec({ name, look, background, onClose, className = '' }: { 
         className="mt-5 [&_code]:min-w-0 [&_pre]:whitespace-pre-wrap [&_pre]:break-words [&_pre]:text-[11.5px]"
       />
       <p className="mt-3 text-[11px] leading-relaxed text-ink-2/80">
-        size, shape, state and alive work as in <a href="/docs/options" className="underline decoration-ink/25 underline-offset-2 hover:text-ink">the options</a>, in every framework.
+        size, shape, state and alive work as in{' '}
+        <a
+          href="/docs/options"
+          className="underline decoration-ink/25 underline-offset-2 hover:text-ink"
+        >
+          the options
+        </a>
+        , in every framework.
       </p>
     </aside>
   );

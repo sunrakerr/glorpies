@@ -1,6 +1,10 @@
 import { pageMetadata } from '@/lib/metadata';
 
-export const metadata = pageMetadata("/docs/options", "options", "Every Glorpie prop and option: name, size, look, shape, colours, background, animation, state, accessibility and error handling.");
+export const metadata = pageMetadata(
+  '/docs/options',
+  'options',
+  'Every Glorpie prop and option: name, size, look, shape, colours, background, animation, state, accessibility and error handling.',
+);
 
 # options
 
@@ -14,9 +18,9 @@ A numeric `name` is a seed; a string is hashed into one. `name={42}` and `name="
 
 A failed paint is reported once per face, and goes to `console.error` unless handled:
 
-| where | how |
-| --- | --- |
-| React, Svelte, Solid, Preact | `onError={(error) => …}` |
-| Vue | `@error="…"` |
-| `<glorpie-face>` | a cancellable `glorpie-error` event; `preventDefault()` suppresses the log |
-| `mount()` | the `onError` option |
+| where                        | how                                                                        |
+| ---------------------------- | -------------------------------------------------------------------------- |
+| React, Svelte, Solid, Preact | `onError={(error) => …}`                                                   |
+| Vue                          | `@error="…"`                                                               |
+| `<glorpie-face>`             | a cancellable `glorpie-error` event; `preventDefault()` suppresses the log |
+| `mount()`                    | the `onError` option                                                       |

@@ -1,6 +1,10 @@
 import { pageMetadata } from '@/lib/metadata';
 
-export const metadata = pageMetadata("/docs/svelte", "svelte", "Add animated alien avatars to Svelte and SvelteKit. Use the Glorpie component or canvas action with reactive props, moods and accessible labels.");
+export const metadata = pageMetadata(
+  '/docs/svelte',
+  'svelte',
+  'Add animated alien avatars to Svelte and SvelteKit. Use the Glorpie component or canvas action with reactive props, moods and accessible labels.',
+);
 
 # svelte
 
@@ -33,7 +37,8 @@ The `glorpie` action runs a face on any canvas. The canvas is sized by CSS; the 
   import { glorpie } from 'glorpies/svelte';
 </script>
 
-<canvas use:glorpie={{ name: 'agent-47', look: 'gouache' }} style="width: 240px; height: 240px"></canvas>
+<canvas use:glorpie={{ name: 'agent-47', look: 'gouache' }} style="width: 240px; height: 240px"
+></canvas>
 ```
 
 ## sveltekit

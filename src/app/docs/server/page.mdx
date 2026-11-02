@@ -1,6 +1,10 @@
 import { pageMetadata } from '@/lib/metadata';
 
-export const metadata = pageMetadata("/docs/server", "server images", "Serve Glorpie avatars from your own app as PNG, WebP, JPEG, SVG or GIF. Routes for Next.js, Nuxt, SvelteKit, Astro, Express, Bun and Deno.");
+export const metadata = pageMetadata(
+  '/docs/server',
+  'server images',
+  'Serve Glorpie avatars from your own app as PNG, WebP, JPEG, SVG or GIF. Routes for Next.js, Nuxt, SvelteKit, Astro, Express, Bun and Deno.',
+);
 
 # server images
 
@@ -115,17 +119,17 @@ Then request faces by URL:
 
 ## query
 
-| parameter | values | default |
-| --- | --- | --- |
-| `name` | any string (required) | |
-| `look` | `auto` or a [look](/docs/looks) | `auto` |
-| `size` | 16 to 1024 pixels; gifs up to 320 | `256` |
-| `shape` | `circle`, `squircle`, `rounded`, `square`; outside is transparent | `square` |
-| `state` | `idle`, `thinking`, `working`, `waiting`, `blocked`, `done` | `idle` |
-| `background` | `false` for only the face, or a colour to put it on: hex without its `#` (`ffe9a8`), a name, `rgb()`; an unreadable colour is ignored | `true` |
-| `format` | `png`, `webp`, `jpeg`, `svg`, `gif` | `png` |
-| `loop` | seconds a gif runs before it repeats, 1 to 8 | `3` |
-| `fps` | gif frames per second, 4 to 30 | `15` |
+| parameter    | values                                                                                                                                | default  |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `name`       | any string (required)                                                                                                                 |          |
+| `look`       | `auto` or a [look](/docs/looks)                                                                                                       | `auto`   |
+| `size`       | 16 to 1024 pixels; gifs up to 320                                                                                                     | `256`    |
+| `shape`      | `circle`, `squircle`, `rounded`, `square`; outside is transparent                                                                     | `square` |
+| `state`      | `idle`, `thinking`, `working`, `waiting`, `blocked`, `done`                                                                           | `idle`   |
+| `background` | `false` for only the face, or a colour to put it on: hex without its `#` (`ffe9a8`), a name, `rgb()`; an unreadable colour is ignored | `true`   |
+| `format`     | `png`, `webp`, `jpeg`, `svg`, `gif`                                                                                                   | `png`    |
+| `loop`       | seconds a gif runs before it repeats, 1 to 8                                                                                          | `3`      |
+| `fps`        | gif frames per second, 4 to 30                                                                                                        | `15`     |
 
 Invalid values fall back to the default rather than erroring.
 
@@ -137,9 +141,9 @@ Every handler accepts defaults for the query parameters, and limits:
 faceRoute({
   look: 'ink',
   size: 128,
-  maxSize: 512,                           // the largest ?size= (default 1024)
-  maxName: 128,                           // the longest ?name= (default 256)
-  cacheControl: 'public, max-age=86400',  // default: a year, for browsers and CDNs
+  maxSize: 512, // the largest ?size= (default 1024)
+  maxName: 128, // the longest ?name= (default 256)
+  cacheControl: 'public, max-age=86400', // default: a year, for browsers and CDNs
 });
 ```
 
@@ -156,7 +160,11 @@ faceRoute({
 ```ts
 import { faceGIF, renderImage } from 'glorpies/server';
 
-const { body, type } = await renderImage('agent-47', { look: 'sticker', size: 256, format: 'webp' });
+const { body, type } = await renderImage('agent-47', {
+  look: 'sticker',
+  size: 256,
+  format: 'webp',
+});
 const gif = await faceGIF('agent-47', { state: 'done', size: 128, loop: 3 });
 ```
 

@@ -24,15 +24,30 @@ type Expression = {
 
 const EXPRESSIONS: Record<Exclude<FaceState, 'idle'>, Expression> = {
   // a small sideways pout under one quizzically raised brow
-  thinking: { mouth: { bend: 0.02, width: 0.5, height: 0.55, shift: 0.45 }, brows: { near: { lift: 0.75, tilt: -0.28 }, far: { lift: -0.1, tilt: 0.12 } } },
+  thinking: {
+    mouth: { bend: 0.02, width: 0.5, height: 0.55, shift: 0.45 },
+    brows: { near: { lift: 0.75, tilt: -0.28 }, far: { lift: -0.1, tilt: 0.12 } },
+  },
   // a flat, set mouth and brows drawn down in concentration
-  working: { mouth: { bend: 0, width: 0.75, height: 0.45, shift: 0 }, brows: { near: { lift: -0.25, tilt: 0.18 }, far: { lift: -0.25, tilt: 0.18 } } },
+  working: {
+    mouth: { bend: 0, width: 0.75, height: 0.45, shift: 0 },
+    brows: { near: { lift: -0.25, tilt: 0.18 }, far: { lift: -0.25, tilt: 0.18 } },
+  },
   // brows up, a hopeful little smile
-  waiting: { mouth: { bend: 0.2, width: 0.8, height: 0.8, shift: 0 }, brows: { near: { lift: 0.6, tilt: -0.12 }, far: { lift: 0.6, tilt: -0.12 } } },
+  waiting: {
+    mouth: { bend: 0.2, width: 0.8, height: 0.8, shift: 0 },
+    brows: { near: { lift: 0.6, tilt: -0.12 }, far: { lift: 0.6, tilt: -0.12 } },
+  },
   // knitted brows and a clear frown
-  blocked: { mouth: { bend: -0.42, width: 0.9, height: 0.6, shift: 0 }, brows: { near: { lift: -0.2, tilt: 0.5 }, far: { lift: -0.2, tilt: 0.5 } } },
+  blocked: {
+    mouth: { bend: -0.42, width: 0.9, height: 0.6, shift: 0 },
+    brows: { near: { lift: -0.2, tilt: 0.5 }, far: { lift: -0.2, tilt: 0.5 } },
+  },
   // a wide smile under lifted brows
-  done: { mouth: { bend: 0.55, width: 1.12, height: 1.1, shift: 0 }, brows: { near: { lift: 0.4, tilt: -0.08 }, far: { lift: 0.4, tilt: -0.08 } } },
+  done: {
+    mouth: { bend: 0.55, width: 1.12, height: 1.1, shift: 0 },
+    brows: { near: { lift: 0.4, tilt: -0.08 }, far: { lift: 0.4, tilt: -0.08 } },
+  },
 };
 
 const cache = new WeakMap<Face, Map<FaceState, Face>>();
@@ -64,9 +79,12 @@ function reshape(face: Face, x: Expression): Face {
     const s = Math.sign(mid.x - k.centre.x) || 1;
     const { lift, tilt } = s === side ? x.brows.near : x.brows.far;
     // turning clockwise lowers the inner end of a left brow, anticlockwise that of a right one
-    const a = -s * tilt, c = Math.cos(a), sn = Math.sin(a);
+    const a = -s * tilt,
+      c = Math.cos(a),
+      sn = Math.sin(a);
     return (p: Pt): Pt => {
-      const dx = p.x - mid.x, dy = p.y - mid.y;
+      const dx = p.x - mid.x,
+        dy = p.y - mid.y;
       return { x: mid.x + dx * c - dy * sn, y: mid.y + dx * sn + dy * c - lift * unit };
     };
   });
@@ -75,7 +93,11 @@ function reshape(face: Face, x: Expression): Face {
   const sketch: Sketch = {
     ...k,
     brows: k.brows.map((b, i) => b.map(browWarps[i]!)),
-    mouth: { ...k.mouth, line: k.mouth.line.map(mouthWarp), shape: k.mouth.shape?.map(mouthWarp) ?? null },
+    mouth: {
+      ...k.mouth,
+      line: k.mouth.line.map(mouthWarp),
+      shape: k.mouth.shape?.map(mouthWarp) ?? null,
+    },
   };
   return { ...face, figure, sketch };
 }
@@ -91,7 +113,9 @@ function mouthWarpFor(face: Face, m: Expression['mouth']): (p: Pt) => Pt {
   // how much the drawn line already curves at its middle, measured against the line between its ends
   let sag = 0;
   if (line.length > 2) {
-    const a = line[0]!, b = line[line.length - 1]!, mid = line[Math.floor(line.length / 2)]!;
+    const a = line[0]!,
+      b = line[line.length - 1]!,
+      mid = line[Math.floor(line.length / 2)]!;
     sag = (mid.y - (a.y + b.y) / 2) * m.height;
   }
   const extra = m.bend * mw - sag;
@@ -112,6 +136,11 @@ function warpOp(op: Op, warp: (p: Pt) => Pt): Op {
     case 'hatch':
       return { ...op, region: pts(op.region), exclude: op.exclude.map(pts) };
     default:
-      return { ...op, pts: pts(op.pts), clip: op.clip && pts(op.clip), exclude: 'exclude' in op && op.exclude ? op.exclude.map(pts) : undefined } as Op;
+      return {
+        ...op,
+        pts: pts(op.pts),
+        clip: op.clip && pts(op.clip),
+        exclude: 'exclude' in op && op.exclude ? op.exclude.map(pts) : undefined,
+      } as Op;
   }
 }

@@ -14,7 +14,11 @@ import type { Face, Sketch } from './face/types';
 
 export const SMALL_STYLES = [
   { id: 'blob', name: 'Soft blob', note: 'flat shapes, big eyes, nothing else' },
-  { id: 'ink', name: 'Ink badge', note: 'the house style: flat colour under one bold wobbly pen line' },
+  {
+    id: 'ink',
+    name: 'Ink badge',
+    note: 'the house style: flat colour under one bold wobbly pen line',
+  },
   { id: 'sticker', name: 'Sticker', note: 'die-cut white border and a lifted shadow' },
   { id: 'cutpaper', name: 'Cut paper', note: 'three layers of card' },
   { id: 'pixel-icon', name: 'Pixel icon', note: '20 × 20, outlined, favicon-ready' },
@@ -28,7 +32,12 @@ export type SmallId = (typeof SMALL_STYLES)[number]['id'];
 const MOUTH_DARK = '#5b1a26';
 
 /** Maps face units onto the avatar: the head and hair fill most of it, centred. */
-type Frame = { s: number; ox: number; oy: number; /** One percent of the avatar, in face units. */ u: number };
+type Frame = {
+  s: number;
+  ox: number;
+  oy: number;
+  /** One percent of the avatar, in face units. */ u: number;
+};
 
 function frameOf(k: Sketch, px: number, fill = 0.8): Frame {
   const pts: Pt[] = [...k.head, ...(k.hair.cover ?? []), ...(k.hat?.pompom ?? [])];
@@ -37,13 +46,22 @@ function frameOf(k: Sketch, px: number, fill = 0.8): Frame {
   // antennae, horns and tentacles widen the frame a little, then are cropped, so the face stays big
   const reach = Math.max(b.x1 - b.x0, b.y1 - b.y0) * 0.22;
   const lim = { x0: b.x0 - reach, y0: b.y0 - reach, x1: b.x1 + reach, y1: b.y1 + reach };
-  for (const q of k.parts) if (!q.loose) for (const pt of q.pts) {
-    b.x0 = Math.min(b.x0, Math.max(pt.x, lim.x0)); b.x1 = Math.max(b.x1, Math.min(pt.x, lim.x1));
-    b.y0 = Math.min(b.y0, Math.max(pt.y, lim.y0)); b.y1 = Math.max(b.y1, Math.min(pt.y, lim.y1));
-  }
+  for (const q of k.parts)
+    if (!q.loose)
+      for (const pt of q.pts) {
+        b.x0 = Math.min(b.x0, Math.max(pt.x, lim.x0));
+        b.x1 = Math.max(b.x1, Math.min(pt.x, lim.x1));
+        b.y0 = Math.min(b.y0, Math.max(pt.y, lim.y0));
+        b.y1 = Math.max(b.y1, Math.min(pt.y, lim.y1));
+      }
   const size = Math.max(b.x1 - b.x0, b.y1 - b.y0) / fill;
   const s = px / size;
-  return { s, ox: px / 2 - ((b.x0 + b.x1) / 2) * s, oy: px / 2 - ((b.y0 + b.y1) / 2) * s, u: size / 100 };
+  return {
+    s,
+    ox: px / 2 - ((b.x0 + b.x1) / 2) * s,
+    oy: px / 2 - ((b.y0 + b.y1) / 2) * s,
+    u: size / 100,
+  };
 }
 
 /** How face units map onto an avatar of `px` pixels, for drawing over it (a state's marks). */
@@ -76,7 +94,13 @@ function fillPts(g: Ctx, pts: readonly Pt[] | null | undefined, col: string | Ca
   g.fill();
 }
 
-function strokePts(g: Ctx, pts: readonly Pt[] | null | undefined, w: number, col: string, closed = false) {
+function strokePts(
+  g: Ctx,
+  pts: readonly Pt[] | null | undefined,
+  w: number,
+  col: string,
+  closed = false,
+) {
   if (!pts || pts.length < 2) return;
   g.strokeStyle = col;
   g.lineWidth = w;
@@ -90,7 +114,15 @@ function ellipse(g: Ctx, x: number, y: number, rx: number, ry: number) {
 }
 
 /** A pen line whose width swells and thins along its length, so even a bold outline looks hand-drawn. */
-function penLine(g: Ctx, pts: readonly Pt[], w: number, col: string, E: Engine, key: number, closed = false) {
+function penLine(
+  g: Ctx,
+  pts: readonly Pt[],
+  w: number,
+  col: string,
+  E: Engine,
+  key: number,
+  closed = false,
+) {
   if (pts.length < 2) return;
   const line = closed ? [...pts, pts[0]!, pts[1]!] : pts;
   const widths = line.map((_, i) => w * (0.72 + 0.56 * E.noise(key * 7.3 + i * 0.09)));
@@ -101,21 +133,46 @@ function penLine(g: Ctx, pts: readonly Pt[], w: number, col: string, E: Engine, 
 
 // ================= the parts, drawn simply =================
 
-type Eye = { x: number; y: number; r: number; dx: number; dy: number; open: number; kind: Face['eyes'][number]['kind'] };
+type Eye = {
+  x: number;
+  y: number;
+  r: number;
+  dx: number;
+  dy: number;
+  open: number;
+  kind: Face['eyes'][number]['kind'];
+};
 
 /** Eyes enlarged by `k`, but never so far that neighbours touch. */
 function bigEyes(face: Face, k: number): Eye[] {
   const es = face.eyes;
   return es.map((e) => {
-    const gap = Math.min(Infinity, ...es.filter((o) => o !== e).map((o) => Math.hypot(o.x - e.x, o.y - e.y)));
+    const gap = Math.min(
+      Infinity,
+      ...es.filter((o) => o !== e).map((o) => Math.hypot(o.x - e.x, o.y - e.y)),
+    );
     const r = Math.min(e.r * k, gap * 0.46);
     const st = eyeState(e, face.gaze, 1);
     // the gaze shifts pupils by a share of the eye, so a bigger eye looks just as far
-    return { x: e.x, y: e.y, r, dx: (st.dx / e.r) * r, dy: (st.dy / e.r) * r, open: e.restOpen, kind: e.kind };
+    return {
+      x: e.x,
+      y: e.y,
+      r,
+      dx: (st.dx / e.r) * r,
+      dy: (st.dy / e.r) * r,
+      open: e.restOpen,
+      kind: e.kind,
+    };
   });
 }
 
-type EyeLook = { white: string; pupil: string; outline?: { w: number; col: string }; shine?: string; pupilK?: number };
+type EyeLook = {
+  white: string;
+  pupil: string;
+  outline?: { w: number; col: string };
+  shine?: string;
+  pupilK?: number;
+};
 
 function drawEyes(g: Ctx, eyes: Eye[], o: EyeLook) {
   for (const e of eyes) {
@@ -136,7 +193,8 @@ function drawEyes(g: Ctx, eyes: Eye[], o: EyeLook) {
       g.lineWidth = e.r * 0.16;
       g.beginPath();
       for (let t = 0; t <= 1; t += 0.02) {
-        const a = t * 2.4 * TAU, rr = e.r * 0.8 * t;
+        const a = t * 2.4 * TAU,
+          rr = e.r * 0.8 * t;
         g.lineTo(e.x + Math.cos(a) * rr, e.y + Math.sin(a) * rr);
       }
       g.stroke();
@@ -189,14 +247,24 @@ function drawBody(g: Ctx, face: Face, paint: (pts: Pt[], role: Role, col?: strin
 }
 
 function earPts(e: Sketch['ears'][number]): Pt[] {
-  return Array.from({ length: 20 }, (_, i) => ({ x: e.x + Math.cos((i / 20) * TAU) * e.rx, y: e.y + Math.sin((i / 20) * TAU) * e.ry }));
+  return Array.from({ length: 20 }, (_, i) => ({
+    x: e.x + Math.cos((i / 20) * TAU) * e.rx,
+    y: e.y + Math.sin((i / 20) * TAU) * e.ry,
+  }));
 }
 
 /** The colour each part is filled with. */
 function roleCol(face: Face, role: Role, col?: string) {
-  const p = face.pal, hair = face.sketch.hair.col;
+  const p = face.pal,
+    hair = face.sketch.hair.col;
   if (col) return col;
-  return role === 'back' ? p.hair2 : role === 'ear' || role === 'head' ? p.skin : role === 'hair' ? hair : p.blush;
+  return role === 'back'
+    ? p.hair2
+    : role === 'ear' || role === 'head'
+      ? p.skin
+      : role === 'hair'
+        ? hair
+        : p.blush;
 }
 
 /** Brows lifted clear of their enlarged eyes, so a bigger eye doesn't swallow its brow. */
@@ -204,13 +272,32 @@ function liftedBrows(face: Face, eyes: Eye[]): Pt[][] {
   return face.sketch.brows.map((b) => {
     const mid = b[Math.floor(b.length / 2)]!;
     let near = 0;
-    eyes.forEach((e, i) => { if (Math.hypot(e.x - mid.x, e.y - mid.y) < Math.hypot(eyes[near]!.x - mid.x, eyes[near]!.y - mid.y)) near = i; });
+    eyes.forEach((e, i) => {
+      if (
+        Math.hypot(e.x - mid.x, e.y - mid.y) <
+        Math.hypot(eyes[near]!.x - mid.x, eyes[near]!.y - mid.y)
+      )
+        near = i;
+    });
     const grow = eyes.length ? eyes[near]!.r - face.eyes[near]!.r : 0;
     return b.map((q) => ({ x: q.x, y: q.y - grow * 1.1 }));
   });
 }
 
-function features(g: Ctx, face: Face, f: Frame, o: { ink: string; eyeK: number; brows?: number; nose?: number; mouth: number; blush?: number; eyes: EyeLook }) {
+function features(
+  g: Ctx,
+  face: Face,
+  f: Frame,
+  o: {
+    ink: string;
+    eyeK: number;
+    brows?: number;
+    nose?: number;
+    mouth: number;
+    blush?: number;
+    eyes: EyeLook;
+  },
+) {
   const k = face.sketch;
   if (o.blush) for (const b of k.blush) fillPts(g, b, rgba(face.pal.blush, o.blush));
   const eyes = bigEyes(face, o.eyeK);
@@ -227,7 +314,14 @@ function blob(face: Face, E: Engine, px: number, bare: boolean) {
   backdrop(g, face.pal.bg);
   if (bare) return c;
   drawBody(g, face, (pts, role, col) => fillPts(g, pts, roleCol(face, role, col)));
-  features(g, face, f, { ink: face.pal.ink, eyeK: 1.55, brows: 2.4, mouth: 2.8, blush: 0.55, eyes: { white: '#ffffff', pupil: face.pal.ink } });
+  features(g, face, f, {
+    ink: face.pal.ink,
+    eyeK: 1.55,
+    brows: 2.4,
+    mouth: 2.8,
+    blush: 0.55,
+    eyes: { white: '#ffffff', pupil: face.pal.ink },
+  });
   return c;
 }
 
@@ -272,13 +366,21 @@ function sticker(face: Face, E: Engine, px: number, bare: boolean) {
   });
   g.restore();
   drawBody(g, face, (pts, role, col) => fillPts(g, pts, roleCol(face, role, col)));
-  features(g, face, f, { ink: p.ink, eyeK: 1.5, brows: 2.4, mouth: 2.8, blush: 0.55, eyes: { white: '#ffffff', pupil: p.ink, shine: '#ffffff' } });
+  features(g, face, f, {
+    ink: p.ink,
+    eyeK: 1.5,
+    brows: 2.4,
+    mouth: 2.8,
+    blush: 0.55,
+    eyes: { white: '#ffffff', pupil: p.ink, shine: '#ffffff' },
+  });
   return c;
 }
 
 function cutpaper(face: Face, E: Engine, px: number, bare: boolean) {
   const [c, g, f] = sheet(face, px);
-  const p = face.pal, k = face.sketch;
+  const p = face.pal,
+    k = face.sketch;
   backdrop(g, p.bg);
   const card = (fn: () => void) => {
     g.save();
@@ -292,10 +394,14 @@ function cutpaper(face: Face, E: Engine, px: number, bare: boolean) {
   card(() => fillCircle(g, k.centre.x - 10, k.centre.y + 12, k.rx * 1.5, p.bg2));
   if (bare) return c;
   drawBody(g, face, (pts, role, col) => card(() => fillPts(g, pts, roleCol(face, role, col))));
-  card(() => { for (const b of k.blush) fillPts(g, b, p.blush); });
+  card(() => {
+    for (const b of k.blush) fillPts(g, b, p.blush);
+  });
   const eyes = bigEyes(face, 1.45);
   card(() => drawEyes(g, eyes, { white: p.paper, pupil: p.ink }));
-  card(() => { for (const b of liftedBrows(face, eyes)) strokePts(g, b, 3 * f.u, p.hair2); });
+  card(() => {
+    for (const b of liftedBrows(face, eyes)) strokePts(g, b, 3 * f.u, p.hair2);
+  });
   card(() => drawMouth(g, k, 3 * f.u, p.ink));
   return c;
 }
@@ -303,7 +409,8 @@ function cutpaper(face: Face, E: Engine, px: number, bare: boolean) {
 const PIXELS = 20;
 
 function pixel(face: Face, E: Engine, px: number, bare: boolean) {
-  const n = PIXELS, p = face.pal;
+  const n = PIXELS,
+    p = face.pal;
   if (bare) {
     const [c, g] = canvas(px);
     g.fillStyle = p.bg;
@@ -317,8 +424,10 @@ function pixel(face: Face, E: Engine, px: number, bare: boolean) {
   drawBody(fg, face, (pts, role, col) => fillPts(fg, pts, roleCol(face, role, col)));
   const [, lg] = sheet(face, n);
   drawMouth(lg, face.sketch, (100 / n) * f.u * 1.2, '#000000', '#000000');
-  for (const b of liftedBrows(face, bigEyes(face, 1.5))) strokePts(lg, b, (100 / n) * f.u * 0.8, '#000000');
-  const fd = fg.getImageData(0, 0, n, n).data, ld = lg.getImageData(0, 0, n, n).data;
+  for (const b of liftedBrows(face, bigEyes(face, 1.5)))
+    strokePts(lg, b, (100 / n) * f.u * 0.8, '#000000');
+  const fd = fg.getImageData(0, 0, n, n).data,
+    ld = lg.getImageData(0, 0, n, n).data;
   const palette = [p.bg, p.skin, p.hair2, face.sketch.hair.col, p.blush].map(hexRGB);
   const cells: string[] = [];
   const isBg: boolean[] = [];
@@ -326,32 +435,47 @@ function pixel(face: Face, E: Engine, px: number, bare: boolean) {
     const j = i * 4;
     const best = nearestOf(palette, fd[j]!, fd[j + 1]!, fd[j + 2]!);
     isBg.push(best === 0);
-    cells.push(ld[j + 3]! > 70 ? p.ink : [p.bg, p.skin, p.hair2, face.sketch.hair.col, p.blush][best]!);
+    cells.push(
+      ld[j + 3]! > 70 ? p.ink : [p.bg, p.skin, p.hair2, face.sketch.hair.col, p.blush][best]!,
+    );
   }
   // a dark outline wherever the figure meets the background, as pixel art does
   const out = cells.slice();
-  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
-    const i = y * n + x;
-    if (!isBg[i]) continue;
-    const touches = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => {
-      const X = x + dx!, Y = y + dy!;
-      return X >= 0 && Y >= 0 && X < n && Y < n && !isBg[Y * n + X];
-    });
-    if (touches) out[i] = mix(p.bg, p.ink, 0.55);
-  }
+  for (let y = 0; y < n; y++)
+    for (let x = 0; x < n; x++) {
+      const i = y * n + x;
+      if (!isBg[i]) continue;
+      const touches = [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+      ].some(([dx, dy]) => {
+        const X = x + dx!,
+          Y = y + dy!;
+        return X >= 0 && Y >= 0 && X < n && Y < n && !isBg[Y * n + X];
+      });
+      if (touches) out[i] = mix(p.bg, p.ink, 0.55);
+    }
   const cell = (x: number, y: number, col: string) => {
     if (x >= 0 && y >= 0 && x < n && y < n) out[y * n + x] = col;
   };
   // eyes as discs of whole cells, never smaller than one white cell around one pupil cell
   for (const e of bigEyes(face, 1.6)) {
-    const ex = e.x * f.s + f.ox, ey = e.y * f.s + f.oy, re = Math.max(1, e.r * f.s);
-    const px0 = ex + e.dx * f.s, py0 = ey + e.dy * f.s, pr = e.kind === 'button' ? re : Math.max(0.6, re * 0.5);
-    for (let y = Math.floor(ey - re - 1); y <= ey + re + 1; y++) for (let x = Math.floor(ex - re - 1); x <= ex + re + 1; x++) {
-      if (Math.hypot(x + 0.5 - ex, y + 0.5 - ey) < re + 0.2) cell(x, y, '#ffffff');
-    }
-    for (let y = Math.floor(py0 - pr - 1); y <= py0 + pr + 1; y++) for (let x = Math.floor(px0 - pr - 1); x <= px0 + pr + 1; x++) {
-      if (Math.hypot(x + 0.5 - px0, y + 0.5 - py0) < pr) cell(x, y, p.ink);
-    }
+    const ex = e.x * f.s + f.ox,
+      ey = e.y * f.s + f.oy,
+      re = Math.max(1, e.r * f.s);
+    const px0 = ex + e.dx * f.s,
+      py0 = ey + e.dy * f.s,
+      pr = e.kind === 'button' ? re : Math.max(0.6, re * 0.5);
+    for (let y = Math.floor(ey - re - 1); y <= ey + re + 1; y++)
+      for (let x = Math.floor(ex - re - 1); x <= ex + re + 1; x++) {
+        if (Math.hypot(x + 0.5 - ex, y + 0.5 - ey) < re + 0.2) cell(x, y, '#ffffff');
+      }
+    for (let y = Math.floor(py0 - pr - 1); y <= py0 + pr + 1; y++)
+      for (let x = Math.floor(px0 - pr - 1); x <= px0 + pr + 1; x++) {
+        if (Math.hypot(x + 0.5 - px0, y + 0.5 - py0) < pr) cell(x, y, p.ink);
+      }
     cell(Math.floor(px0), Math.floor(py0), p.ink);
   }
   const [c, g] = canvas(px);
@@ -359,7 +483,12 @@ function pixel(face: Face, E: Engine, px: number, bare: boolean) {
   out.forEach((col, i) => {
     g.fillStyle = col;
     // overlap by a hair so no seams show between cells at fractional sizes
-    g.fillRect(Math.floor((i % n) * q), Math.floor(Math.floor(i / n) * q), Math.ceil(q) + 1, Math.ceil(q) + 1);
+    g.fillRect(
+      Math.floor((i % n) * q),
+      Math.floor(Math.floor(i / n) * q),
+      Math.ceil(q) + 1,
+      Math.ceil(q) + 1,
+    );
   });
   return c;
 }
@@ -370,10 +499,14 @@ function hexRGB(h: string): [number, number, number] {
 }
 
 function nearestOf(pal: [number, number, number][], r: number, g: number, b: number) {
-  let best = 0, bd = Infinity;
+  let best = 0,
+    bd = Infinity;
   pal.forEach((c, i) => {
     const d = 2 * (r - c[0]) ** 2 + 4 * (g - c[1]) ** 2 + 3 * (b - c[2]) ** 2;
-    if (d < bd) { bd = d; best = i; }
+    if (d < bd) {
+      bd = d;
+      best = i;
+    }
   });
   return best;
 }
@@ -389,7 +522,14 @@ function line(face: Face, E: Engine, px: number, bare: boolean) {
     fillPts(g, pts, p.paper);
     strokePts(g, pts, w, p.ink, true);
   });
-  features(g, face, f, { ink: p.ink, eyeK: 1.4, brows: 3, nose: 2.4, mouth: 3, eyes: { white: p.paper, pupil: p.ink, outline: { w: w * 0.8, col: p.ink } } });
+  features(g, face, f, {
+    ink: p.ink,
+    eyeK: 1.4,
+    brows: 3,
+    nose: 2.4,
+    mouth: 3,
+    eyes: { white: p.paper, pupil: p.ink, outline: { w: w * 0.8, col: p.ink } },
+  });
   return c;
 }
 
@@ -409,7 +549,8 @@ function neon(face: Face, E: Engine, px: number, bare: boolean) {
     g.restore();
   };
   const k = face.sketch;
-  const glow = mix(p.accent2, '#ffffff', 0.15), hair = mix(p.accent, '#ffffff', 0.1);
+  const glow = mix(p.accent2, '#ffffff', 0.15),
+    hair = mix(p.accent, '#ffffff', 0.1);
   for (const q of k.parts) if (!q.loose) tube(q.pts, mix(q.col, '#ffffff', 0.1), 2 * f.u, true);
   tube(k.head, glow, 2.6 * f.u, true);
   tube(k.hair.cover, hair, 2.6 * f.u, true);
@@ -435,12 +576,32 @@ function wash(face: Face, E: Engine, px: number, bare: boolean) {
   const src = renderStill(bare ? bareFace(face) : face, E, full);
   const [c, g] = canvas(px);
   const k = full / 480;
-  g.drawImage(src, -f.ox / f.s * k, -f.oy / f.s * k, (px / f.s) * k, (px / f.s) * k, 0, 0, px, px);
+  g.drawImage(
+    src,
+    (-f.ox / f.s) * k,
+    (-f.oy / f.s) * k,
+    (px / f.s) * k,
+    (px / f.s) * k,
+    0,
+    0,
+    px,
+    px,
+  );
   return c;
 }
 
-const RENDER: Record<SmallId, (face: Face, E: Engine, px: number, bare: boolean) => HTMLCanvasElement> = {
-  blob, ink, sticker, cutpaper, 'pixel-icon': pixel, 'line-icon': line, glow: neon, wash,
+const RENDER: Record<
+  SmallId,
+  (face: Face, E: Engine, px: number, bare: boolean) => HTMLCanvasElement
+> = {
+  blob,
+  ink,
+  sticker,
+  cutpaper,
+  'pixel-icon': pixel,
+  'line-icon': line,
+  glow: neon,
+  wash,
 };
 
 /**
@@ -448,7 +609,13 @@ const RENDER: Record<SmallId, (face: Face, E: Engine, px: number, bare: boolean)
  * circle or any other shape. `bare` paints only what lies behind the face, so
  * the animator can keep the background still while the face moves.
  */
-export function renderSmall(id: SmallId, face: Face, E: Engine, px: number, bare = false): HTMLCanvasElement {
+export function renderSmall(
+  id: SmallId,
+  face: Face,
+  E: Engine,
+  px: number,
+  bare = false,
+): HTMLCanvasElement {
   E.noiseSeed(face.seed);
   return RENDER[id](face, E, px, bare);
 }

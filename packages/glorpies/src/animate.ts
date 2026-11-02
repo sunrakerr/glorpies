@@ -2,7 +2,13 @@ import { applyPalette, GIFEncoder, quantize } from 'gifenc';
 import { EYE_POSES, eyePatch, pixelsOf, posed } from './alive';
 import { makeCanvas } from './canvas';
 import { getEngine } from './engine';
-import { drawFrame, drawStill, rasterizeFace, type Painting, type StillRaster } from './face/render';
+import {
+  drawFrame,
+  drawStill,
+  rasterizeFace,
+  type Painting,
+  type StillRaster,
+} from './face/render';
 import { cutBackdrop, cutOut } from './cutout';
 import { unguided } from './face/bare';
 import { splitLayers } from './layers';
@@ -30,11 +36,15 @@ export const FRAME_BUDGET = 256 * 256 * 120;
 function timing(o: AnimationOptions) {
   const size = sizeOf(o.size);
   const loop = o.loop ?? 3;
-  if (!(loop > 0 && loop <= 10)) throw new RangeError(`loop must be from 0 to 10 seconds, not ${o.loop}`);
+  if (!(loop > 0 && loop <= 10))
+    throw new RangeError(`loop must be from 0 to 10 seconds, not ${o.loop}`);
   const fps = o.fps ?? 15;
   if (!(fps >= 1 && fps <= 30)) throw new RangeError(`fps must be from 1 to 30, not ${o.fps}`);
   const most = Math.floor(FRAME_BUDGET / (size * size));
-  if (most < 1) throw new RangeError(`a ${size}px frame is too big to animate; try ${Math.floor(Math.sqrt(FRAME_BUDGET))}px or less`);
+  if (most < 1)
+    throw new RangeError(
+      `a ${size}px frame is too big to animate; try ${Math.floor(Math.sqrt(FRAME_BUDGET))}px or less`,
+    );
   // a long or large loop keeps its length and moves in fewer steps
   const count = Math.min(most, Math.max(1, Math.round(loop * fps)));
   return { size, loop, count };
@@ -44,7 +54,10 @@ function timing(o: AnimationOptions) {
  * A face's life as a seamless loop of frames, for places that can't run code. A scripted pose drives it,
  * so the same name always loops the same way.
  */
-export function animationFrames(name: FaceName, options: AnimationOptions = {}): { frames: Uint8ClampedArray[]; size: number; fps: number; loop: number } {
+export function animationFrames(
+  name: FaceName,
+  options: AnimationOptions = {},
+): { frames: Uint8ClampedArray[]; size: number; fps: number; loop: number } {
   const o = checked(options);
   const { size, loop, count } = timing(o);
   const state: FaceState = o.state ?? 'idle';
@@ -60,15 +73,39 @@ export function animationFrames(name: FaceName, options: AnimationOptions = {}):
   } else {
     const still = renderLook(look, face, E, size);
     const { motion, eyes, tiles } = lookOf(look);
-    const r: StillRaster = { px: size, still, layers: 'whole', back: null, figure: null, mask: null, motion, eyes, tiles, patches: [], glance: null };
+    const r: StillRaster = {
+      px: size,
+      still,
+      layers: 'whole',
+      back: null,
+      figure: null,
+      mask: null,
+      motion,
+      eyes,
+      tiles,
+      patches: [],
+      glance: null,
+    };
     const back = renderLook(look, face, E, size, true);
     // off its background the face moves over nothing; otherwise over its own background, held still
     const cut = paper ? null : cutOut(look, face, E, still, back);
     const split = cut ? { figure: cut.figure, mask: cut.mask } : splitLayers(still, back);
-    if (split) Object.assign(r, { layers: 'split', back: cut ? makeCanvas(size) : back, figure: split.figure, mask: split.mask });
+    if (split)
+      Object.assign(r, {
+        layers: 'split',
+        back: cut ? makeCanvas(size) : back,
+        figure: split.figure,
+        mask: split.mask,
+      });
     const rest = pixelsOf(still);
     for (const pose of EYE_POSES) {
-      const patch = eyePatch(rest, renderLook(look, posed(face, pose), E, size), face, pose, r.mask);
+      const patch = eyePatch(
+        rest,
+        renderLook(look, posed(face, pose), E, size),
+        face,
+        pose,
+        r.mask,
+      );
       if (patch) r.patches.push(patch);
     }
     raster = r;
@@ -112,7 +149,9 @@ export function faceGIF(name: FaceName, o: AnimationOptions = {}): Uint8Array {
   const { paper, colour } = backdropOf(o.background);
   const shaped = (!paper && !colour) || (!!o.shape && o.shape !== 'square');
   const sample = new Uint8ClampedArray(frames.length > 4 ? size * size * 4 * 4 : frames[0]!.length);
-  if (frames.length > 4) for (let k = 0; k < 4; k++) sample.set(frames[Math.floor((k * frames.length) / 4)]!, k * size * size * 4);
+  if (frames.length > 4)
+    for (let k = 0; k < 4; k++)
+      sample.set(frames[Math.floor((k * frames.length) / 4)]!, k * size * size * 4);
   else sample.set(frames[0]!);
   const palette = quantize(sample, shaped ? 255 : 256);
   const clear = palette.length;
@@ -125,7 +164,12 @@ export function faceGIF(name: FaceName, o: AnimationOptions = {}): Uint8Array {
     const delay = (end(i + 1) - end(i)) * 10;
     const index = applyPalette(f, palette.slice(0, clear));
     if (shaped) for (let i = 0; i < index.length; i++) if (f[i * 4 + 3]! < 128) index[i] = clear;
-    gif.writeFrame(index, size, size, { palette, delay, repeat: 0, ...(shaped ? { transparent: true, transparentIndex: clear, dispose: 2 } : {}) });
+    gif.writeFrame(index, size, size, {
+      palette,
+      delay,
+      repeat: 0,
+      ...(shaped ? { transparent: true, transparentIndex: clear, dispose: 2 } : {}),
+    });
   }
   gif.finish();
   return gif.bytes();

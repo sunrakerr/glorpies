@@ -58,12 +58,17 @@ async function main() {
   const num = (flag: string, v: string | undefined, lo: number, hi: number) => {
     if (v === undefined) return undefined;
     const n = Number(v);
-    return Number.isFinite(n) && n >= lo && n <= hi ? n : fail(`--${flag} must be a number from ${lo} to ${hi}`);
+    return Number.isFinite(n) && n >= lo && n <= hi
+      ? n
+      : fail(`--${flag} must be a number from ${lo} to ${hi}`);
   };
   const fromOut = values.out?.split('.').pop()?.replace('jpg', 'jpeg');
-  const format = (values.format ?? (FORMATS as readonly string[]).find((f) => f === fromOut) ?? 'png') as ImageFormat;
+  const format = (values.format ??
+    (FORMATS as readonly string[]).find((f) => f === fromOut) ??
+    'png') as ImageFormat;
   if (!(FORMATS as readonly string[]).includes(format)) fail(`unknown format "${format}"`);
-  if (values.look && values.look !== 'auto' && !isLook(values.look)) fail(`unknown look "${values.look}"`);
+  if (values.look && values.look !== 'auto' && !isLook(values.look))
+    fail(`unknown look "${values.look}"`);
   if (values.shape && !isShape(values.shape)) fail(`unknown shape "${values.shape}"`);
   if (values.state && !isState(values.state)) fail(`unknown state "${values.state}"`);
 
@@ -82,7 +87,8 @@ async function main() {
     try {
       await writeFile(out, body, { flag: values.force ? 'w' : 'wx' });
     } catch (e) {
-      if ((e as NodeJS.ErrnoException).code === 'EEXIST') fail(`${out} already exists; pass --force to overwrite it`);
+      if ((e as NodeJS.ErrnoException).code === 'EEXIST')
+        fail(`${out} already exists; pass --force to overwrite it`);
       throw e;
     }
     console.error(`painted ${out}`);
@@ -91,6 +97,7 @@ async function main() {
 
 main().catch((e) => {
   console.error(e instanceof Error ? e.message : e);
-  if (e instanceof Error && e.message.includes('@napi-rs/canvas')) console.error('with npx: npx -p glorpies -p @napi-rs/canvas glorpies <name>');
+  if (e instanceof Error && e.message.includes('@napi-rs/canvas'))
+    console.error('with npx: npx -p glorpies -p @napi-rs/canvas glorpies <name>');
   process.exit(1);
 });

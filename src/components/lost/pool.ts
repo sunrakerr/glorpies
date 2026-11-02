@@ -58,7 +58,9 @@ export function facePool(px: number): FacePool {
     take() {
       if (taken < ready.length) return ready[taken++]!;
       // nobody sees a face twice until every one has been painted
-      return ready.length === names.length ? ready[Math.floor(Math.random() * ready.length)]! : null;
+      return ready.length === names.length
+        ? ready[Math.floor(Math.random() * ready.length)]!
+        : null;
     },
     dispose() {
       disposed = true;

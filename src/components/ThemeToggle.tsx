@@ -10,7 +10,9 @@ const current = (): Theme => {
   const theme = root().dataset.theme;
   return theme === 'light' || theme === 'dark' ? theme : DEFAULT_THEME;
 };
-const apply = (t: Theme) => { root().dataset.theme = t; };
+const apply = (t: Theme) => {
+  root().dataset.theme = t;
+};
 
 function subscribe(onChange: () => void) {
   const watch = new MutationObserver(onChange);
@@ -36,7 +38,11 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
       title={`${next} mode`}
       className={`grid size-7 place-items-center rounded-[4px] border border-ink/15 text-ink-2 transition hover:border-ink/40 hover:text-ink ${className}`}
     >
-      {theme === 'dark' ? <Sun className="size-3.5" strokeWidth={1.8} /> : <Moon className="size-3.5" strokeWidth={1.8} />}
+      {theme === 'dark' ? (
+        <Sun className="size-3.5" strokeWidth={1.8} />
+      ) : (
+        <Moon className="size-3.5" strokeWidth={1.8} />
+      )}
     </button>
   );
 }

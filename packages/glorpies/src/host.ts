@@ -29,7 +29,12 @@ export type GlorpieOptions = {
   priority?: number;
 };
 
-export const RADIUS: Record<Shape, string> = { circle: '50%', squircle: '30%', rounded: '16%', square: '0' };
+export const RADIUS: Record<Shape, string> = {
+  circle: '50%',
+  squircle: '30%',
+  rounded: '16%',
+  square: '0',
+};
 
 export const cssLength = (size: number | string) => (typeof size === 'number' ? `${size}px` : size);
 
@@ -64,4 +69,7 @@ export function hostStyle(o: GlorpieOptions): Record<string, string> {
   };
 }
 
-export const styleText = (style: Record<string, string>) => Object.entries(style).map(([k, v]) => `${k}:${v}`).join(';');
+export const styleText = (style: Record<string, string>) =>
+  Object.entries(style)
+    .map(([k, v]) => `${k}:${v}`)
+    .join(';');

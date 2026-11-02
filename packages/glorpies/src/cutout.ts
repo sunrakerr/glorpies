@@ -34,10 +34,20 @@ function keepMasked(c: HTMLCanvasElement, mask: HTMLCanvasElement): HTMLCanvasEl
  * transparent; or null for a style whose background can't be told from its
  * face. `bare` is the same look painted without the face, if it's at hand.
  */
-export function cutOut(look: LookId, face: Face, E: Engine, full: HTMLCanvasElement, bare?: HTMLCanvasElement): { figure: HTMLCanvasElement; mask: HTMLCanvasElement } | null {
+export function cutOut(
+  look: LookId,
+  face: Face,
+  E: Engine,
+  full: HTMLCanvasElement,
+  bare?: HTMLCanvasElement,
+): { figure: HTMLCanvasElement; mask: HTMLCanvasElement } | null {
   const px = full.width;
   const cut = BY_OUTLINE.has(look)
-    ? faceMask(renderLook('watercolour', face, E, px), renderLook('watercolour', face, E, px, true), true)
+    ? faceMask(
+        renderLook('watercolour', face, E, px),
+        renderLook('watercolour', face, E, px, true),
+        true,
+      )
     : faceMask(full, bare ?? renderLook(look, face, E, px, true), true);
   if (!cut) return null;
   const figure = makeCanvas(full.width, full.height);

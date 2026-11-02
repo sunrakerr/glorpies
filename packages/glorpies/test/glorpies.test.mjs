@@ -8,9 +8,25 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
-import { faceCanvas, faceSVG, FACES, LOOKS, randomName, seedOf, SHAPES, STATES } from '../dist/index.js';
+import {
+  faceCanvas,
+  faceSVG,
+  FACES,
+  LOOKS,
+  randomName,
+  seedOf,
+  SHAPES,
+  STATES,
+} from '../dist/index.js';
 import { faceOf } from '../dist/testing.js';
-import { animationFrames, createFaceHandler, faceGIF, FRAME_BUDGET, renderImage, useNativeCanvas } from '../dist/server.js';
+import {
+  animationFrames,
+  createFaceHandler,
+  faceGIF,
+  FRAME_BUDGET,
+  renderImage,
+  useNativeCanvas,
+} from '../dist/server.js';
 
 /**
  * Seeds and fingerprints of the face each name is built into: the painting,
@@ -27,7 +43,8 @@ const KNOWN = {
 
 // Math.sin, exp and friends differ in the last bits between arm64 and x64, so coordinates are compared to a millionth of a pixel.
 const toMillionths = (_, v) => (typeof v === 'number' ? Math.round(v * 1e6) / 1e6 : v);
-const fingerprint = (face) => createHash('sha256').update(JSON.stringify(face, toMillionths)).digest('hex').slice(0, 16);
+const fingerprint = (face) =>
+  createHash('sha256').update(JSON.stringify(face, toMillionths)).digest('hex').slice(0, 16);
 
 test('a name always maps to the same seed', () => {
   for (const [name, [seed]] of Object.entries(KNOWN)) assert.equal(seedOf(name), seed, name);
@@ -36,19 +53,25 @@ test('a name always maps to the same seed', () => {
 
 test('a made-up name is two words and a hyphen', () => {
   for (let i = 0; i < 200; i++) assert.match(randomName(), /^[a-z]+-[a-z]+$/);
-  assert.equal(randomName(() => 0), 'soggy-glorp', 'the words come from the source of numbers given');
+  assert.equal(
+    randomName(() => 0),
+    'soggy-glorp',
+    'the words come from the source of numbers given',
+  );
 });
 
 test('every bit of a seed counts: there are 9 quadrillion faces', () => {
   assert.equal(FACES, 9007199254740992);
-  for (const [name] of Object.entries(KNOWN)) assert.ok(seedOf(name) < FACES && Number.isSafeInteger(seedOf(name)));
+  for (const [name] of Object.entries(KNOWN))
+    assert.ok(seedOf(name) < FACES && Number.isSafeInteger(seedOf(name)));
   // seeds that differ only above the low 32 bits are different faces (a 32-bit generator would make them twins)
   assert.notEqual(fingerprint(faceOf(5)), fingerprint(faceOf(5 + 2 ** 32)));
   assert.notEqual(fingerprint(faceOf(5)), fingerprint(faceOf(5 + 2 ** 52)));
 });
 
 test('a name is always built into the same face', () => {
-  for (const [name, [, print]] of Object.entries(KNOWN)) assert.equal(fingerprint(faceOf(name)), print, name);
+  for (const [name, [, print]] of Object.entries(KNOWN))
+    assert.equal(fingerprint(faceOf(name)), print, name);
 });
 
 test('a state reshapes the mouth and brows, and nothing else', () => {
@@ -72,9 +95,15 @@ test('a state reshapes the mouth and brows, and nothing else', () => {
 });
 
 const PNG = [0x89, 0x50, 0x4e, 0x47];
-const MAGIC = { png: [0x89, 0x50, 0x4e, 0x47], webp: [0x52, 0x49, 0x46, 0x46], jpeg: [0xff, 0xd8, 0xff], gif: [0x47, 0x49, 0x46, 0x38] };
+const MAGIC = {
+  png: [0x89, 0x50, 0x4e, 0x47],
+  webp: [0x52, 0x49, 0x46, 0x46],
+  jpeg: [0xff, 0xd8, 0xff],
+  gif: [0x47, 0x49, 0x46, 0x38],
+};
 const sha = (bytes) => createHash('sha256').update(bytes).digest('hex').slice(0, 16);
-const pixelsOf = (canvas) => canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+const pixelsOf = (canvas) =>
+  canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
 
 test('every look paints on a server', async () => {
   for (const look of LOOKS) {
@@ -97,9 +126,21 @@ async function pixelPrints() {
   const prints = {};
   for (const look of LOOKS) {
     const h = createHash('sha256');
-    for (const name of ['agent-47', 'ünïcödé 🙂', 42]) for (const size of [40, 200]) for (const background of [true, false]) {
-      h.update(pixelsOf(faceCanvas(name, { look: look.id, size, background, state: size === 40 ? 'blocked' : 'idle', shape: 'squircle' })));
-    }
+    for (const name of ['agent-47', 'ünïcödé 🙂', 42])
+      for (const size of [40, 200])
+        for (const background of [true, false]) {
+          h.update(
+            pixelsOf(
+              faceCanvas(name, {
+                look: look.id,
+                size,
+                background,
+                state: size === 40 ? 'blocked' : 'idle',
+                shape: 'squircle',
+              }),
+            ),
+          );
+        }
     prints[look.id] = h.digest('hex').slice(0, 16);
   }
   const loop = await animationFrames('agent-47', { size: 64, loop: 1, fps: 8, state: 'thinking' });
@@ -120,14 +161,25 @@ test('every look paints exactly what it painted before', async (t) => {
   }
   // every look at once, so one run shows all that changed and what they paint now
   const now = Object.fromEntries(Object.keys(all[PLATFORM]).map((id) => [id, prints[id]]));
-  assert.deepEqual(now, all[PLATFORM], 'some looks paint differently; if that is intended, record them again with GLORPIES_RECORD=1');
+  assert.deepEqual(
+    now,
+    all[PLATFORM],
+    'some looks paint differently; if that is intended, record them again with GLORPIES_RECORD=1',
+  );
 });
 
 test('every state and shape paints, in every format', async () => {
-  for (const state of STATES) for (const shape of SHAPES) {
-    const { body } = await renderImage('research-bot', { look: 'ink', size: 64, state, shape, format: 'webp' });
-    assert.deepEqual([...body.slice(0, 4)], MAGIC.webp, `${state} ${shape}`);
-  }
+  for (const state of STATES)
+    for (const shape of SHAPES) {
+      const { body } = await renderImage('research-bot', {
+        look: 'ink',
+        size: 64,
+        state,
+        shape,
+        format: 'webp',
+      });
+      assert.deepEqual([...body.slice(0, 4)], MAGIC.webp, `${state} ${shape}`);
+    }
   for (const format of ['png', 'webp', 'jpeg', 'gif']) {
     const { body } = await renderImage('agent-47', { look: 'ink', size: 48, format });
     assert.deepEqual([...body.slice(0, MAGIC[format].length)], MAGIC[format], format);
@@ -137,14 +189,29 @@ test('every state and shape paints, in every format', async () => {
 });
 
 test('an animated face loops, and its frames differ', async () => {
-  const gif = await faceGIF('agent-47', { look: 'ink', size: 64, loop: 2, fps: 10, state: 'working' });
+  const gif = await faceGIF('agent-47', {
+    look: 'ink',
+    size: 64,
+    loop: 2,
+    fps: 10,
+    state: 'working',
+  });
   assert.equal(Buffer.from(gif.slice(0, 6)).toString(), 'GIF89a');
   // a graphic control extension per frame, one per frame of the loop
   let count = 0;
   for (let i = 0; i < gif.length - 1; i++) if (gif[i] === 0x21 && gif[i + 1] === 0xf9) count++;
   assert.equal(count, 20);
-  const { frames } = await animationFrames('agent-47', { look: 'ink', size: 64, loop: 2, fps: 10, state: 'working' });
-  assert.ok(new Set(frames.map((f) => sha(f))).size > frames.length / 2, 'most frames are different pictures');
+  const { frames } = await animationFrames('agent-47', {
+    look: 'ink',
+    size: 64,
+    loop: 2,
+    fps: 10,
+    state: 'working',
+  });
+  assert.ok(
+    new Set(frames.map((f) => sha(f))).size > frames.length / 2,
+    'most frames are different pictures',
+  );
 });
 
 test('a watercolour svg keeps its state marks', async () => {
@@ -162,10 +229,18 @@ test('svgs of different faces can sit inline together', async () => {
   const c = ids(faceSVG('ada@lovelace.dev', { look: 'watercolour', size: 64, shape: 'circle' }));
   assert.ok(a.size > 0);
   for (const id of a) assert.ok(!b.has(id) && !c.has(id), `${id} is shared`);
-  assert.deepEqual(ids(faceSVG('agent-47', { look: 'watercolour', size: 64 })), a, 'the same picture keeps its ids');
+  assert.deepEqual(
+    ids(faceSVG('agent-47', { look: 'watercolour', size: 64 })),
+    a,
+    'the same picture keeps its ids',
+  );
   // two pictures whose ids once collided, when the options were hashed
-  const p = ids(faceSVG('agent-47', { look: 'watercolour', state: 'idle', shape: 'squircle', size: 836 }));
-  const q = ids(faceSVG('agent-47', { look: 'watercolour', state: 'thinking', shape: 'rounded', size: 133 }));
+  const p = ids(
+    faceSVG('agent-47', { look: 'watercolour', state: 'idle', shape: 'squircle', size: 836 }),
+  );
+  const q = ids(
+    faceSVG('agent-47', { look: 'watercolour', state: 'thinking', shape: 'rounded', size: 133 }),
+  );
   for (const id of p) assert.ok(!q.has(id), `${id} is shared`);
 });
 
@@ -176,20 +251,39 @@ test('unknown options are refused before they reach any markup', () => {
 });
 
 test('a loop stays inside its budget, and nonsense is refused', async () => {
-  const { frames, size, loop } = await animationFrames('agent-47', { look: 'ink', size: 400, loop: 10, fps: 30 });
+  const { frames, size, loop } = await animationFrames('agent-47', {
+    look: 'ink',
+    size: 400,
+    loop: 10,
+    fps: 30,
+  });
   assert.ok(frames.length * size * size <= FRAME_BUDGET, 'frames are dropped to fit');
   assert.equal(loop, 10, 'the loop keeps its length');
-  for (const o of [{ loop: Infinity }, { loop: 0 }, { fps: Number.NaN }, { size: 1e9 }, { size: 8192, loop: 0.001 }]) await assert.rejects(animationFrames('agent-47', o), RangeError);
+  for (const o of [
+    { loop: Infinity },
+    { loop: 0 },
+    { fps: Number.NaN },
+    { size: 1e9 },
+    { size: 8192, loop: 0.001 },
+  ])
+    await assert.rejects(animationFrames('agent-47', o), RangeError);
 });
 
 test('a gif lasts as long as its loop', async () => {
   // each frame's delay sits in a graphics control extension: 21 f9 04 <flags> <delay lo> <delay hi>
   const centiseconds = (gif) => {
     let total = 0;
-    for (let i = 0; i < gif.length - 5; i++) if (gif[i] === 0x21 && gif[i + 1] === 0xf9 && gif[i + 2] === 4) total += gif[i + 4] | (gif[i + 5] << 8);
+    for (let i = 0; i < gif.length - 5; i++)
+      if (gif[i] === 0x21 && gif[i + 1] === 0xf9 && gif[i + 2] === 4)
+        total += gif[i + 4] | (gif[i + 5] << 8);
     return total;
   };
-  for (const fps of [15, 30]) assert.equal(centiseconds(await faceGIF('agent-47', { look: 'ink', size: 48, loop: 3, fps })), 300, `${fps} fps`);
+  for (const fps of [15, 30])
+    assert.equal(
+      centiseconds(await faceGIF('agent-47', { look: 'ink', size: 48, loop: 3, fps })),
+      300,
+      `${fps} fps`,
+    );
 });
 
 test('the image handler refuses what it should and hardens svg', async () => {
@@ -220,7 +314,8 @@ test('without a background, every look keeps only the face', async () => {
     let clear = 0;
     for (let i = 3; i < px.length; i += 4) if (px[i] === 0) clear++;
     // thermal paints its whole square as heat, so little of it is clear
-    if (look.id !== 'thermal') assert.ok(clear > px.length / 4 / 4, `${look.id} is see-through around the face`);
+    if (look.id !== 'thermal')
+      assert.ok(clear > px.length / 4 / 4, `${look.id} is see-through around the face`);
   }
   const gif = await faceGIF('agent-47', { look: 'ink', size: 48, loop: 1, background: false });
   assert.ok(gif.length > 0);
@@ -233,35 +328,94 @@ test('a background colour sits behind the face, inside its crop, in every format
   const at = (px, size, x, y) => [...px.subarray((y * size + x) * 4, (y * size + x) * 4 + 4)];
   for (const look of ['watercolour', 'oil', 'ink']) {
     const square = pixelsOf(faceCanvas('agent-47', { look, size: 96, background: '#ffe9a8' }));
-    assert.deepEqual(at(square, 96, 1, 1), [255, 233, 168, 255], `${look}: the colour fills the corner`);
-    const round = pixelsOf(faceCanvas('agent-47', { look, size: 96, background: 'tomato', shape: 'circle' }));
+    assert.deepEqual(
+      at(square, 96, 1, 1),
+      [255, 233, 168, 255],
+      `${look}: the colour fills the corner`,
+    );
+    const round = pixelsOf(
+      faceCanvas('agent-47', { look, size: 96, background: 'tomato', shape: 'circle' }),
+    );
     assert.equal(at(round, 96, 0, 0)[3], 0, `${look}: the crop still cuts`);
-    assert.deepEqual(at(round, 96, 48, 3), [255, 99, 71, 255], `${look}: inside the crop it's the colour`);
+    assert.deepEqual(
+      at(round, 96, 48, 3),
+      [255, 99, 71, 255],
+      `${look}: inside the crop it's the colour`,
+    );
   }
-  const svg = faceSVG('agent-47', { look: 'watercolour', size: 64, background: 'rgb(255 233 168)', shape: 'circle' });
-  assert.match(svg, /<rect width="64" height="64" fill="#ffe9a8"\/>/, 'an svg names the colour as canvas writes it');
+  const svg = faceSVG('agent-47', {
+    look: 'watercolour',
+    size: 64,
+    background: 'rgb(255 233 168)',
+    shape: 'circle',
+  });
+  assert.match(
+    svg,
+    /<rect width="64" height="64" fill="#ffe9a8"\/>/,
+    'an svg names the colour as canvas writes it',
+  );
   assert.match(svg, /clip-path/);
-  assert.throws(() => faceCanvas('agent-47', { background: 'not a colour' }), /unknown background colour/);
-  assert.throws(() => faceSVG('agent-47', { background: '"/><script>' }), /unknown background colour/);
+  assert.throws(
+    () => faceCanvas('agent-47', { background: 'not a colour' }),
+    /unknown background colour/,
+  );
+  assert.throws(
+    () => faceSVG('agent-47', { background: '"/><script>' }),
+    /unknown background colour/,
+  );
 
-  const gif = await animationFrames('agent-47', { look: 'ink', size: 48, loop: 1, fps: 4, background: '#ffe9a8' });
-  assert.deepEqual(at(gif.frames[0], 48, 1, 1), [255, 233, 168, 255], 'every frame of a loop is on the colour');
+  const gif = await animationFrames('agent-47', {
+    look: 'ink',
+    size: 48,
+    loop: 1,
+    fps: 4,
+    background: '#ffe9a8',
+  });
+  assert.deepEqual(
+    at(gif.frames[0], 48, 1, 1),
+    [255, 233, 168, 255],
+    'every frame of a loop is on the colour',
+  );
 
-  const get = async (q) => (await createFaceHandler()(new Request(`http://x/api/face?name=agent-47&size=32&${q}`))).status;
-  for (const q of ['background=ffe9a8', 'background=%23ffe9a8', 'background=tomato', 'background=nonsense', 'format=jpeg&background=ffe9a8']) assert.equal(await get(q), 200, q);
+  const get = async (q) =>
+    (await createFaceHandler()(new Request(`http://x/api/face?name=agent-47&size=32&${q}`))).status;
+  for (const q of [
+    'background=ffe9a8',
+    'background=%23ffe9a8',
+    'background=tomato',
+    'background=nonsense',
+    'format=jpeg&background=ffe9a8',
+  ])
+    assert.equal(await get(q), 200, q);
   const jpeg = await renderImage('agent-47', { format: 'jpeg', size: 32, background: '#000000' });
   assert.ok(jpeg.body.length > 0);
 
   const cli = fileURLToPath(new URL('../dist/cli.js', import.meta.url));
   const out = join(mkdtempSync(join(tmpdir(), 'glorpies-')), 'face.png');
-  execFileSync(process.execPath, [cli, 'agent-47', '--size', '32', '--background', 'ffe9a8', '-o', out], { stdio: 'pipe' });
+  execFileSync(
+    process.execPath,
+    [cli, 'agent-47', '--size', '32', '--background', 'ffe9a8', '-o', out],
+    { stdio: 'pipe' },
+  );
   assert.deepEqual([...readFileSync(out).subarray(0, 4)], PNG);
 });
 
 test('every server export works in a fresh process', () => {
   const server = new URL('../dist/server.js', import.meta.url).href;
-  for (const call of ['faceGIF("a", { size: 32, loop: 1 })', 'animationFrames("a", { size: 32, loop: 1 })', 'renderImage("a", { size: 32 })']) {
-    const run = spawnSync(process.execPath, ['--input-type=module', '-e', `const m = await import(${JSON.stringify(server)}); await m.${call};`], { encoding: 'utf8' });
+  for (const call of [
+    'faceGIF("a", { size: 32, loop: 1 })',
+    'animationFrames("a", { size: 32, loop: 1 })',
+    'renderImage("a", { size: 32 })',
+  ]) {
+    const run = spawnSync(
+      process.execPath,
+      [
+        '--input-type=module',
+        '-e',
+        `const m = await import(${JSON.stringify(server)}); await m.${call};`,
+      ],
+      { encoding: 'utf8' },
+    );
     assert.equal(run.status, 0, `${call}: ${run.stderr}`);
   }
 });
@@ -271,10 +425,14 @@ test('the cli paints a file, and keeps an existing one unless told to overwrite 
   const out = join(mkdtempSync(join(tmpdir(), 'glorpies-')), 'face.png');
   execFileSync(process.execPath, [cli, 'agent-47', '--size', '32', '-o', out], { stdio: 'pipe' });
   assert.deepEqual([...readFileSync(out).subarray(0, 4)], PNG);
-  const again = spawnSync(process.execPath, [cli, 'agent-47', '--size', '32', '-o', out], { encoding: 'utf8' });
+  const again = spawnSync(process.execPath, [cli, 'agent-47', '--size', '32', '-o', out], {
+    encoding: 'utf8',
+  });
   assert.equal(again.status, 1);
   assert.match(again.stderr, /already exists/);
-  execFileSync(process.execPath, [cli, 'agent-47', '--size', '32', '-o', out, '--force'], { stdio: 'pipe' });
+  execFileSync(process.execPath, [cli, 'agent-47', '--size', '32', '-o', out, '--force'], {
+    stdio: 'pipe',
+  });
 });
 
 /** What every framework's <Glorpie> must render on the server: the element, its attributes, and a placeholder in the face's place. */
@@ -306,7 +464,10 @@ test('preact renders the face on the server', async () => {
 test('solid renders the face on the server', async () => {
   const { renderToString, createComponent } = await import('solid-js/web');
   const { Glorpie } = await import('../dist/solid.js');
-  assertPlaceholder(renderToString(() => createComponent(Glorpie, props)), 'solid');
+  assertPlaceholder(
+    renderToString(() => createComponent(Glorpie, props)),
+    'solid',
+  );
 });
 
 test('the svelte component compiles, and renders the face on the server', async () => {
@@ -330,7 +491,9 @@ test('node servers get faces through nodeFaceHandler', async () => {
   const server = createServer(nodeFaceHandler()).listen(0);
   await new Promise((r) => server.once('listening', r));
   try {
-    const res = await fetch(`http://localhost:${server.address().port}/face?name=agent-47&size=32&look=ink`);
+    const res = await fetch(
+      `http://localhost:${server.address().port}/face?name=agent-47&size=32&look=ink`,
+    );
     assert.equal(res.headers.get('content-type'), 'image/png');
     assert.deepEqual([...new Uint8Array(await res.arrayBuffer()).subarray(0, 4)], PNG);
     assert.equal((await fetch(`http://localhost:${server.address().port}/face`)).status, 400);
@@ -340,6 +503,7 @@ test('node servers get faces through nodeFaceHandler', async () => {
 });
 
 test('the drop-in script stays small', () => {
-  const kb = gzipSync(readFileSync(new URL('../dist/cdn/glorpies.js', import.meta.url))).length / 1024;
+  const kb =
+    gzipSync(readFileSync(new URL('../dist/cdn/glorpies.js', import.meta.url))).length / 1024;
   assert.ok(kb < 48, `dist/cdn/glorpies.js is ${kb.toFixed(1)} KB gzipped`);
 });

@@ -12,12 +12,30 @@ const LINKS = [
 ];
 
 /** An 11 × 8 pixel invader, the site's mark. */
-const INVADER = ['00100000100', '00010001000', '00111111100', '01101110110', '11111111111', '10111111101', '10100000101', '00011011000'];
+const INVADER = [
+  '00100000100',
+  '00010001000',
+  '00111111100',
+  '01101110110',
+  '11111111111',
+  '10111111101',
+  '10100000101',
+  '00011011000',
+];
 
 export function Invader({ className = '' }: { className?: string }) {
   return (
-    <svg aria-hidden viewBox="0 0 11 8" shapeRendering="crispEdges" className={`fill-current ${className}`}>
-      {INVADER.flatMap((row, y) => [...row].map((on, x) => (on === '1' ? <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" /> : null)))}
+    <svg
+      aria-hidden
+      viewBox="0 0 11 8"
+      shapeRendering="crispEdges"
+      className={`fill-current ${className}`}
+    >
+      {INVADER.flatMap((row, y) =>
+        [...row].map((on, x) =>
+          on === '1' ? <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" /> : null,
+        ),
+      )}
     </svg>
   );
 }
@@ -35,8 +53,16 @@ export function SiteHeader({ className = '' }: { className?: string }) {
         {LINKS.map((l) => {
           const here = path === l.href || path.startsWith(`${l.href}/`);
           return (
-            <Link key={l.href} href={l.href} aria-current={here ? 'page' : undefined} className={`transition hover:text-ink ${here ? 'text-ink' : ''}`}>
-              <span className={`hidden sm:inline ${here ? 'text-accent' : 'text-ink-2/50'}`}>./</span>{l.label}
+            <Link
+              key={l.href}
+              href={l.href}
+              aria-current={here ? 'page' : undefined}
+              className={`transition hover:text-ink ${here ? 'text-ink' : ''}`}
+            >
+              <span className={`hidden sm:inline ${here ? 'text-accent' : 'text-ink-2/50'}`}>
+                ./
+              </span>
+              {l.label}
             </Link>
           );
         })}

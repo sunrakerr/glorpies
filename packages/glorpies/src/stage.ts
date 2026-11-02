@@ -18,7 +18,10 @@ type Mood = {
   nextBlink: number;
   nudgeAt: number;
   /** Damped-spring jiggle: rotation and squash, with velocities. */
-  jr: number; jv: number; js: number; jsv: number;
+  jr: number;
+  jv: number;
+  js: number;
+  jsv: number;
   offset: number;
 };
 
@@ -49,21 +52,42 @@ class Stage {
   private pointer = { x: 0, y: 0, at: -Infinity };
 
   constructor() {
-    window.addEventListener('pointermove', (e) => {
-      this.pointer = { x: e.clientX, y: e.clientY, at: performance.now() };
-    }, { passive: true });
-    document.documentElement.addEventListener('pointerleave', () => { this.pointer.at = -Infinity; });
+    window.addEventListener(
+      'pointermove',
+      (e) => {
+        this.pointer = { x: e.clientX, y: e.clientY, at: performance.now() };
+      },
+      { passive: true },
+    );
+    document.documentElement.addEventListener('pointerleave', () => {
+      this.pointer.at = -Infinity;
+    });
     document.addEventListener('visibilitychange', () => this.wake());
   }
 
   add(canvas: HTMLCanvasElement, face: Face): Actor {
     const t = performance.now() / 1000;
     const actor: Actor = {
-      canvas, face, raster: null, visible: true, alive: true, state: 'idle', marks: null, needsDraw: true,
+      canvas,
+      face,
+      raster: null,
+      visible: true,
+      alive: true,
+      state: 'idle',
+      marks: null,
+      needsDraw: true,
       mood: {
-        look: { ...face.gaze }, target: { ...face.gaze }, saccadeAt: t + Math.random() * 2,
-        blinkAt: -10, nextBlink: t + 0.5 + Math.random() * face.temper.blinkEvery, nudgeAt: t + 1 + Math.random() * 2,
-        jr: 0, jv: 0, js: 0, jsv: 0, offset: Math.random(),
+        look: { ...face.gaze },
+        target: { ...face.gaze },
+        saccadeAt: t + Math.random() * 2,
+        blinkAt: -10,
+        nextBlink: t + 0.5 + Math.random() * face.temper.blinkEvery,
+        nudgeAt: t + 1 + Math.random() * 2,
+        jr: 0,
+        jv: 0,
+        js: 0,
+        jsv: 0,
+        offset: Math.random(),
       },
     };
     this.actors.add(actor);
@@ -100,7 +124,9 @@ class Stage {
   }
 
   private moving(a: Actor) {
-    return this.alive && a.alive && a.visible && !(a.raster && isStill(a.raster) && a.raster.settling);
+    return (
+      this.alive && a.alive && a.visible && !(a.raster && isStill(a.raster) && a.raster.settling)
+    );
   }
 
   private wake() {
@@ -133,7 +159,13 @@ class Stage {
   private rest(a: Actor): Pose {
     const b = BEHAVIOUR[a.state];
     const body = bodyAt(a.face, a.state, 0);
-    return { ...restPose(a.face), rot: body.rot, ty: BEHAVIOUR[a.state].body.slump, look: a.state === 'idle' ? a.face.gaze : gazeFor(a.face, a.state), blink: b.open };
+    return {
+      ...restPose(a.face),
+      rot: body.rot,
+      ty: BEHAVIOUR[a.state].body.slump,
+      look: a.state === 'idle' ? a.face.gaze : gazeFor(a.face, a.state),
+      blink: b.open,
+    };
   }
 
   private draw(a: Actor, pose: Pose) {
@@ -161,11 +193,17 @@ class Stage {
       m.target = { x: clamp(dx * k, -1, 1), y: clamp(dy * k, -1, 1) };
     } else if (t > m.saccadeAt) {
       const c = gazeFor(face, a.state);
-      m.target = { x: clamp(c.x + (Math.random() - 0.5) * b.spread.x, -1, 1), y: clamp(c.y + (Math.random() - 0.5) * b.spread.y, -1, 1) };
+      m.target = {
+        x: clamp(c.x + (Math.random() - 0.5) * b.spread.x, -1, 1),
+        y: clamp(c.y + (Math.random() - 0.5) * b.spread.y, -1, 1),
+      };
       m.saccadeAt = t + b.every[0] + Math.random() * (b.every[1] - b.every[0]);
     }
     const ease = 1 - Math.exp(-dt * 14);
-    m.look = { x: m.look.x + (m.target.x - m.look.x) * ease, y: m.look.y + (m.target.y - m.look.y) * ease };
+    m.look = {
+      x: m.look.x + (m.target.x - m.look.x) * ease,
+      y: m.look.y + (m.target.y - m.look.y) * ease,
+    };
 
     if (t > m.nextBlink) {
       m.blinkAt = t;

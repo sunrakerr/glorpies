@@ -9,7 +9,12 @@ if (!out) {
 }
 
 await withChrome(async ({ send, goto, screenshot }) => {
-  await send('Emulation.setDeviceMetricsOverride', { width: +width, height: +height, deviceScaleFactor: +scale, mobile: +width < 600 });
+  await send('Emulation.setDeviceMetricsOverride', {
+    width: +width,
+    height: +height,
+    deviceScaleFactor: +scale,
+    mobile: +width < 600,
+  });
   await goto(`${BASE_URL}${path}`);
   // faces paint after load, a few at a time
   await sleep(2500);

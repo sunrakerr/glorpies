@@ -9,7 +9,6 @@ import { drawFlat } from './styles';
 export type Ctx = CanvasRenderingContext2D;
 export type RGB = [number, number, number];
 
-
 export function canvas(w: number, h = w): [HTMLCanvasElement, Ctx] {
   const c = makeCanvas(w, h);
   return [c, c.getContext('2d', { willReadFrequently: true })!];
@@ -39,7 +38,9 @@ export function rng(seed: number) {
  * (an eye closing) leaves the randomness everywhere else alone.
  */
 export function hash01(seed: number, i: number): number {
-  let t = Math.imul((seed ^ 0x9e3779b9) >>> 0, 0x85ebca6b) ^ Math.imul((i + 0x632be5ab) >>> 0, 0xc2b2ae35);
+  let t =
+    Math.imul((seed ^ 0x9e3779b9) >>> 0, 0x85ebca6b) ^
+    Math.imul((i + 0x632be5ab) >>> 0, 0xc2b2ae35);
   t = Math.imul(t ^ (t >>> 15), 0x2c1b3c6d);
   t = Math.imul(t ^ (t >>> 12), 0x297a2d39);
   return ((t ^ (t >>> 15)) >>> 0) / 4294967296;
@@ -49,17 +50,27 @@ export const hex = (h: string): RGB => {
   const n = parseInt(h.slice(1), 16);
   return [n >> 16, (n >> 8) & 255, n & 255];
 };
-export const css = (c: RGB, a = 1) => `rgba(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])},${a})`;
+export const css = (c: RGB, a = 1) =>
+  `rgba(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])},${a})`;
 export const lum = (c: RGB) => (0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) / 255;
-export const mixRGB = (a: RGB, b: RGB, t: number): RGB => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+export const mixRGB = (a: RGB, b: RGB, t: number): RGB => [
+  a[0] + (b[0] - a[0]) * t,
+  a[1] + (b[1] - a[1]) * t,
+  a[2] + (b[2] - a[2]) * t,
+];
 export const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 export const fract = (v: number) => v - Math.floor(v);
 
 export function toHsl([r, g, b]: RGB): RGB {
-  r /= 255; g /= 255; b /= 255;
-  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2;
+  r /= 255;
+  g /= 255;
+  b /= 255;
+  const mx = Math.max(r, g, b),
+    mn = Math.min(r, g, b),
+    l = (mx + mn) / 2;
   if (mx === mn) return [0, 0, l];
-  const d = mx - mn, s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+  const d = mx - mn,
+    s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
   const h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
   return [h * 60, s, l];
 }
@@ -74,14 +85,23 @@ export function fromHsl([h, s, l]: RGB): RGB {
 
 /** A raster we can sample: RGBA bytes plus width. */
 export type Img = { w: number; d: Uint8ClampedArray };
-export const imgOf = (c: HTMLCanvasElement): Img => ({ w: c.width, d: c.getContext('2d', { willReadFrequently: true })!.getImageData(0, 0, c.width, c.height).data });
+export const imgOf = (c: HTMLCanvasElement): Img => ({
+  w: c.width,
+  d: c.getContext('2d', { willReadFrequently: true })!.getImageData(0, 0, c.width, c.height).data,
+});
 export function at(im: Img, x: number, y: number): RGB {
-  const xi = Math.min(im.w - 1, Math.max(0, Math.round(x))), yi = Math.min(im.w - 1, Math.max(0, Math.round(y)));
+  const xi = Math.min(im.w - 1, Math.max(0, Math.round(x))),
+    yi = Math.min(im.w - 1, Math.max(0, Math.round(y)));
   const i = (yi * im.w + xi) * 4;
   return [im.d[i]!, im.d[i + 1]!, im.d[i + 2]!];
 }
 
-export function flat(face: Face, E: Engine, px: number, map?: (c: string) => string): HTMLCanvasElement {
+export function flat(
+  face: Face,
+  E: Engine,
+  px: number,
+  map?: (c: string) => string,
+): HTMLCanvasElement {
   const [c, g] = faceSpace(px);
   drawFlat(g, face, E, { ink: 2.2, map });
   return c;
@@ -136,7 +156,8 @@ export function blur(a: Float32Array, w: number, r: number, passes = 3): Float32
 
 export function lumField(im: Img): Float32Array {
   const f = new Float32Array(im.w * im.w);
-  for (let i = 0; i < f.length; i++) f[i] = (0.2126 * im.d[i * 4]! + 0.7152 * im.d[i * 4 + 1]! + 0.0722 * im.d[i * 4 + 2]!) / 255;
+  for (let i = 0; i < f.length; i++)
+    f[i] = (0.2126 * im.d[i * 4]! + 0.7152 * im.d[i * 4 + 1]! + 0.0722 * im.d[i * 4 + 2]!) / 255;
   return f;
 }
 
@@ -151,18 +172,21 @@ export function pillow(face: Face, E: Engine, px: number) {
 /** Direction along the contours of a field (perpendicular to its gradient), in radians. */
 export function flowField(f: Float32Array, w: number): Float32Array {
   const a = new Float32Array(w * w);
-  for (let y = 1; y < w - 1; y++) for (let x = 1; x < w - 1; x++) {
-    const i = y * w + x;
-    const gx = f[i + 1]! - f[i - 1]!, gy = f[i + w]! - f[i - w]!;
-    a[i] = Math.hypot(gx, gy) < 1e-4 ? Math.PI / 4 : Math.atan2(gy, gx) + Math.PI / 2;
-  }
+  for (let y = 1; y < w - 1; y++)
+    for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x;
+      const gx = f[i + 1]! - f[i - 1]!,
+        gy = f[i + w]! - f[i - w]!;
+      a[i] = Math.hypot(gx, gy) < 1e-4 ? Math.PI / 4 : Math.atan2(gy, gx) + Math.PI / 2;
+    }
   return a;
 }
 
 export function grain(g: Ctx, px: number, seed: number, amount: number, col: string, size = 1.3) {
   const r = rng(seed);
   g.fillStyle = col;
-  for (let i = 0; i < px * px * amount; i++) g.fillRect(r() * px, r() * px, size * (0.4 + r()), size * (0.4 + r()));
+  for (let i = 0; i < px * px * amount; i++)
+    g.fillRect(r() * px, r() * px, size * (0.4 + r()), size * (0.4 + r()));
 }
 
 export function polyline(g: Ctx, pts: readonly Pt[], closed = false) {
@@ -171,7 +195,8 @@ export function polyline(g: Ctx, pts: readonly Pt[], closed = false) {
   if (closed) g.closePath();
 }
 
-export const figureInks = (face: Face) => face.figure.filter((o): o is InkOp => o.k === 'ink' && o.col !== 'paper');
+export const figureInks = (face: Face) =>
+  face.figure.filter((o): o is InkOp => o.k === 'ink' && o.col !== 'paper');
 
 export function pupils(g: Ctx, face: Face, col: string, scale = 1) {
   for (const e of face.eyes) {
@@ -197,21 +222,34 @@ export function pupils(g: Ctx, face: Face, col: string, scale = 1) {
     } else {
       const b = bbox(e.pupil);
       g.beginPath();
-      g.arc((b.x0 + b.x1) / 2 + st.dx, (b.y0 + b.y1) / 2 + st.dy, ((b.x1 - b.x0) / 2) * scale, 0, TAU);
+      g.arc(
+        (b.x0 + b.x1) / 2 + st.dx,
+        (b.y0 + b.y1) / 2 + st.dy,
+        ((b.x1 - b.x0) / 2) * scale,
+        0,
+        TAU,
+      );
       g.fill();
     }
     g.restore();
   }
 }
 
-export function imageFrom(px: number, fn: (i: number, x: number, y: number) => RGB): HTMLCanvasElement {
+export function imageFrom(
+  px: number,
+  fn: (i: number, x: number, y: number) => RGB,
+): HTMLCanvasElement {
   const [c, g] = canvas(px);
   const im = g.createImageData(px, px);
-  for (let y = 0; y < px; y++) for (let x = 0; x < px; x++) {
-    const i = y * px + x, p = fn(i, x, y);
-    im.data[i * 4] = p[0]; im.data[i * 4 + 1] = p[1]; im.data[i * 4 + 2] = p[2]; im.data[i * 4 + 3] = 255;
-  }
+  for (let y = 0; y < px; y++)
+    for (let x = 0; x < px; x++) {
+      const i = y * px + x,
+        p = fn(i, x, y);
+      im.data[i * 4] = p[0];
+      im.data[i * 4 + 1] = p[1];
+      im.data[i * 4 + 2] = p[2];
+      im.data[i * 4 + 3] = 255;
+    }
   g.putImageData(im, 0, 0);
   return c;
 }
-

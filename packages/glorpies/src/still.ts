@@ -18,7 +18,8 @@ import { faceFor } from './studio';
 export const SHAPES = ['square', 'rounded', 'squircle', 'circle'] as const;
 export type Shape = (typeof SHAPES)[number];
 
-export const isShape = (s: unknown): s is Shape => typeof s === 'string' && (SHAPES as readonly string[]).includes(s);
+export const isShape = (s: unknown): s is Shape =>
+  typeof s === 'string' && (SHAPES as readonly string[]).includes(s);
 
 export type StillOptions = {
   look?: LookChoice;
@@ -36,9 +37,19 @@ export type StillOptions = {
 };
 
 /** What `background` asks for: the face's own paper, or a colour behind the face (null for none). */
-export function backdropOf(background: boolean | string | null | undefined): { paper: boolean; colour: string | null } {
+export function backdropOf(background: boolean | string | null | undefined): {
+  paper: boolean;
+  colour: string | null;
+} {
   if (background === false || background === 'false') return { paper: false, colour: null };
-  if (background === undefined || background === null || background === true || background === '' || background === 'true') return { paper: true, colour: null };
+  if (
+    background === undefined ||
+    background === null ||
+    background === true ||
+    background === '' ||
+    background === 'true'
+  )
+    return { paper: true, colour: null };
   return { paper: false, colour: background };
 }
 
@@ -60,15 +71,19 @@ export const MAX_SIZE = 8192;
 /** A size in whole pixels, refused unless it's a number from 1 to MAX_SIZE. */
 export function sizeOf(size: number | undefined, fallback = 256): number {
   const px = Math.round(size ?? fallback);
-  if (!(px >= 1 && px <= MAX_SIZE)) throw new RangeError(`size must be a number from 1 to ${MAX_SIZE}, not ${size}`);
+  if (!(px >= 1 && px <= MAX_SIZE))
+    throw new RangeError(`size must be a number from 1 to ${MAX_SIZE}, not ${size}`);
   return px;
 }
 
 /** The options, refused if any is unknown: they end up in markup, so nothing unchecked gets through. */
 export function checked<T extends StillOptions>(o: T): T {
-  if (o.look !== undefined && o.look !== 'auto' && !isLook(o.look)) throw new TypeError(`glorpies: unknown look "${String(o.look)}"`);
-  if (o.state !== undefined && !isState(o.state)) throw new TypeError(`glorpies: unknown state "${String(o.state)}"`);
-  if (o.shape !== undefined && !isShape(o.shape)) throw new TypeError(`glorpies: unknown shape "${String(o.shape)}"`);
+  if (o.look !== undefined && o.look !== 'auto' && !isLook(o.look))
+    throw new TypeError(`glorpies: unknown look "${String(o.look)}"`);
+  if (o.state !== undefined && !isState(o.state))
+    throw new TypeError(`glorpies: unknown state "${String(o.state)}"`);
+  if (o.shape !== undefined && !isShape(o.shape))
+    throw new TypeError(`glorpies: unknown shape "${String(o.shape)}"`);
   const { colour } = backdropOf(o.background);
   if (colour === null) return o;
   // written back as canvas reads it, so what reaches the markup is a plain colour and nothing else
@@ -81,7 +96,15 @@ export function checked<T extends StillOptions>(o: T): T {
 function svgIds(name: FaceName, o: StillOptions, size: number): string {
   const { paper, colour } = backdropOf(o.background);
   const ground = colour ? `on${colour.replace(/\W/g, '')}` : paper ? 'paper' : 'bare';
-  return ['glorpie', seedOf(name).toString(36), o.look ?? 'auto', o.state ?? 'idle', o.shape ?? 'square', ground, size].join('-');
+  return [
+    'glorpie',
+    seedOf(name).toString(36),
+    o.look ?? 'auto',
+    o.state ?? 'idle',
+    o.shape ?? 'square',
+    ground,
+    size,
+  ].join('-');
 }
 
 /** The face for a name, built once and cached. */
@@ -125,18 +148,25 @@ export function faceSVG(name: FaceName, options: StillOptions = {}): string {
   const ids = svgIds(name, o, size);
   const { paper, colour } = backdropOf(o.background);
   const box = `xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"`;
-  let inner = look === 'watercolour'
-    ? watercolourSVG(paintedFace(name, o), size, o.state, paper, ids)
-    : `<svg ${box}><image width="${size}" height="${size}" href="${faceCanvas(name, { ...o, shape: 'square' }).toDataURL('image/png')}"/></svg>`;
+  let inner =
+    look === 'watercolour'
+      ? watercolourSVG(paintedFace(name, o), size, o.state, paper, ids)
+      : `<svg ${box}><image width="${size}" height="${size}" href="${faceCanvas(name, { ...o, shape: 'square' }).toDataURL('image/png')}"/></svg>`;
   // any other look has its colour painted in already
-  if (colour && look === 'watercolour') inner = `<svg ${box}><rect width="${size}" height="${size}" fill="${colour}"/>${inner}</svg>`;
+  if (colour && look === 'watercolour')
+    inner = `<svg ${box}><rect width="${size}" height="${size}" fill="${colour}"/>${inner}</svg>`;
   if (!(paper || colour) || !o.shape || o.shape === 'square') return inner;
   const id = `${ids}-shape`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><defs><clipPath id="${id}"><path d="${shapeD(o.shape, size)}"/></clipPath></defs><g clip-path="url(#${id})">${inner}</g></svg>`;
 }
 
 /** A state's marks (a thought cloud, a red !, sparkles) by the head, drawn onto a finished still. */
-function drawStateMarks(c: HTMLCanvasElement, face: Face, look: LookId, state: FaceState | undefined) {
+function drawStateMarks(
+  c: HTMLCanvasElement,
+  face: Face,
+  look: LookId,
+  state: FaceState | undefined,
+) {
   const marks = state && state !== 'idle' ? marksFor(look, face, c.width) : null;
   if (marks) drawMarks(c.getContext('2d')!, face, state!, marks, 0, true);
 }
@@ -166,7 +196,13 @@ const SVG_CUT_PX = 512;
  * paths stay vector under a soft mask of the face, painted white so it reads
  * the same as an alpha or a luminance mask.
  */
-function watercolourSVG(face: Face, size: number, state: FaceState | undefined, background: boolean, ids: string): string {
+function watercolourSVG(
+  face: Face,
+  size: number,
+  state: FaceState | undefined,
+  background: boolean,
+  ids: string,
+): string {
   const E = getEngine();
   let svg = faceToSVG(face, E, size, ids);
   if (!background) {
@@ -202,8 +238,7 @@ export function shapePath(g: CanvasRenderingContext2D, shape: Shape, size: numbe
       if (i) g.lineTo(q[0], q[1]);
       else g.moveTo(q[0], q[1]);
     }
-  }
-  else g.rect(0, 0, size, size);
+  } else g.rect(0, 0, size, size);
   g.closePath();
 }
 
@@ -214,7 +249,10 @@ function shapeD(shape: Shape, size: number): string {
     const k = size * 0.16;
     return `M${k} 0H${size - k}Q${size} 0 ${size} ${k}V${size - k}Q${size} ${size} ${size - k} ${size}H${k}Q0 ${size} 0 ${size - k}V${k}Q0 0 ${k} 0Z`;
   }
-  if (shape === 'squircle') return `M${squircle(size).map((q) => `${q[0].toFixed(2)} ${q[1].toFixed(2)}`).join('L')}Z`;
+  if (shape === 'squircle')
+    return `M${squircle(size)
+      .map((q) => `${q[0].toFixed(2)} ${q[1].toFixed(2)}`)
+      .join('L')}Z`;
   return `M0 0H${size}V${size}H0Z`;
 }
 
@@ -222,7 +260,12 @@ function shapeD(shape: Shape, size: number): string {
 function squircle(size: number): [number, number][] {
   const r = size / 2;
   return Array.from({ length: 64 }, (_, i) => {
-    const a = (i / 64) * Math.PI * 2, c = Math.cos(a), s = Math.sin(a);
-    return [r + Math.sign(c) * Math.sqrt(Math.abs(c)) * r, r + Math.sign(s) * Math.sqrt(Math.abs(s)) * r] as [number, number];
+    const a = (i / 64) * Math.PI * 2,
+      c = Math.cos(a),
+      s = Math.sin(a);
+    return [
+      r + Math.sign(c) * Math.sqrt(Math.abs(c)) * r,
+      r + Math.sign(s) * Math.sqrt(Math.abs(s)) * r,
+    ] as [number, number];
   });
 }

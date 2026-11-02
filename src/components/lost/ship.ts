@@ -25,7 +25,14 @@ const HALF = [
 
 /** Glints catch the light on the left only. */
 const MIRROR: Record<string, string> = { h: 'g', w: 'g', W: '1' };
-const ROWS = HALF.map((half) => half + [...half].reverse().map((c) => MIRROR[c] ?? c).join(''));
+const ROWS = HALF.map(
+  (half) =>
+    half +
+    [...half]
+      .reverse()
+      .map((c) => MIRROR[c] ?? c)
+      .join(''),
+);
 
 export const SHIP_W = ROWS[0]!.length;
 export const SHIP_H = ROWS.length;
@@ -43,7 +50,8 @@ const rgb = (hex: string): [number, number, number] => {
   const n = parseInt(hex.replace('#', ''), 16);
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 };
-const mix = (a: number[], b: number[], k: number) => a.map((v, i) => Math.round(v + (b[i]! - v) * k)) as [number, number, number];
+const mix = (a: number[], b: number[], k: number) =>
+  a.map((v, i) => Math.round(v + (b[i]! - v) * k)) as [number, number, number];
 
 const PALETTE: Record<string, [number, number, number]> = {
   o: rgb('#1b1726'),
@@ -108,9 +116,21 @@ function paintShip({ t, vx, beam }: Look) {
 }
 
 /** The ship with its rim at (x, y), `px` CSS pixels a cell, kept on whole pixels so the cells stay crisp. */
-export function drawShip(g: CanvasRenderingContext2D, x: number, y: number, px: number, look: Look) {
+export function drawShip(
+  g: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  px: number,
+  look: Look,
+) {
   g.imageSmoothingEnabled = false;
-  g.drawImage(paintShip(look), Math.round(x - (SHIP_W * px) / 2), Math.round(y - (RIM + 0.5) * px), SHIP_W * px, SHIP_H * px);
+  g.drawImage(
+    paintShip(look),
+    Math.round(x - (SHIP_W * px) / 2),
+    Math.round(y - (RIM + 0.5) * px),
+    SHIP_W * px,
+    SHIP_H * px,
+  );
   g.imageSmoothingEnabled = true;
 }
 
@@ -120,9 +140,20 @@ let field: { canvas: HTMLCanvasElement; img: ImageData } | null = null;
  * The tractor beam in cells, dithered like the field behind: it spreads from the
  * emitter, fades with depth, and bands of light climb it towards the ship.
  */
-export function drawBeam(g: CanvasRenderingContext2D, x: number, top: number, px: number, reach: number, spread: number, strength: number, t: number, accent: string) {
+export function drawBeam(
+  g: CanvasRenderingContext2D,
+  x: number,
+  top: number,
+  px: number,
+  reach: number,
+  spread: number,
+  strength: number,
+  t: number,
+  accent: string,
+) {
   const half = Math.ceil((EMITTER * px + reach * spread) / px);
-  const w = half * 2, h = Math.ceil(reach / px);
+  const w = half * 2,
+    h = Math.ceil(reach / px);
   if (!field || field.canvas.width !== w || field.canvas.height !== h) {
     const canvas = document.createElement('canvas');
     canvas.width = w;

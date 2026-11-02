@@ -2,7 +2,14 @@
 
 import { Check, Palette } from 'lucide-react';
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { FULL_LOOKS, LOOKS, lookOf, SMALL_LOOKS, type Look, type LookId } from 'glorpies/internal/looks';
+import {
+  FULL_LOOKS,
+  LOOKS,
+  lookOf,
+  SMALL_LOOKS,
+  type Look,
+  type LookId,
+} from 'glorpies/internal/looks';
 import { cachedThumb, paintThumb } from 'glorpies/internal/studio';
 import { ThumbSkeleton } from './Loading';
 
@@ -35,13 +42,23 @@ export function LookThumb({ seed, look }: { seed: number; look: LookId }) {
 
   return (
     <>
-      <canvas ref={ref} className={`absolute inset-0 h-full w-full transition-opacity duration-500 ${ready ? 'opacity-100' : 'opacity-0'}`} />
+      <canvas
+        ref={ref}
+        className={`absolute inset-0 h-full w-full transition-opacity duration-500 ${ready ? 'opacity-100' : 'opacity-0'}`}
+      />
       {!ready && <ThumbSkeleton />}
     </>
   );
 }
 
-type TileProps = { seed: number; look: Look; selected: boolean; marked?: boolean; compact?: boolean; onSelect: () => void };
+type TileProps = {
+  seed: number;
+  look: Look;
+  selected: boolean;
+  marked?: boolean;
+  compact?: boolean;
+  onSelect: () => void;
+};
 
 function LookTile({ seed, look, selected, marked = false, compact = false, onSelect }: TileProps) {
   return (
@@ -56,7 +73,9 @@ function LookTile({ seed, look, selected, marked = false, compact = false, onSel
     >
       <span
         className={`relative block aspect-square w-full overflow-hidden rounded-[4px] bg-paper-2/60 shadow-sheet transition duration-300 ease-soft group-focus-visible/tile:ring-2 group-focus-visible/tile:ring-accent ${
-          selected ? 'ring-2 ring-accent ring-offset-2 ring-offset-paper' : 'group-hover/tile:-translate-y-0.5 group-hover/tile:shadow-sheet-lift'
+          selected
+            ? 'ring-2 ring-accent ring-offset-2 ring-offset-paper'
+            : 'group-hover/tile:-translate-y-0.5 group-hover/tile:shadow-sheet-lift'
         }`}
       >
         <LookThumb seed={seed} look={look.id} />
@@ -67,9 +86,16 @@ function LookTile({ seed, look, selected, marked = false, compact = false, onSel
         )}
       </span>
       {compact ? (
-        <span aria-hidden className={`size-1 rounded-full transition ${marked ? 'bg-ink/35' : 'bg-transparent'}`} />
+        <span
+          aria-hidden
+          className={`size-1 rounded-full transition ${marked ? 'bg-ink/35' : 'bg-transparent'}`}
+        />
       ) : (
-        <span className={`line-clamp-2 text-[11px] leading-tight transition ${selected ? 'font-medium text-ink' : 'text-ink-2 group-hover/tile:text-ink'}`}>{look.name}</span>
+        <span
+          className={`line-clamp-2 text-[11px] leading-tight transition ${selected ? 'font-medium text-ink' : 'text-ink-2 group-hover/tile:text-ink'}`}
+        >
+          {look.name}
+        </span>
       )}
     </button>
   );
@@ -102,7 +128,9 @@ export function StylePicker({ seed, value, onChange }: PickerProps) {
     };
     document.addEventListener('pointerdown', away);
     document.addEventListener('keydown', esc);
-    root.current?.querySelector<HTMLElement>('[aria-pressed="true"]')?.focus({ preventScroll: true });
+    root.current
+      ?.querySelector<HTMLElement>('[aria-pressed="true"]')
+      ?.focus({ preventScroll: true });
     return () => {
       document.removeEventListener('pointerdown', away);
       document.removeEventListener('keydown', esc);
@@ -139,10 +167,18 @@ export function StylePicker({ seed, value, onChange }: PickerProps) {
           <div className="max-h-[min(58dvh,26rem)] overflow-y-auto overscroll-contain px-5 pb-5 pt-2">
             {GROUPS.map((g) => (
               <section key={g.title} className="mb-5 last:mb-0">
-                <h3 className="mb-2.5 text-[11px] uppercase tracking-[0.12em] text-ink-2">{g.title}</h3>
+                <h3 className="mb-2.5 text-[11px] uppercase tracking-[0.12em] text-ink-2">
+                  {g.title}
+                </h3>
                 <div className="grid grid-cols-4 gap-x-3 gap-y-4 sm:grid-cols-6">
                   {g.looks.map((l) => (
-                    <LookTile key={l.id} seed={seed} look={l} selected={l.id === value} onSelect={() => onChange(l.id)} />
+                    <LookTile
+                      key={l.id}
+                      seed={seed}
+                      look={l}
+                      selected={l.id === value}
+                      onSelect={() => onChange(l.id)}
+                    />
                   ))}
                 </div>
               </section>
@@ -154,7 +190,12 @@ export function StylePicker({ seed, value, onChange }: PickerProps) {
   );
 }
 
-type StripProps = { seed: number; value: LookId; gallery: LookId; onChange: (look: LookId) => void };
+type StripProps = {
+  seed: number;
+  value: LookId;
+  gallery: LookId;
+  onChange: (look: LookId) => void;
+};
 
 /** One face's style in the viewer: a strip of that face in every style. The dot marks the gallery's style. */
 export function LookStrip({ seed, value, gallery, onChange }: StripProps) {
@@ -162,7 +203,9 @@ export function LookStrip({ seed, value, gallery, onChange }: StripProps) {
   const current = lookOf(value);
 
   useEffect(() => {
-    strip.current?.querySelector(`[data-look="${value}"]`)?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+    strip.current
+      ?.querySelector(`[data-look="${value}"]`)
+      ?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
   }, [value, seed]);
 
   return (
@@ -180,8 +223,17 @@ export function LookStrip({ seed, value, gallery, onChange }: StripProps) {
       >
         {LOOKS.map((l, i) => (
           <Fragment key={l.id}>
-            {i > 0 && l.size !== LOOKS[i - 1]!.size && <span aria-hidden className="mx-1 my-3 w-px shrink-0 self-stretch bg-ink/12" />}
-            <LookTile seed={seed} look={l} compact selected={l.id === value} marked={l.id === gallery} onSelect={() => onChange(l.id)} />
+            {i > 0 && l.size !== LOOKS[i - 1]!.size && (
+              <span aria-hidden className="mx-1 my-3 w-px shrink-0 self-stretch bg-ink/12" />
+            )}
+            <LookTile
+              seed={seed}
+              look={l}
+              compact
+              selected={l.id === value}
+              marked={l.id === gallery}
+              onSelect={() => onChange(l.id)}
+            />
           </Fragment>
         ))}
       </div>

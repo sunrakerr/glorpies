@@ -4,7 +4,15 @@ import { Pause, Play, RotateCcw, Shuffle } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { randomName } from 'glorpies';
 import { loadEngine } from 'glorpies/internal/engine';
-import { DURATION, prepareExplainer, VH, VW, type Explainer, type Fonts, type Theme } from '@/lib/explainer';
+import {
+  DURATION,
+  prepareExplainer,
+  VH,
+  VW,
+  type Explainer,
+  type Fonts,
+  type Theme,
+} from '@/lib/explainer';
 import { MARKS } from '@/lib/glyphs';
 import { Heading, Page } from './Page';
 import { IconButton, Pill } from './ui';
@@ -35,7 +43,12 @@ async function loadFonts(): Promise<Fonts> {
 function themeNow(): Theme {
   const css = getComputedStyle(document.documentElement);
   const v = (name: string) => css.getPropertyValue(name).trim();
-  return { page: v('--color-paper'), ink: v('--color-ink'), ink2: v('--color-ink-2'), accent: v('--color-accent') };
+  return {
+    page: v('--color-paper'),
+    ink: v('--color-ink'),
+    ink2: v('--color-ink-2'),
+    accent: v('--color-accent'),
+  };
 }
 
 export function HowItsDrawn() {
@@ -102,7 +115,8 @@ export function HowItsDrawn() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== ' ' || (e.target as HTMLElement | null)?.closest('input, textarea, button')) return;
+      if (e.key !== ' ' || (e.target as HTMLElement | null)?.closest('input, textarea, button'))
+        return;
       e.preventDefault();
       setPlaying((p) => !p);
     };
@@ -112,7 +126,18 @@ export function HowItsDrawn() {
 
   return (
     <Page className="pt-12">
-      <Heading as="h1" title="how it's drawn" mark={MARKS.how} aside={name ? <>painting <span className="text-ink">{name}</span></> : undefined} />
+      <Heading
+        as="h1"
+        title="how it's drawn"
+        mark={MARKS.how}
+        aside={
+          name ? (
+            <>
+              painting <span className="text-ink">{name}</span>
+            </>
+          ) : undefined
+        }
+      />
       <div className="relative">
         <canvas
           ref={ref}
@@ -122,17 +147,33 @@ export function HowItsDrawn() {
           role="img"
           aria-label="Animated explainer: how a glorpie is painted, from its name and seed to paper, pencil, glazes, hatching, ink, live eyes and line boil"
         />
-        {!ready && <p className="sketching absolute inset-0 grid place-items-center font-display text-xl text-ink-2">mixing paints…</p>}
+        {!ready && (
+          <p className="sketching absolute inset-0 grid place-items-center font-display text-xl text-ink-2">
+            mixing paints…
+          </p>
+        )}
       </div>
       <div className="mt-5 flex justify-center">
         <Pill>
-          <IconButton label={playing ? 'Pause' : 'Play'} onClick={() => setPlaying((p) => !p)} disabled={!ready}>
-            {playing ? <Pause className="size-[17px]" strokeWidth={1.8} /> : <Play className="size-[17px]" strokeWidth={1.8} />}
+          <IconButton
+            label={playing ? 'Pause' : 'Play'}
+            onClick={() => setPlaying((p) => !p)}
+            disabled={!ready}
+          >
+            {playing ? (
+              <Pause className="size-[17px]" strokeWidth={1.8} />
+            ) : (
+              <Play className="size-[17px]" strokeWidth={1.8} />
+            )}
           </IconButton>
           <IconButton label="From the start" onClick={restart} disabled={!ready}>
             <RotateCcw className="size-[17px]" strokeWidth={1.8} />
           </IconButton>
-          <IconButton label="Paint another glorpie" onClick={() => setName(randomName())} disabled={!ready}>
+          <IconButton
+            label="Paint another glorpie"
+            onClick={() => setName(randomName())}
+            disabled={!ready}
+          >
             <Shuffle className="size-[17px]" strokeWidth={1.8} />
           </IconButton>
         </Pill>

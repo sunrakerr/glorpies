@@ -8,7 +8,8 @@ import { hash01 } from './raster';
 export const STATES = ['idle', 'thinking', 'working', 'waiting', 'blocked', 'done'] as const;
 export type FaceState = (typeof STATES)[number];
 
-export const isState = (s: unknown): s is FaceState => typeof s === 'string' && (STATES as readonly string[]).includes(s);
+export const isState = (s: unknown): s is FaceState =>
+  typeof s === 'string' && (STATES as readonly string[]).includes(s);
 
 export type Behaviour = {
   /** Where glances centre (null: the face's own resting gaze), how far they stray, and seconds between them. */
@@ -42,17 +43,83 @@ export type Behaviour = {
 const STILL_BODY: Behaviour['body'] = { tilt: 0, nod: [0, 0], hop: [0, 0], slump: 0 };
 
 export const BEHAVIOUR: Record<FaceState, Behaviour> = {
-  idle: { gaze: null, spread: { x: 1.4, y: 1 }, every: [0.6, 2.8], follow: true, blinks: 1, open: 1, breathe: 1, sway: 1, nudge: 0, body: STILL_BODY },
+  idle: {
+    gaze: null,
+    spread: { x: 1.4, y: 1 },
+    every: [0.6, 2.8],
+    follow: true,
+    blinks: 1,
+    open: 1,
+    breathe: 1,
+    sway: 1,
+    nudge: 0,
+    body: STILL_BODY,
+  },
   // eyes up and to one side, slower and stiller
-  thinking: { gaze: { x: 0.7, y: -0.85 }, spread: { x: 0.3, y: 0.15 }, every: [1.4, 3.2], follow: false, blinks: 1.6, open: 1, breathe: 1.25, sway: 0.5, nudge: 0, body: { tilt: 0.11, nod: [0, 0], hop: [0, 0], slump: 0 } },
+  thinking: {
+    gaze: { x: 0.7, y: -0.85 },
+    spread: { x: 0.3, y: 0.15 },
+    every: [1.4, 3.2],
+    follow: false,
+    blinks: 1.6,
+    open: 1,
+    breathe: 1.25,
+    sway: 0.5,
+    nudge: 0,
+    body: { tilt: 0.11, nod: [0, 0], hop: [0, 0], slump: 0 },
+  },
   // reading: quick glances along a line below, blinking more
-  working: { gaze: { x: 0, y: 0.8 }, spread: { x: 1.3, y: 0.1 }, every: [0.22, 0.5], follow: false, blinks: 0.7, open: 0.85, breathe: 0.8, sway: 0.4, nudge: 0, body: { tilt: 0, nod: [2.4, 4], hop: [0, 0], slump: 3 } },
+  working: {
+    gaze: { x: 0, y: 0.8 },
+    spread: { x: 1.3, y: 0.1 },
+    every: [0.22, 0.5],
+    follow: false,
+    blinks: 0.7,
+    open: 0.85,
+    breathe: 0.8,
+    sway: 0.4,
+    nudge: 0,
+    body: { tilt: 0, nod: [2.4, 4], hop: [0, 0], slump: 3 },
+  },
   // looking straight out at you, a little expectant
-  waiting: { gaze: { x: 0, y: 0 }, spread: { x: 0.2, y: 0.12 }, every: [1.5, 3], follow: true, blinks: 1, open: 1, breathe: 1, sway: 1.25, nudge: 0, body: { tilt: 0, nod: [0.9, 5], hop: [0, 0], slump: 0 } },
+  waiting: {
+    gaze: { x: 0, y: 0 },
+    spread: { x: 0.2, y: 0.12 },
+    every: [1.5, 3],
+    follow: true,
+    blinks: 1,
+    open: 1,
+    breathe: 1,
+    sway: 1.25,
+    nudge: 0,
+    body: { tilt: 0, nod: [0.9, 5], hop: [0, 0], slump: 0 },
+  },
   // down and away, heavy-lidded, with a frustrated shake now and then
-  blocked: { gaze: { x: -0.4, y: 0.7 }, spread: { x: 0.3, y: 0.2 }, every: [1.5, 3], follow: false, blinks: 0.8, open: 0.7, breathe: 1.4, sway: 0.4, nudge: 2.6, body: { tilt: 0, nod: [0, 0], hop: [0, 0], slump: 9 } },
+  blocked: {
+    gaze: { x: -0.4, y: 0.7 },
+    spread: { x: 0.3, y: 0.2 },
+    every: [1.5, 3],
+    follow: false,
+    blinks: 0.8,
+    open: 0.7,
+    breathe: 1.4,
+    sway: 0.4,
+    nudge: 2.6,
+    body: { tilt: 0, nod: [0, 0], hop: [0, 0], slump: 9 },
+  },
   // a pleased squint and a looser sway
-  done: { gaze: { x: 0, y: -0.1 }, spread: { x: 0.4, y: 0.2 }, every: [1, 2.5], follow: true, blinks: 1.3, open: 0.4, breathe: 0.9, sway: 1.4, nudge: 0, body: { tilt: 0, nod: [0, 0], hop: [2.8, 16], slump: 0 } },
+  done: {
+    gaze: { x: 0, y: -0.1 },
+    spread: { x: 0.4, y: 0.2 },
+    every: [1, 2.5],
+    follow: true,
+    blinks: 1.3,
+    open: 0.4,
+    breathe: 0.9,
+    sway: 1.4,
+    nudge: 0,
+    body: { tilt: 0, nod: [0, 0], hop: [2.8, 16], slump: 0 },
+  },
 };
 
 /** The glance centre for a face in a state; a thinker looks off to whichever side the face already favours. */
@@ -93,9 +160,12 @@ export function scriptedPose(face: Face, state: FaceState, t: number, loop: numb
     };
   };
   // each stop holds, then the eyes move quickly to the next, as saccades do
-  const s = u * stops, k = Math.floor(s), f = s - k;
+  const s = u * stops,
+    k = Math.floor(s),
+    f = s - k;
   const ease = f < 0.8 ? 0 : smooth((f - 0.8) / 0.2);
-  const from = at(k), to = at(k + 1);
+  const from = at(k),
+    to = at(k + 1);
   const look = { x: from.x + (to.x - from.x) * ease, y: from.y + (to.y - from.y) * ease };
 
   const bu = (u - 0.62) / (0.18 / loop);

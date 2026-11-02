@@ -10,15 +10,44 @@ import { renderStyle, STYLES, type StyleId } from './styles';
 
 /** The paintings, in the order they're listed; the avatar looks follow, in theirs. */
 const FULL = [
-  'watercolour', 'atkinson', 'bayer', 'plotter', 'cutout', 'neon',
-  'gouache', 'oil', 'sumi', 'charcoal', 'pointillism',
-  'linocut', 'warhol', 'stencil',
-  'stained', 'mosaic', 'felt',
-  'lowpoly', 'topo', 'thermal', 'holo',
+  'watercolour',
+  'atkinson',
+  'bayer',
+  'plotter',
+  'cutout',
+  'neon',
+  'gouache',
+  'oil',
+  'sumi',
+  'charcoal',
+  'pointillism',
+  'linocut',
+  'warhol',
+  'stencil',
+  'stained',
+  'mosaic',
+  'felt',
+  'lowpoly',
+  'topo',
+  'thermal',
+  'holo',
 ] as const;
 
 /** Looks of hard pixels or edges, whose dots crawl if turned or scaled by a fraction of a pixel, so they move in whole pixels. */
-const CRISP = new Set<string>(['atkinson', 'bayer', 'linocut', 'warhol', 'stencil', 'stained', 'mosaic', 'lowpoly', 'topo', 'thermal', 'holo', 'pixel-icon']);
+const CRISP = new Set<string>([
+  'atkinson',
+  'bayer',
+  'linocut',
+  'warhol',
+  'stencil',
+  'stained',
+  'mosaic',
+  'lowpoly',
+  'topo',
+  'thermal',
+  'holo',
+  'pixel-icon',
+]);
 
 /** Looks of flat colour, where a half-faded eye would show two pupils at once, so eyes switch pose outright. */
 const FLAT = new Set<string>(['cutout', 'blob', 'ink', 'sticker', 'cutpaper', 'line-icon', 'glow']);
@@ -52,9 +81,14 @@ const describe = (id: LookId, size: Look['size']): Look => {
   if (!entry) throw new Error(`glorpies: no renderer for the look "${id}"`);
   const crisp = CRISP.has(id);
   return Object.freeze({
-    id, name: entry.name, note: entry.note, size,
-    motion: crisp ? 'snap' : 'sway', eyes: crisp || FLAT.has(id) ? 'snap' : 'blend',
-    tiles: id === 'warhol' ? 2 : 1, dark: DARK.has(id),
+    id,
+    name: entry.name,
+    note: entry.note,
+    size,
+    motion: crisp ? 'snap' : 'sway',
+    eyes: crisp || FLAT.has(id) ? 'snap' : 'blend',
+    tiles: id === 'warhol' ? 2 : 1,
+    dark: DARK.has(id),
   });
 };
 
@@ -68,7 +102,8 @@ const BY_ID = new Map(LOOKS.map((l) => [l.id, l]));
 export const FULL_LOOKS: readonly Look[] = Object.freeze(LOOKS.filter((l) => l.size === 'full'));
 export const SMALL_LOOKS: readonly Look[] = Object.freeze(LOOKS.filter((l) => l.size === 'small'));
 
-export const isLook = (id: unknown): id is LookId => typeof id === 'string' && BY_ID.has(id as LookId);
+export const isLook = (id: unknown): id is LookId =>
+  typeof id === 'string' && BY_ID.has(id as LookId);
 
 export const lookOf = (id: LookId): Look => BY_ID.get(id)!;
 
@@ -90,7 +125,13 @@ const isStyle = (id: string): id is StyleId => STYLES.some((s) => s.id === id);
 const isSmall = (id: string): id is SmallId => SMALL_STYLES.some((s) => s.id === id);
 
 /** One face in one look, as a finished still. `bare` paints only what the look puts behind the face. */
-export function renderLook(id: LookId, face: Face, E: Engine, px: number, bare = false): HTMLCanvasElement {
+export function renderLook(
+  id: LookId,
+  face: Face,
+  E: Engine,
+  px: number,
+  bare = false,
+): HTMLCanvasElement {
   if (isSmall(id)) return renderSmall(id, face, E, px, bare);
   // a painting's strokes, dots and leading are sized in pixels, so below this it would be a different picture,
   // not a smaller one; it's painted at this size and reduced instead

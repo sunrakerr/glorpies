@@ -60,17 +60,30 @@ export function paintPaper(ctx: Ctx, pal: Palette, seed: number, E: Engine) {
   }
   ctx.lineWidth = 0.4;
   for (let i = 0; i < 60; i++) {
-    const x = E.random(0, W), y = E.random(0, W);
+    const x = E.random(0, W),
+      y = E.random(0, W);
     ctx.strokeStyle = rgba(pal.ink, E.random(0.03, 0.07));
     ctx.beginPath();
     ctx.moveTo(x, y);
-    ctx.quadraticCurveTo(x + E.random(-8, 8), y + E.random(-8, 8), x + E.random(-16, 16), y + E.random(-16, 16));
+    ctx.quadraticCurveTo(
+      x + E.random(-8, 8),
+      y + E.random(-8, 8),
+      x + E.random(-16, 16),
+      y + E.random(-16, 16),
+    );
     ctx.stroke();
   }
 }
 
 /** Plays a display list onto one canvas per boil phase; glazes are painted once and shared. */
-export function play(targets: Ctx[], ops: Op[], face: Face, E: Engine, sheet: Sheet, scale: number) {
+export function play(
+  targets: Ctx[],
+  ops: Op[],
+  face: Face,
+  E: Engine,
+  sheet: Sheet,
+  scale: number,
+) {
   const col = (c: Color) => resolveColor(c, face.pal, sheet);
   for (const op of ops) {
     if (op.k === 'paper') {
@@ -120,7 +133,13 @@ export function play(targets: Ctx[], ops: Op[], face: Face, E: Engine, sheet: Sh
   }
 }
 
-type EyeRaster = { iris: WashRaster | null; clip: Path2D; pupil: Path2D; highlight: Path2D; spiral: Path2D | null };
+type EyeRaster = {
+  iris: WashRaster | null;
+  clip: Path2D;
+  pupil: Path2D;
+  highlight: Path2D;
+  spiral: Path2D | null;
+};
 
 export type FaceRaster = {
   px: number;
@@ -141,7 +160,14 @@ export function rasterizeFace(face: Face, E: Engine, px: number, phases = 3): Fa
   bctx.fillRect(0, 0, W, W);
   bctx.globalCompositeOperation = 'source-over';
   const sheets = Array.from({ length: phases }, () => faceCanvas(px));
-  play(sheets.map(([, c]) => c), face.figure, face, E, 'figure', scale);
+  play(
+    sheets.map(([, c]) => c),
+    face.figure,
+    face,
+    E,
+    'figure',
+    scale,
+  );
   const eyes = face.eyes.map((e): EyeRaster => {
     let spiral: Path2D | null = null;
     if (e.spiral) {
@@ -172,7 +198,17 @@ export type Pose = {
   t: number;
 };
 
-export const restPose = (face: Face): Pose => ({ phase: 0, rot: 0, sx: 1, sy: 1, ty: 0, look: face.gaze, blink: 1, spin: 0, t: 0 });
+export const restPose = (face: Face): Pose => ({
+  phase: 0,
+  rot: 0,
+  sx: 1,
+  sy: 1,
+  ty: 0,
+  look: face.gaze,
+  blink: 1,
+  spin: 0,
+  t: 0,
+});
 
 /** Composes one frame: still backdrop (vignette baked in), breathing figure multiplied over it, then live eyes. */
 export function drawFrame(ctx: Ctx, face: Face, raster: FaceRaster, pose: Pose, px: number) {
@@ -254,19 +290,21 @@ export function drawStill(ctx: Ctx, face: Face, raster: StillRaster, pose: Pose,
 
   if (raster.layers === 'split' && raster.back && raster.figure) {
     ctx.drawImage(raster.back, 0, 0, px, px);
-    const n = raster.tiles, tile = px / n;
-    for (let ty = 0; ty < n; ty++) for (let tx = 0; tx < n; tx++) {
-      ctx.save();
-      if (n > 1) {
-        ctx.beginPath();
-        ctx.rect(tx * tile, ty * tile, tile, tile);
-        ctx.clip();
+    const n = raster.tiles,
+      tile = px / n;
+    for (let ty = 0; ty < n; ty++)
+      for (let tx = 0; tx < n; tx++) {
+        ctx.save();
+        if (n > 1) {
+          ctx.beginPath();
+          ctx.rect(tx * tile, ty * tile, tile, tile);
+          ctx.clip();
+        }
+        place(ctx, face, pose, raster.motion, tx * tile, ty * tile, tile);
+        ctx.drawImage(raster.figure, 0, 0, px, px);
+        drawPatches(ctx, raster, face, pose, unit);
+        ctx.restore();
       }
-      place(ctx, face, pose, raster.motion, tx * tile, ty * tile, tile);
-      ctx.drawImage(raster.figure, 0, 0, px, px);
-      drawPatches(ctx, raster, face, pose, unit);
-      ctx.restore();
-    }
     return;
   }
 
@@ -284,10 +322,17 @@ export function drawStill(ctx: Ctx, face: Face, raster: StillRaster, pose: Pose,
 
   // the whole picture sways, enlarged about its centre just enough that its edges never come into view
   const { x: pxv, y: pyv } = face.pivot;
-  const c = Math.cos(-pose.rot), sn = Math.sin(-pose.rot);
+  const c = Math.cos(-pose.rot),
+    sn = Math.sin(-pose.rot);
   let need = 1;
-  for (const [qx, qy] of [[0, 0], [W, 0], [0, W], [W, W]] as const) {
-    const x = qx - pxv, y = qy - pyv - pose.ty;
+  for (const [qx, qy] of [
+    [0, 0],
+    [W, 0],
+    [0, W],
+    [W, W],
+  ] as const) {
+    const x = qx - pxv,
+      y = qy - pyv - pose.ty;
     const ux = (x * c - y * sn) / pose.sx + pxv - W / 2;
     const uy = (x * sn + y * c) / pose.sy + pyv - W / 2;
     need = Math.max(need, Math.abs(ux) / (W / 2), Math.abs(uy) / (W / 2));
@@ -309,9 +354,18 @@ export function drawStill(ctx: Ctx, face: Face, raster: StillRaster, pose: Pose,
  * whole-pixel nudge: the head shifts as far as the turn would carry it, but
  * nothing is ever resampled.
  */
-function place(ctx: Ctx, face: Face, pose: Pose, motion: 'sway' | 'snap', ox: number, oy: number, size: number) {
+function place(
+  ctx: Ctx,
+  face: Face,
+  pose: Pose,
+  motion: 'sway' | 'snap',
+  ox: number,
+  oy: number,
+  size: number,
+) {
   const k = size / W;
-  const px = ox + face.pivot.x * k, py = oy + face.pivot.y * k;
+  const px = ox + face.pivot.x * k,
+    py = oy + face.pivot.y * k;
   if (motion === 'snap') {
     const reach = (face.pivot.y - face.sketch.centre.y) * k;
     ctx.translate(Math.round(Math.sin(pose.rot) * reach), Math.round(pose.ty * k));
@@ -343,20 +397,25 @@ function drawPatches(ctx: Ctx, raster: StillRaster, face: Face, pose: Pose, unit
     if (crisp) a = a >= 0.5 ? 1 : 0;
     if (!p || a <= 0.01) return;
     ctx.globalAlpha = Math.min(1, a);
-    for (const r of p.runs) ctx.drawImage(p.atlas, r.sx, r.sy, r.w, r.h, r.x * unit, r.y * unit, r.w * unit, r.h * unit);
+    for (const r of p.runs)
+      ctx.drawImage(p.atlas, r.sx, r.sy, r.w, r.h, r.x * unit, r.y * unit, r.w * unit, r.h * unit);
     ctx.globalAlpha = 1;
   };
 
   // how far the gaze has gone toward each glance, measured from the resting gaze
   const rel = { x: pose.look.x - face.gaze.x, y: pose.look.y - face.gaze.y };
-  let best: EyePatch | null = null, bestW = 0;
+  let best: EyePatch | null = null,
+    bestW = 0;
   for (const p of patches) {
     if (p.blink !== 1) continue;
     const d = { x: p.look.x - face.gaze.x, y: p.look.y - face.gaze.y };
     const dd = d.x * d.x + d.y * d.y;
     if (dd < 1e-4) continue;
     const w = Math.min(1, Math.max(0, (rel.x * d.x + rel.y * d.y) / dd));
-    if (w > bestW) { best = p; bestW = w; }
+    if (w > bestW) {
+      best = p;
+      bestW = w;
+    }
   }
   const target = smooth(Math.max(0, (bestW - GLANCE_FROM) / (1 - GLANCE_FROM)));
   const g = raster.glance;
@@ -366,7 +425,10 @@ function drawPatches(ctx: Ctx, raster: StillRaster, face: Face, pose: Pose, unit
     const step = Math.max(0, Math.min(0.1, pose.t - g.t)) / GLANCE_FADE;
     if (g.patch !== best) {
       g.a -= step;
-      if (g.a <= 0) { g.patch = best; g.a = 0; }
+      if (g.a <= 0) {
+        g.patch = best;
+        g.a = 0;
+      }
     } else g.a += Math.max(-step, Math.min(step, target - g.a));
     g.t = pose.t;
   }
@@ -437,7 +499,14 @@ export function drawEyes(ctx: Ctx, face: Face, raster: FaceRaster, pose: Pose) {
 export const VIGNETTE = { inner: 0.32, outer: 0.76, color: '#b9a888', alpha: 0.32 };
 
 export function vignette(ctx: Ctx): CanvasGradient {
-  const g = ctx.createRadialGradient(W / 2, W / 2, W * VIGNETTE.inner, W / 2, W / 2, W * VIGNETTE.outer);
+  const g = ctx.createRadialGradient(
+    W / 2,
+    W / 2,
+    W * VIGNETTE.inner,
+    W / 2,
+    W / 2,
+    W * VIGNETTE.outer,
+  );
   g.addColorStop(0, 'rgba(255,255,255,0)');
   g.addColorStop(1, rgba(VIGNETTE.color, VIGNETTE.alpha));
   return g;
@@ -450,4 +519,3 @@ export function renderStill(face: Face, E: Engine, px: number): HTMLCanvasElemen
   drawFrame(c.getContext('2d')!, face, raster, restPose(face), px);
   return c;
 }
-

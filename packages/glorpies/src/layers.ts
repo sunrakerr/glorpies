@@ -51,11 +51,18 @@ export function splitLayers(full: HTMLCanvasElement, back: HTMLCanvasElement): L
  * background comes along, rather than a coarse cut whose margin is hidden by
  * the background staying underneath.
  */
-export function faceMask(full: HTMLCanvasElement, back: HTMLCanvasElement, tight = false): { mask: HTMLCanvasElement; cover: number } | null {
-  const w = full.width, h = full.height;
-  const a = pixelsOf(full), b = pixelsOf(back);
+export function faceMask(
+  full: HTMLCanvasElement,
+  back: HTMLCanvasElement,
+  tight = false,
+): { mask: HTMLCanvasElement; cover: number } | null {
+  const w = full.width,
+    h = full.height;
+  const a = pixelsOf(full),
+    b = pixelsOf(back);
   const step = tight ? 2 : Math.max(2, Math.ceil(Math.max(w, h) / GRID));
-  const cols = Math.ceil(w / step), rows = Math.ceil(h / step);
+  const cols = Math.ceil(w / step),
+    rows = Math.ceil(h / step);
   const cells = new Uint8Array(cols * rows);
 
   for (let y = 0; y < h; y++) {
@@ -64,7 +71,12 @@ export function faceMask(full: HTMLCanvasElement, back: HTMLCanvasElement, tight
       const c = row + Math.floor(x / step);
       if (cells[c]) continue;
       const i = (y * w + x) * 4;
-      if (Math.abs(a[i]! - b[i]!) > DIFF || Math.abs(a[i + 1]! - b[i + 1]!) > DIFF || Math.abs(a[i + 2]! - b[i + 2]!) > DIFF) cells[c] = 1;
+      if (
+        Math.abs(a[i]! - b[i]!) > DIFF ||
+        Math.abs(a[i + 1]! - b[i + 1]!) > DIFF ||
+        Math.abs(a[i + 2]! - b[i + 2]!) > DIFF
+      )
+        cells[c] = 1;
     }
   }
 
@@ -79,16 +91,20 @@ export function faceMask(full: HTMLCanvasElement, back: HTMLCanvasElement, tight
   const small = makeCanvas(cols, rows);
   const sg = small.getContext('2d')!;
   const img = sg.createImageData(cols, rows);
-  for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
-    let sum = 0, n = 0;
-    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
-      const X = x + dx, Y = y + dy;
-      if (X < 0 || Y < 0 || X >= cols || Y >= rows) continue;
-      sum += solid[Y * cols + X]!;
-      n++;
+  for (let y = 0; y < rows; y++)
+    for (let x = 0; x < cols; x++) {
+      let sum = 0,
+        n = 0;
+      for (let dy = -1; dy <= 1; dy++)
+        for (let dx = -1; dx <= 1; dx++) {
+          const X = x + dx,
+            Y = y + dy;
+          if (X < 0 || Y < 0 || X >= cols || Y >= rows) continue;
+          sum += solid[Y * cols + X]!;
+          n++;
+        }
+      img.data[(y * cols + x) * 4 + 3] = Math.round((sum / n) * 255);
     }
-    img.data[(y * cols + x) * 4 + 3] = Math.round((sum / n) * 255);
-  }
   sg.putImageData(img, 0, 0);
 
   const mask = makeCanvas(w, h);
@@ -101,7 +117,12 @@ export function faceMask(full: HTMLCanvasElement, back: HTMLCanvasElement, tight
 
 /** Square dilation by `r` cells, as two running passes. */
 function grow(src: Uint8Array, cols: number, rows: number, r: number): Uint8Array {
-  const pass = (from: Uint8Array, len: number, lines: number, at: (line: number, k: number) => number) => {
+  const pass = (
+    from: Uint8Array,
+    len: number,
+    lines: number,
+    at: (line: number, k: number) => number,
+  ) => {
     const out = new Uint8Array(from.length);
     for (let l = 0; l < lines; l++) {
       let last = -Infinity;
@@ -132,10 +153,18 @@ function closeHoles(src: Uint8Array, cols: number, rows: number): Uint8Array {
       stack.push(i);
     }
   };
-  for (let x = 0; x < cols; x++) { seed(x); seed((rows - 1) * cols + x); }
-  for (let y = 0; y < rows; y++) { seed(y * cols); seed(y * cols + cols - 1); }
+  for (let x = 0; x < cols; x++) {
+    seed(x);
+    seed((rows - 1) * cols + x);
+  }
+  for (let y = 0; y < rows; y++) {
+    seed(y * cols);
+    seed(y * cols + cols - 1);
+  }
   while (stack.length) {
-    const i = stack.pop()!, x = i % cols, y = (i - x) / cols;
+    const i = stack.pop()!,
+      x = i % cols,
+      y = (i - x) / cols;
     if (x > 0) seed(i - 1);
     if (x < cols - 1) seed(i + 1);
     if (y > 0) seed(i - cols);

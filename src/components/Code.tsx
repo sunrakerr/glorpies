@@ -6,7 +6,15 @@ import { highlight, type Lang } from '@/lib/highlight';
 import { Invader } from './SiteHeader';
 
 /** Copies `text`, and says so for a moment. With `label`, it reads "copy" / "copied" next to the icon. */
-export function CopyButton({ text, label = false, className = '' }: { text: string; label?: boolean; className?: string }) {
+export function CopyButton({
+  text,
+  label = false,
+  className = '',
+}: {
+  text: string;
+  label?: boolean;
+  className?: string;
+}) {
   const [done, setDone] = useState(false);
   const copy = async () => {
     try {
@@ -36,11 +44,27 @@ export function CopyButton({ text, label = false, className = '' }: { text: stri
  * `title`), line numbers and syntax colours, with a copy button. `compact`
  * drops the mark and the copy label, for narrow panels.
  */
-export function CodePanel({ code, lang, title, compact = false, className = '' }: { code: string; lang: Lang; title?: ReactNode; compact?: boolean; className?: string }) {
+export function CodePanel({
+  code,
+  lang,
+  title,
+  compact = false,
+  className = '',
+}: {
+  code: string;
+  lang: Lang;
+  title?: ReactNode;
+  compact?: boolean;
+  className?: string;
+}) {
   const lines = useMemo(() => highlight(code, lang), [code, lang]);
   return (
-    <div className={`overflow-hidden rounded-lg border border-term-fg/10 bg-term text-term-fg shadow-sheet ${className}`}>
-      <div className={`flex h-10 items-center gap-3 border-b border-term-fg/10 pr-2 ${compact ? 'pl-2.5' : 'pl-4'}`}>
+    <div
+      className={`overflow-hidden rounded-lg border border-term-fg/10 bg-term text-term-fg shadow-sheet ${className}`}
+    >
+      <div
+        className={`flex h-10 items-center gap-3 border-b border-term-fg/10 pr-2 ${compact ? 'pl-2.5' : 'pl-4'}`}
+      >
         {!compact && <Invader className="h-2.5 shrink-0 text-term-accent" />}
         <div className="min-w-0 flex-1 text-[11.5px] text-term-fg/55">{title}</div>
         <CopyButton text={code} label={!compact} />
@@ -49,9 +73,19 @@ export function CodePanel({ code, lang, title, compact = false, className = '' }
         <code className="grid min-w-max">
           {lines.map((tokens, i) => (
             <span key={i} className="grid grid-cols-[3rem_minmax(0,1fr)] pr-5">
-              <span aria-hidden className="select-none pr-4 text-right text-term-fg/25">{lang === 'sh' ? '$' : i + 1}</span>
+              <span aria-hidden className="select-none pr-4 text-right text-term-fg/25">
+                {lang === 'sh' ? '$' : i + 1}
+              </span>
               <span>
-                {tokens.map((t, j) => (t.kind === 'text' ? t.text : <span key={j} className={`tk-${t.kind}`}>{t.text}</span>))}
+                {tokens.map((t, j) =>
+                  t.kind === 'text' ? (
+                    t.text
+                  ) : (
+                    <span key={j} className={`tk-${t.kind}`}>
+                      {t.text}
+                    </span>
+                  ),
+                )}
                 {tokens.length === 0 && ' '}
               </span>
             </span>

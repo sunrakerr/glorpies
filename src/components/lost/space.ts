@@ -30,10 +30,25 @@ export type Ship = {
 };
 
 /** A pixel of exhaust, or of a glorpie arriving aboard. */
-export type Spark = { x: number; y: number; vx: number; vy: number; life: number; max: number; lit: boolean };
+export type Spark = {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  max: number;
+  lit: boolean;
+};
 
 /** `pixel` is the ship's cell size in CSS pixels. */
-export type Space = { width: number; height: number; pixel: number; ship: Ship; glorps: Glorp[]; sparks: Spark[] };
+export type Space = {
+  width: number;
+  height: number;
+  pixel: number;
+  ship: Ship;
+  glorps: Glorp[];
+  sparks: Spark[];
+};
 
 const TAU = Math.PI * 2;
 /** Most glorpies afloat at once; past it, the oldest fade out. */
@@ -51,7 +66,17 @@ const SPREAD = 0.34;
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
 export function emptySpace(width: number, height: number): Space {
-  const ship: Ship = { x: width * 0.75, y: height * 0.22, vx: 0, vy: 0, tx: width * 0.75, ty: height * 0.22, chasing: null, hover: 0, beam: 0 };
+  const ship: Ship = {
+    x: width * 0.75,
+    y: height * 0.22,
+    vx: 0,
+    vy: 0,
+    tx: width * 0.75,
+    ty: height * 0.22,
+    chasing: null,
+    hover: 0,
+    beam: 0,
+  };
   return { width, height, pixel: pixelOf(width), ship, glorps: [], sparks: [] };
 }
 
@@ -62,12 +87,20 @@ export function resize(space: Space, width: number, height: number) {
 const pixelOf = (width: number) => (width < 640 ? 2 : 3);
 const undersideOf = (space: Space) => space.ship.y + UNDERSIDE * space.pixel;
 
-export function letIn(space: Space, face: CanvasImageSource, x: number, y: number, vx: number, vy: number) {
+export function letIn(
+  space: Space,
+  face: CanvasImageSource,
+  x: number,
+  y: number,
+  vx: number,
+  vy: number,
+) {
   const speed = Math.hypot(vx, vy);
   const cap = speed > MAX_SPEED ? MAX_SPEED / speed : 1;
   const a = Math.random() * TAU;
   space.glorps.push({
-    x, y,
+    x,
+    y,
     vx: vx * cap + Math.cos(a) * DRIFT * 2,
     vy: vy * cap + Math.sin(a) * DRIFT * 2,
     size: (46 + Math.random() * 40) * clamp(space.width / 1100, 0.75, 1),
@@ -156,7 +189,15 @@ function burst(space: Space, x: number, y: number) {
   for (let i = 0; i < 10; i++) {
     const a = Math.PI + Math.random() * Math.PI;
     const v = 40 + Math.random() * 70;
-    space.sparks.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.5, life: 0.4 + Math.random() * 0.4, max: 0.8, lit: true });
+    space.sparks.push({
+      x,
+      y,
+      vx: Math.cos(a) * v,
+      vy: Math.sin(a) * v * 0.5,
+      life: 0.4 + Math.random() * 0.4,
+      max: 0.8,
+      lit: true,
+    });
   }
 }
 
@@ -188,7 +229,8 @@ function steer(space: Space, dt: number) {
       ship.tx = clamp(ship.chasing.x, 70, space.width - 70);
       ship.ty = clamp(ship.chasing.y - BEAM * 0.7, 50, space.height - 50);
     }
-    const dx = ship.tx - ship.x, dy = ship.ty - ship.y;
+    const dx = ship.tx - ship.x,
+      dy = ship.ty - ship.y;
     const distance = Math.hypot(dx, dy);
     if (distance < 10) {
       if (ship.chasing) ship.hover = HOVER;
@@ -207,7 +249,8 @@ function steer(space: Space, dt: number) {
 function pickTarget(space: Space) {
   const { ship, width, height } = space;
   const free = space.glorps.filter((g) => !g.beamed && !g.dying && g.y > BEAM * 0.6);
-  ship.chasing = free.length && Math.random() < 0.65 ? free[Math.floor(Math.random() * free.length)]! : null;
+  ship.chasing =
+    free.length && Math.random() < 0.65 ? free[Math.floor(Math.random() * free.length)]! : null;
   ship.tx = clamp(90 + Math.random() * (width - 180), 70, width - 70);
   ship.ty = clamp(60 + Math.random() * height * 0.45, 50, height - 50);
 }
@@ -219,7 +262,8 @@ export function draw(g: CanvasRenderingContext2D, space: Space, t: number, c: Co
   const { ship, pixel } = space;
   const bob = Math.round(Math.sin(t * 1.7) * 2);
 
-  if (ship.beam > 0) drawBeam(g, ship.x, undersideOf(space) + bob, pixel, BEAM, SPREAD, ship.beam, t, c.accent);
+  if (ship.beam > 0)
+    drawBeam(g, ship.x, undersideOf(space) + bob, pixel, BEAM, SPREAD, ship.beam, t, c.accent);
 
   for (const b of space.glorps) {
     // it settles in rather than appearing, and shrinks as the beam takes it up
@@ -249,7 +293,12 @@ export function draw(g: CanvasRenderingContext2D, space: Space, t: number, c: Co
 let shrunk: HTMLCanvasElement | null = null;
 
 /** A face drawn `cells` pixels across, then blown back up to `size` with the pixels showing. */
-function drawPixelated(g: CanvasRenderingContext2D, face: CanvasImageSource, size: number, cells: number) {
+function drawPixelated(
+  g: CanvasRenderingContext2D,
+  face: CanvasImageSource,
+  size: number,
+  cells: number,
+) {
   shrunk ??= document.createElement('canvas');
   shrunk.width = shrunk.height = cells;
   const s = shrunk.getContext('2d')!;

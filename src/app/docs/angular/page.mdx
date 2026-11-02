@@ -1,6 +1,10 @@
 import { pageMetadata } from '@/lib/metadata';
 
-export const metadata = pageMetadata("/docs/angular", "angular", "Use the glorpie-face web component in Angular. Bind avatar names, sizes, looks and moods, with no framework-specific wrapper required.");
+export const metadata = pageMetadata(
+  '/docs/angular',
+  'angular',
+  'Use the glorpie-face web component in Angular. Bind avatar names, sizes, looks and moods, with no framework-specific wrapper required.',
+);
 
 # angular
 
@@ -36,7 +40,10 @@ Every [option](/docs/options) is both an attribute and a property, so `[name]` a
 If a face fails to paint, the element dispatches `glorpie-error` with the error as `detail`. Call `preventDefault()` to suppress the `console.error`.
 
 ```html
-<glorpie-face [name]="user.id" (glorpie-error)="report($event.detail); $event.preventDefault()"></glorpie-face>
+<glorpie-face
+  [name]="user.id"
+  (glorpie-error)="report($event.detail); $event.preventDefault()"
+></glorpie-face>
 ```
 
 ## server rendering
@@ -44,7 +51,14 @@ If a face fails to paint, the element dispatches `glorpie-error` with the error 
 With Angular SSR the element is rendered as an empty tag and upgrades in the browser. Size it in CSS to reserve its space:
 
 ```css
-glorpie-face { width: 40px; height: 40px; }
+glorpie-face {
+  width: 40px;
+  height: 40px;
+}
 ```
 
-<Note>Why no Angular component? Angular libraries must be compiled with ng-packagr and published as a separate package. Angular handles custom elements natively, so the element is the supported path for now.</Note>
+<Note>
+  Why no Angular component? Angular libraries must be compiled with ng-packagr and published as a
+  separate package. Angular handles custom elements natively, so the element is the supported path
+  for now.
+</Note>

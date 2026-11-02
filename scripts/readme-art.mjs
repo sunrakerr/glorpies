@@ -17,7 +17,10 @@ function writeArt(file, bytes, to = out) {
 }
 
 const { body: hero } = await renderImage('sunrakerrisfriednoodlz', {
-  look: 'watercolour', size: 512, format: 'png', shape: 'circle',
+  look: 'watercolour',
+  size: 512,
+  format: 'png',
+  shape: 'circle',
 });
 writeArt('glorpie.png', hero);
 console.log('wrote glorpie.png');
@@ -30,7 +33,32 @@ const facesAt = `http://127.0.0.1:${faces.address().port}`;
 const face = (name, o = {}) => `${facesAt}/?${new URLSearchParams({ name, format: 'png', ...o })}`;
 
 /** One name in 24 looks, as a contact sheet with a transparent page behind it, so it sits on GitHub's page in either theme. */
-const LOOKS = ['watercolour', 'gouache', 'oil', 'sumi', 'charcoal', 'pointillism', 'linocut', 'warhol', 'stained', 'mosaic', 'neon', 'holo', 'atkinson', 'plotter', 'thermal', 'topo', 'blob', 'ink', 'sticker', 'cutpaper', 'pixel-icon', 'line-icon', 'glow', 'wash'];
+const LOOKS = [
+  'watercolour',
+  'gouache',
+  'oil',
+  'sumi',
+  'charcoal',
+  'pointillism',
+  'linocut',
+  'warhol',
+  'stained',
+  'mosaic',
+  'neon',
+  'holo',
+  'atkinson',
+  'plotter',
+  'thermal',
+  'topo',
+  'blob',
+  'ink',
+  'sticker',
+  'cutpaper',
+  'pixel-icon',
+  'line-icon',
+  'glow',
+  'wash',
+];
 const looks = () => `
 <div id="art" style="width:1280px;box-sizing:border-box;padding:24px 48px 28px;color:var(--color-ink);font-family:var(--font-mono)">
   <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:26px 18px">
@@ -50,7 +78,13 @@ async function shoot(page, file, theme, html, options = {}) {
   }
 }
 
-async function shootOnce({ send, evaluate }, file, theme, html, { square = false, scale = 1, to = out }) {
+async function shootOnce(
+  { send, evaluate },
+  file,
+  theme,
+  html,
+  { square = false, scale = 1, to = out },
+) {
   const box = await evaluate(`(async () => {
     document.documentElement.dataset.theme = ${JSON.stringify(theme)};
     document.body.innerHTML = ${JSON.stringify(html)};
@@ -81,25 +115,42 @@ async function shootOnce({ send, evaluate }, file, theme, html, { square = false
     const r = art.getBoundingClientRect();
     return { x: r.x, y: r.y, width: r.width, height: r.height };
   })()`);
-  if (!(await evaluate(`!!document.getElementById('art')`))) throw new Error('the page reloaded before the capture');
+  if (!(await evaluate(`!!document.getElementById('art')`)))
+    throw new Error('the page reloaded before the capture');
   const format = file.endsWith('.png') ? 'png' : 'webp';
-  const shot = await send('Page.captureScreenshot', { format, quality: format === 'webp' ? 90 : undefined, clip: { ...box, scale } });
+  const shot = await send('Page.captureScreenshot', {
+    format,
+    quality: format === 'webp' ? 90 : undefined,
+    clip: { ...box, scale },
+  });
   writeArt(file, Buffer.from(shot.data, 'base64'), to);
   console.log('wrote', file);
 }
 
-await withChrome(async (page) => {
-  await page.send('Emulation.setDefaultBackgroundColorOverride', { color: { r: 0, g: 0, b: 0, a: 0 } });
-  await page.send('Emulation.setDeviceMetricsOverride', { width: 1400, height: 1400, deviceScaleFactor: 2, mobile: false });
-  await page.goto(`${base}/how`);
-  for (const theme of ['dark', 'light']) {
-    await shoot(page, `looks-${theme}.webp`, theme, looks());
-  }
-}, { width: 1400, height: 1400 });
+await withChrome(
+  async (page) => {
+    await page.send('Emulation.setDefaultBackgroundColorOverride', {
+      color: { r: 0, g: 0, b: 0, a: 0 },
+    });
+    await page.send('Emulation.setDeviceMetricsOverride', {
+      width: 1400,
+      height: 1400,
+      deviceScaleFactor: 2,
+      mobile: false,
+    });
+    await page.goto(`${base}/how`);
+    for (const theme of ['dark', 'light']) {
+      await shoot(page, `looks-${theme}.webp`, theme, looks());
+    }
+  },
+  { width: 1400, height: 1400 },
+);
 
 // the states, alive: looping GIFs straight from the handler
 for (const state of ['idle', 'thinking', 'working', 'waiting', 'blocked', 'done']) {
-  const res = await fetch(face('agent-47', { state, format: 'gif', size: '160', shape: 'squircle' }));
+  const res = await fetch(
+    face('agent-47', { state, format: 'gif', size: '160', shape: 'squircle' }),
+  );
   if (!res.ok) throw new Error(`${state}: ${res.status}`);
   writeArt(`state-${state}.gif`, Buffer.from(await res.arrayBuffer()));
   console.log('wrote', `state-${state}.gif`);

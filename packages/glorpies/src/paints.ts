@@ -8,10 +8,34 @@ import type { EyeSpec, Face } from './face/types';
 import { W } from './face/types';
 import { drawFlatEyes, nearest, opsOf, paletteOf } from './styles';
 import {
-  at, blur, canvas, clamp01, css, faceSpace, figureInks, figureMask, flat, flowField, fract, fromHsl, grain, hash01, hex, imageFrom, imgOf, inkMask, lum, lumField, mixRGB, pillow, polyline, pupils, rng, toHsl,
+  at,
+  blur,
+  canvas,
+  clamp01,
+  css,
+  faceSpace,
+  figureInks,
+  figureMask,
+  flat,
+  flowField,
+  fract,
+  fromHsl,
+  grain,
+  hash01,
+  hex,
+  imageFrom,
+  imgOf,
+  inkMask,
+  lum,
+  lumField,
+  mixRGB,
+  pillow,
+  polyline,
+  pupils,
+  rng,
+  toHsl,
   type RGB,
 } from './raster';
-
 
 /** The paintings: each reads the face's display list, or a flat rendering of it, and rebuilds it in its own medium. */
 
@@ -37,9 +61,13 @@ const gouache: Render = (face, E, px) => {
     if (op.k === 'wash') {
       // dry-brush streaks: broken strokes of a lighter and a darker mix of the same paint
       g.clip();
-      const b = bbox(op.pts), ang = r() * Math.PI;
+      const b = bbox(op.pts),
+        ang = r() * Math.PI;
       for (let k = 0; k < 18; k++) {
-        const t = r(), cx = b.x0 + (b.x1 - b.x0) * r(), cy = b.y0 + (b.y1 - b.y0) * r(), len = 20 + r() * 60;
+        const t = r(),
+          cx = b.x0 + (b.x1 - b.x0) * r(),
+          cy = b.y0 + (b.y1 - b.y0) * r(),
+          len = 20 + r() * 60;
         g.strokeStyle = css(mixRGB(hex(col), t < 0.5 ? [255, 250, 240] : [40, 30, 30], 0.14), 0.45);
         g.lineWidth = 3 + r() * 6;
         g.setLineDash([4 + r() * 10, 2 + r() * 4]);
@@ -86,33 +114,39 @@ const oil: Render = (face, E, px) => {
     const step = R * 1.1;
     const strokes: { pts: Pt[]; col: RGB; order: number; jit: number }[] = [];
     let cell = 0;
-    for (let y = 0; y < px; y += step) for (let x = 0; x < px; x += step) {
-      // every brush cell draws from its own stream, so posing the eyes can't reshuffle the rest of the painting
-      const r = rng(Math.floor(hash01(face.seed + 9 + layer, cell++) * 4294967296));
-      const sx = x + (r() - 0.5) * step, sy = y + (r() - 0.5) * step;
-      const i = Math.min(px * px - 1, Math.max(0, Math.round(sy) * px + Math.round(sx)));
-      // fine brushes only where there's detail to resolve
-      if (R < px / 60 && Math.abs(detail[i]! - L[i]!) < 0.02 && r() < 0.8) continue;
-      const col = at(src, sx, sy);
-      const pts: Pt[] = [{ x: sx, y: sy }];
-      let px0 = sx, py0 = sy;
-      const dir = r() < 0.5 ? 1 : -1;
-      for (let s = 0; s < 6; s++) {
-        const j = Math.min(px * px - 1, Math.max(0, Math.round(py0) * px + Math.round(px0)));
-        const a = angle[j]! * 1;
-        px0 += Math.cos(a) * R * 0.9 * dir;
-        py0 += Math.sin(a) * R * 0.9 * dir;
-        const here = at(src, px0, py0);
-        if (Math.abs(lum(here) - lum(col)) > 0.12) break;
-        pts.push({ x: px0, y: py0 });
+    for (let y = 0; y < px; y += step)
+      for (let x = 0; x < px; x += step) {
+        // every brush cell draws from its own stream, so posing the eyes can't reshuffle the rest of the painting
+        const r = rng(Math.floor(hash01(face.seed + 9 + layer, cell++) * 4294967296));
+        const sx = x + (r() - 0.5) * step,
+          sy = y + (r() - 0.5) * step;
+        const i = Math.min(px * px - 1, Math.max(0, Math.round(sy) * px + Math.round(sx)));
+        // fine brushes only where there's detail to resolve
+        if (R < px / 60 && Math.abs(detail[i]! - L[i]!) < 0.02 && r() < 0.8) continue;
+        const col = at(src, sx, sy);
+        const pts: Pt[] = [{ x: sx, y: sy }];
+        let px0 = sx,
+          py0 = sy;
+        const dir = r() < 0.5 ? 1 : -1;
+        for (let s = 0; s < 6; s++) {
+          const j = Math.min(px * px - 1, Math.max(0, Math.round(py0) * px + Math.round(px0)));
+          const a = angle[j]! * 1;
+          px0 += Math.cos(a) * R * 0.9 * dir;
+          py0 += Math.sin(a) * R * 0.9 * dir;
+          const here = at(src, px0, py0);
+          if (Math.abs(lum(here) - lum(col)) > 0.12) break;
+          pts.push({ x: px0, y: py0 });
+        }
+        strokes.push({ pts, col, order: r(), jit: 1 + (r() - 0.5) * 0.08 });
       }
-      strokes.push({ pts, col, order: r(), jit: 1 + (r() - 0.5) * 0.08 });
-    }
     // a random painting order that doesn't depend on how many strokes there are
     strokes.sort((a, b) => a.order - b.order);
     for (const s of strokes) {
       const { jit } = s;
-      polyline(g, s.pts.length > 1 ? s.pts : [s.pts[0]!, { x: s.pts[0]!.x + 0.5, y: s.pts[0]!.y + 0.5 }]);
+      polyline(
+        g,
+        s.pts.length > 1 ? s.pts : [s.pts[0]!, { x: s.pts[0]!.x + 0.5, y: s.pts[0]!.y + 0.5 }],
+      );
       g.lineWidth = R * 1.7;
       g.strokeStyle = css([s.col[0] * jit, s.col[1] * jit, s.col[2] * jit]);
       g.stroke();
@@ -162,8 +196,12 @@ const sumi: Render = (face, E, px) => {
   g.strokeStyle = 'rgba(150,130,100,0.12)';
   g.lineWidth = 0.4;
   for (let i = 0; i < 90; i++) {
-    const x = r() * W, y = r() * W;
-    g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + r() * 20 - 10, y + r() * 20 - 10, x + r() * 40 - 20, y + r() * 40 - 20); g.stroke();
+    const x = r() * W,
+      y = r() * W;
+    g.beginPath();
+    g.moveTo(x, y);
+    g.quadraticCurveTo(x + r() * 20 - 10, y + r() * 20 - 10, x + r() * 40 - 20, y + r() * 40 - 20);
+    g.stroke();
   }
   // grey ink washes bleeding into damp paper
   g.filter = `blur(${2.5 * k}px)`;
@@ -249,7 +287,9 @@ const charcoal: Render = (face, E, px) => {
   g.strokeStyle = 'rgba(248,246,240,0.7)';
   g.lineCap = 'round';
   for (let n = 0, tries = 0; n < 22 && tries < 4000; tries++) {
-    const x = r() * px, y = r() * px, i = Math.round(y) * px + Math.round(x);
+    const x = r() * px,
+      y = r() * px,
+      i = Math.round(y) * px + Math.round(x);
     if (!fig[i] || L[i]! < 0.78) continue;
     g.lineWidth = px / 120;
     g.beginPath();
@@ -269,11 +309,17 @@ const pointillism: Render = (face, E, px) => {
   const r = rng(face.seed + 17);
   const k = px / 480;
   for (let n = 0; n < (px * px) / 13; n++) {
-    const x = r() * px, y = r() * px;
+    const x = r() * px,
+      y = r() * px;
     const [h, s, l] = toHsl(at(src, x, y));
     const roll = r();
     // pure dots side by side, mixed by the eye: mostly the colour, some lighter, a few complements
-    const col = roll < 0.1 ? fromHsl([h + 180, s * 0.6, Math.min(0.85, l + 0.1)]) : roll < 0.35 ? fromHsl([h + 15, Math.min(1, s * 1.15), Math.min(0.92, l + 0.12)]) : fromHsl([h + (r() - 0.5) * 16, Math.min(1, s * 1.2), l]);
+    const col =
+      roll < 0.1
+        ? fromHsl([h + 180, s * 0.6, Math.min(0.85, l + 0.1)])
+        : roll < 0.35
+          ? fromHsl([h + 15, Math.min(1, s * 1.15), Math.min(0.92, l + 0.12)])
+          : fromHsl([h + (r() - 0.5) * 16, Math.min(1, s * 1.2), l]);
     g.fillStyle = css(col);
     g.beginPath();
     g.arc(x, y, (1.6 + r() * 1.1) * k, 0, TAU);
@@ -307,10 +353,11 @@ function cutLines(face: Face, E: Engine, px: number, period: number) {
   const F = lumField(src);
   const { mask, h } = pillow(face, E, px);
   const phase = new Float32Array(px * px);
-  for (let y = 0; y < px; y++) for (let x = 0; x < px; x++) {
-    const i = y * px + x;
-    phase[i] = y / period - h[i]! * 3.2 + Math.sin(x / (px * 0.12)) * 0.15;
-  }
+  for (let y = 0; y < px; y++)
+    for (let x = 0; x < px; x++) {
+      const i = y * px + x;
+      phase[i] = y / period - h[i]! * 3.2 + Math.sin(x / (px * 0.12)) * 0.15;
+    }
   return { L, F, mask, h, phase };
 }
 
@@ -332,9 +379,14 @@ const linocut: Render = (face, E, px) => {
       return on && chip(i) > 0.035 ? inkCol : paper;
     }
     const c = [flatImg.d[i * 4]!, flatImg.d[i * 4 + 1]!, flatImg.d[i * 4 + 2]!];
-    const bg = Math.abs(c[0]! - paperRGB[0]) + Math.abs(c[1]! - paperRGB[1]) + Math.abs(c[2]! - paperRGB[2]) > 24;
+    const bg =
+      Math.abs(c[0]! - paperRGB[0]) +
+        Math.abs(c[1]! - paperRGB[1]) +
+        Math.abs(c[2]! - paperRGB[2]) >
+      24;
     // the background block, gouged with long horizontal strokes
-    if (bg && fract((y + 4 * Math.sin(x * 0.05)) / (px / 60)) > 0.28 && chip(i) > 0.03) return block;
+    if (bg && fract((y + 4 * Math.sin(x * 0.05)) / (px / 60)) > 0.28 && chip(i) > 0.03)
+      return block;
     return paper;
   });
 };
@@ -352,7 +404,19 @@ const warhol: Render = (face, E, px) => {
   const L = lumField(imgOf(renderStill(face, E, q)));
   const ink = inkMask(face, E, q, 2.6);
   const pal = face.pal;
-  const keys: [string, number][] = [[pal.paper, 0], [pal.bg, 0], [pal.bg2, 0], [pal.skin, 1], [pal.shade, 1], [pal.blush, 1], [pal.hair, 2], [pal.hair2, 2], [pal.accent, 3], [pal.accent2, 3], [pal.ink, 4]];
+  const keys: [string, number][] = [
+    [pal.paper, 0],
+    [pal.bg, 0],
+    [pal.bg2, 0],
+    [pal.skin, 1],
+    [pal.shade, 1],
+    [pal.blush, 1],
+    [pal.hair, 2],
+    [pal.hair2, 2],
+    [pal.accent, 3],
+    [pal.accent2, 3],
+    [pal.ink, 4],
+  ];
   const ref = keys.map(([c]) => hex(c));
   const cls = new Uint8Array(q * q);
   for (let i = 0; i < q * q; i++) {
@@ -362,11 +426,22 @@ const warhol: Render = (face, E, px) => {
   }
   const [c, g] = canvas(px);
   WARHOL.forEach((set, k) => {
-    const ox = (k % 2) * q, oy = Math.floor(k / 2) * q;
+    const ox = (k % 2) * q,
+      oy = Math.floor(k / 2) * q;
     const [bg, skin, hair, acc] = set.map(hex) as [RGB, RGB, RGB, RGB];
     const tile = imageFrom(q, (i) => {
       const k2 = cls[i]!;
-      return k2 === 0 ? bg : k2 === 1 ? (L[i]! < 0.5 ? mixRGB(skin, [0, 0, 0], 0.18) : skin) : k2 === 2 ? hair : k2 === 3 ? acc : [20, 18, 22];
+      return k2 === 0
+        ? bg
+        : k2 === 1
+          ? L[i]! < 0.5
+            ? mixRGB(skin, [0, 0, 0], 0.18)
+            : skin
+          : k2 === 2
+            ? hair
+            : k2 === 3
+              ? acc
+              : [20, 18, 22];
     });
     g.drawImage(tile, ox, oy);
     // the black screen, printed slightly off-register
@@ -395,7 +470,9 @@ const stencil: Render = (face, E, px) => {
   grain(g, px, face.seed + 1, 0.25, 'rgba(60,58,54,0.18)', 1.6);
   grain(g, px, face.seed + 2, 0.15, 'rgba(200,196,188,0.15)', 1.6);
   for (let n = 0; n < 8; n++) {
-    const x = r() * px, y = r() * px, rad = px * (0.05 + r() * 0.12);
+    const x = r() * px,
+      y = r() * px,
+      rad = px * (0.05 + r() * 0.12);
     const grd = g.createRadialGradient(x, y, 0, x, y, rad);
     grd.addColorStop(0, 'rgba(60,55,45,0.14)');
     grd.addColorStop(1, 'rgba(60,55,45,0)');
@@ -415,7 +492,11 @@ const stencil: Render = (face, E, px) => {
     const id = img.getContext('2d')!.getImageData(0, 0, px, px);
     for (let i = 0; i < px * px; i++) {
       // solid inside the stencil, a speckled overspray halo outside it
-      const a = m[i] ? 1 : mist[i]! > 0.02 && hash01(face.seed + 31 + li, i) < mist[i]! * 1.6 ? 0.8 : 0;
+      const a = m[i]
+        ? 1
+        : mist[i]! > 0.02 && hash01(face.seed + 31 + li, i) < mist[i]! * 1.6
+          ? 0.8
+          : 0;
       id.data[i * 4 + 3] = a * 255;
     }
     img.getContext('2d')!.putImageData(id, 0, 0);
@@ -425,8 +506,10 @@ const stencil: Render = (face, E, px) => {
       g.strokeStyle = css(layer.col, 0.85);
       g.lineCap = 'round';
       for (let n = 0, tries = 0; n < 9 && tries < 20000; tries++) {
-        const x = Math.floor(r() * px), y = Math.floor(r() * (px - 2));
-        const len = px * (0.03 + r() * 0.1), width = px / 240 + r() * 1.5;
+        const x = Math.floor(r() * px),
+          y = Math.floor(r() * (px - 2));
+        const len = px * (0.03 + r() * 0.1),
+          width = px / 240 + r() * 1.5;
         const i = y * px + x;
         if (!m[i] || m[i + px]) continue;
         g.lineWidth = width;
@@ -455,28 +538,43 @@ const stainedGlass: Render = (face, E, px) => {
   const r = rng(face.seed + 37);
   const n = Math.ceil(px / s) + 1;
   const seeds: Pt[] = [];
-  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) seeds.push({ x: (i + 0.15 + r() * 0.7) * s, y: (j + 0.15 + r() * 0.7) * s });
+  for (let j = 0; j < n; j++)
+    for (let i = 0; i < n; i++)
+      seeds.push({ x: (i + 0.15 + r() * 0.7) * s, y: (j + 0.15 + r() * 0.7) * s });
   // each pane is one Voronoi cell clipped to one colour region
   const label = new Int32Array(px * px);
-  const regionOf = (i: number) => pal.indexOf(nearest(pal, src.d[i * 4]!, src.d[i * 4 + 1]!, src.d[i * 4 + 2]!));
+  const regionOf = (i: number) =>
+    pal.indexOf(nearest(pal, src.d[i * 4]!, src.d[i * 4 + 1]!, src.d[i * 4 + 2]!));
   const cellD = new Float32Array(px * px);
-  for (let y = 0; y < px; y++) for (let x = 0; x < px; x++) {
-    const gi = Math.floor(x / s), gj = Math.floor(y / s);
-    let best = 0, bd = Infinity;
-    for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) {
-      const ii = gi + di, jj = gj + dj;
-      if (ii < 0 || jj < 0 || ii >= n || jj >= n) continue;
-      const p = seeds[jj * n + ii]!, d = (p.x - x) ** 2 + (p.y - y) ** 2;
-      if (d < bd) { bd = d; best = jj * n + ii; }
+  for (let y = 0; y < px; y++)
+    for (let x = 0; x < px; x++) {
+      const gi = Math.floor(x / s),
+        gj = Math.floor(y / s);
+      let best = 0,
+        bd = Infinity;
+      for (let dj = -1; dj <= 1; dj++)
+        for (let di = -1; di <= 1; di++) {
+          const ii = gi + di,
+            jj = gj + dj;
+          if (ii < 0 || jj < 0 || ii >= n || jj >= n) continue;
+          const p = seeds[jj * n + ii]!,
+            d = (p.x - x) ** 2 + (p.y - y) ** 2;
+          if (d < bd) {
+            bd = d;
+            best = jj * n + ii;
+          }
+        }
+      const i = y * px + x;
+      label[i] = best * 64 + regionOf(i);
+      cellD[i] = Math.sqrt(bd) / s;
     }
-    const i = y * px + x;
-    label[i] = best * 64 + regionOf(i);
-    cellD[i] = Math.sqrt(bd) / s;
-  }
   const sums = new Map<number, [number, number, number, number]>();
   for (let i = 0; i < px * px; i++) {
     const e = sums.get(label[i]!) ?? [0, 0, 0, 0];
-    e[0] += src.d[i * 4]!; e[1] += src.d[i * 4 + 1]!; e[2] += src.d[i * 4 + 2]!; e[3]++;
+    e[0] += src.d[i * 4]!;
+    e[1] += src.d[i * 4 + 1]!;
+    e[2] += src.d[i * 4 + 2]!;
+    e[3]++;
     sums.set(label[i]!, e);
   }
   const glass = new Map<number, RGB>();
@@ -487,7 +585,11 @@ const stainedGlass: Render = (face, E, px) => {
   const lead: RGB = [38, 36, 40];
   return imageFrom(px, (i, x, y) => {
     const L0 = label[i]!;
-    const edge = (x < px - 1 && label[i + 1] !== L0) || (y < px - 1 && label[i + px] !== L0) || (x > 0 && label[i - 1] !== L0) || (y > 0 && label[i - px] !== L0);
+    const edge =
+      (x < px - 1 && label[i + 1] !== L0) ||
+      (y < px - 1 && label[i + px] !== L0) ||
+      (x > 0 && label[i - 1] !== L0) ||
+      (y > 0 && label[i - px] !== L0);
     if (edge || ink[i]) return lead;
     const c = glass.get(L0)!;
     const glow = 1.18 - cellD[i]! * 0.45 + (Math.sin(x * 0.7 + y * 0.3) * 0.5 + 0.5) * 0.04;
@@ -505,21 +607,25 @@ const mosaic: Render = (face, E, px) => {
   g.fillRect(0, 0, px, px);
   const r = rng(face.seed + 41);
   const t = px / 46;
-  for (let y = t / 2; y < px; y += t * 0.92) for (let x = t / 2; x < px; x += t * 0.92) {
-    const sx = x + (r() - 0.5) * t * 0.3, sy = y + (r() - 0.5) * t * 0.3;
-    const i = Math.min(px * px - 1, Math.round(sy) * px + Math.round(sx));
-    if (ink[i]) continue;
-    const col = at(src, sx, sy), j = 1 + (r() - 0.5) * 0.14;
-    g.save();
-    g.translate(sx, sy);
-    g.rotate(angle[i]! + (r() - 0.5) * 0.15);
-    const w = t * (0.72 + r() * 0.1), h = t * (0.72 + r() * 0.1);
-    g.fillStyle = css([col[0] * j, col[1] * j, col[2] * j]);
-    g.fillRect(-w / 2, -h / 2, w, h);
-    g.fillStyle = 'rgba(255,255,255,0.14)';
-    g.fillRect(-w / 2, -h / 2, w, h * 0.22);
-    g.restore();
-  }
+  for (let y = t / 2; y < px; y += t * 0.92)
+    for (let x = t / 2; x < px; x += t * 0.92) {
+      const sx = x + (r() - 0.5) * t * 0.3,
+        sy = y + (r() - 0.5) * t * 0.3;
+      const i = Math.min(px * px - 1, Math.round(sy) * px + Math.round(sx));
+      if (ink[i]) continue;
+      const col = at(src, sx, sy),
+        j = 1 + (r() - 0.5) * 0.14;
+      g.save();
+      g.translate(sx, sy);
+      g.rotate(angle[i]! + (r() - 0.5) * 0.15);
+      const w = t * (0.72 + r() * 0.1),
+        h = t * (0.72 + r() * 0.1);
+      g.fillStyle = css([col[0] * j, col[1] * j, col[2] * j]);
+      g.fillRect(-w / 2, -h / 2, w, h);
+      g.fillStyle = 'rgba(255,255,255,0.14)';
+      g.fillRect(-w / 2, -h / 2, w, h * 0.22);
+      g.restore();
+    }
   // the outlines laid as a row of small dark tesserae
   g.save();
   g.scale(px / W, px / W);
@@ -529,7 +635,8 @@ const mosaic: Render = (face, E, px) => {
     applyClip(g, op.clip);
     const pts = resample(op.pts, tw * 0.62);
     pts.forEach((q, k) => {
-      const nx = pts[Math.min(pts.length - 1, k + 1)]!, pv = pts[Math.max(0, k - 1)]!;
+      const nx = pts[Math.min(pts.length - 1, k + 1)]!,
+        pv = pts[Math.max(0, k - 1)]!;
       g.save();
       g.translate(q.x, q.y);
       g.rotate(Math.atan2(nx.y - pv.y, nx.x - pv.x));
@@ -549,8 +656,14 @@ const felt: Render = (face, E, px) => {
   const r = rng(face.seed + 47);
   const fibres = (col: RGB, n: number, b = { x0: 0, y0: 0, x1: W, y1: W }) => {
     for (let k = 0; k < n; k++) {
-      const x = b.x0 + r() * (b.x1 - b.x0), y = b.y0 + r() * (b.y1 - b.y0), a = r() * TAU, l = 1 + r() * 3;
-      g.strokeStyle = css(mixRGB(col, r() < 0.5 ? [255, 255, 255] : [0, 0, 0], 0.12 + r() * 0.1), 0.35);
+      const x = b.x0 + r() * (b.x1 - b.x0),
+        y = b.y0 + r() * (b.y1 - b.y0),
+        a = r() * TAU,
+        l = 1 + r() * 3;
+      g.strokeStyle = css(
+        mixRGB(col, r() < 0.5 ? [255, 255, 255] : [0, 0, 0], 0.12 + r() * 0.1),
+        0.35,
+      );
       g.lineWidth = 0.35;
       g.beginPath();
       g.moveTo(x, y);
@@ -578,7 +691,8 @@ const felt: Render = (face, E, px) => {
     g.shadowColor = 'transparent';
     // fuzzy cut edge
     for (const q of resample([...op.pts, op.pts[0]!], 2)) {
-      const a = r() * TAU, l = 0.8 + r() * 1.6;
+      const a = r() * TAU,
+        l = 0.8 + r() * 1.6;
       g.strokeStyle = css(col, 0.7);
       g.lineWidth = 0.5;
       g.beginPath();
@@ -594,11 +708,17 @@ const felt: Render = (face, E, px) => {
     g.restore();
     // running stitch just inside the edge
     if (op.k === 'wash' && op.layers >= 20) {
-      const b = bbox(op.pts), cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
+      const b = bbox(op.pts),
+        cx = (b.x0 + b.x1) / 2,
+        cy = (b.y0 + b.y1) / 2;
       g.strokeStyle = css(mixRGB(col, [255, 255, 255], 0.55), 0.85);
       g.lineWidth = 0.9;
       g.setLineDash([3, 2.5]);
-      polyline(g, op.pts.map((q) => ({ x: cx + (q.x - cx) * 0.93, y: cy + (q.y - cy) * 0.93 })), true);
+      polyline(
+        g,
+        op.pts.map((q) => ({ x: cx + (q.x - cx) * 0.93, y: cy + (q.y - cy) * 0.93 })),
+        true,
+      );
       g.stroke();
       g.setLineDash([]);
     }
@@ -665,14 +785,21 @@ const felt: Render = (face, E, px) => {
     g.strokeStyle = '#efe6d4';
     g.lineWidth = 0.9;
     const hd = rad * 0.28;
-    for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]] as const) {
+    for (const [dx, dy] of [
+      [-1, -1],
+      [1, -1],
+      [-1, 1],
+      [1, 1],
+    ] as const) {
       g.beginPath();
       g.arc(e.x + dx * hd, e.y + dy * hd, rad * 0.11, 0, TAU);
       g.fill();
     }
     g.beginPath();
-    g.moveTo(e.x - hd, e.y - hd); g.lineTo(e.x + hd, e.y + hd);
-    g.moveTo(e.x + hd, e.y - hd); g.lineTo(e.x - hd, e.y + hd);
+    g.moveTo(e.x - hd, e.y - hd);
+    g.lineTo(e.x + hd, e.y + hd);
+    g.moveTo(e.x + hd, e.y - hd);
+    g.lineTo(e.x - hd, e.y + hd);
     g.stroke();
     g.restore();
     if (st.lid) feltLid(e, st);
@@ -689,22 +816,39 @@ function delaunay(pts: Pt[]): [number, number, number][] {
   const n = pts.length;
   type Tri = { a: number; b: number; c: number; x: number; y: number; r2: number };
   const make = (a: number, b: number, c: number): Tri => {
-    const A = P[a]!, B = P[b]!, C = P[c]!;
+    const A = P[a]!,
+      B = P[b]!,
+      C = P[c]!;
     const d = 2 * (A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y));
-    const ux = ((A.x ** 2 + A.y ** 2) * (B.y - C.y) + (B.x ** 2 + B.y ** 2) * (C.y - A.y) + (C.x ** 2 + C.y ** 2) * (A.y - B.y)) / d;
-    const uy = ((A.x ** 2 + A.y ** 2) * (C.x - B.x) + (B.x ** 2 + B.y ** 2) * (A.x - C.x) + (C.x ** 2 + C.y ** 2) * (B.x - A.x)) / d;
+    const ux =
+      ((A.x ** 2 + A.y ** 2) * (B.y - C.y) +
+        (B.x ** 2 + B.y ** 2) * (C.y - A.y) +
+        (C.x ** 2 + C.y ** 2) * (A.y - B.y)) /
+      d;
+    const uy =
+      ((A.x ** 2 + A.y ** 2) * (C.x - B.x) +
+        (B.x ** 2 + B.y ** 2) * (A.x - C.x) +
+        (C.x ** 2 + C.y ** 2) * (B.x - A.x)) /
+      d;
     return { a, b, c, x: ux, y: uy, r2: (A.x - ux) ** 2 + (A.y - uy) ** 2 };
   };
   let tris: Tri[] = [make(n, n + 1, n + 2)];
   for (let i = 0; i < n; i++) {
     const p = P[i]!;
-    const bad: Tri[] = [], keep: Tri[] = [];
+    const bad: Tri[] = [],
+      keep: Tri[] = [];
     for (const t of tris) ((p.x - t.x) ** 2 + (p.y - t.y) ** 2 < t.r2 ? bad : keep).push(t);
     const edges = new Map<string, [number, number]>();
-    for (const t of bad) for (const [u, v] of [[t.a, t.b], [t.b, t.c], [t.c, t.a]] as const) {
-      const key = u < v ? `${u},${v}` : `${v},${u}`;
-      if (edges.has(key)) edges.delete(key); else edges.set(key, [u, v]);
-    }
+    for (const t of bad)
+      for (const [u, v] of [
+        [t.a, t.b],
+        [t.b, t.c],
+        [t.c, t.a],
+      ] as const) {
+        const key = u < v ? `${u},${v}` : `${v},${u}`;
+        if (edges.has(key)) edges.delete(key);
+        else edges.set(key, [u, v]);
+      }
     tris = keep;
     for (const [u, v] of edges.values()) tris.push(make(u, v, i));
   }
@@ -716,33 +860,63 @@ const lowpoly: Render = (face, E, px) => {
   const r = rng(face.seed + 53);
   const s = px / 22;
   const pts: Pt[] = [];
-  for (let y = 0; y <= px + 1; y += s) for (let x = 0; x <= px + 1; x += s) {
-    const edge = x === 0 || y === 0 || x + s > px + 1 || y + s > px + 1;
-    pts.push({ x: Math.min(px, x + (edge ? 0 : (r() - 0.5) * s * 0.8)), y: Math.min(px, y + (edge ? 0 : (r() - 0.5) * s * 0.8)) });
-  }
+  for (let y = 0; y <= px + 1; y += s)
+    for (let x = 0; x <= px + 1; x += s) {
+      const edge = x === 0 || y === 0 || x + s > px + 1 || y + s > px + 1;
+      pts.push({
+        x: Math.min(px, x + (edge ? 0 : (r() - 0.5) * s * 0.8)),
+        y: Math.min(px, y + (edge ? 0 : (r() - 0.5) * s * 0.8)),
+      });
+    }
   // extra vertices along the pen lines keep the features sharp
-  for (const op of figureInks(face)) for (const q of resample(op.pts, 9)) pts.push({ x: (q.x / W) * px + (r() - 0.5), y: (q.y / W) * px + (r() - 0.5) });
-  for (const e of face.eyes) for (let k = 0; k < 6; k++) pts.push({ x: ((e.x + Math.cos((k / 6) * TAU) * e.r * 0.6) / W) * px, y: ((e.y + Math.sin((k / 6) * TAU) * e.r * 0.6) / W) * px });
+  for (const op of figureInks(face))
+    for (const q of resample(op.pts, 9))
+      pts.push({ x: (q.x / W) * px + (r() - 0.5), y: (q.y / W) * px + (r() - 0.5) });
+  for (const e of face.eyes)
+    for (let k = 0; k < 6; k++)
+      pts.push({
+        x: ((e.x + Math.cos((k / 6) * TAU) * e.r * 0.6) / W) * px,
+        y: ((e.y + Math.sin((k / 6) * TAU) * e.r * 0.6) / W) * px,
+      });
   const [c, g] = canvas(px);
   for (const [a, b, d] of delaunay(pts)) {
-    const A = pts[a]!, B = pts[b]!, D = pts[d]!;
-    const cx = (A.x + B.x + D.x) / 3, cy = (A.y + B.y + D.y) / 3;
-    const samples = [at(src, cx, cy), at(src, (cx + A.x) / 2, (cy + A.y) / 2), at(src, (cx + B.x) / 2, (cy + B.y) / 2), at(src, (cx + D.x) / 2, (cy + D.y) / 2)];
-    const col = samples.reduce<RGB>((m, p) => [m[0] + p[0] / 4, m[1] + p[1] / 4, m[2] + p[2] / 4], [0, 0, 0]);
+    const A = pts[a]!,
+      B = pts[b]!,
+      D = pts[d]!;
+    const cx = (A.x + B.x + D.x) / 3,
+      cy = (A.y + B.y + D.y) / 3;
+    const samples = [
+      at(src, cx, cy),
+      at(src, (cx + A.x) / 2, (cy + A.y) / 2),
+      at(src, (cx + B.x) / 2, (cy + B.y) / 2),
+      at(src, (cx + D.x) / 2, (cy + D.y) / 2),
+    ];
+    const col = samples.reduce<RGB>(
+      (m, p) => [m[0] + p[0] / 4, m[1] + p[1] / 4, m[2] + p[2] / 4],
+      [0, 0, 0],
+    );
     // facets catch the light differently depending on which way they lean
-    const k = 0.94 + ((A.x - D.x) * (B.y - D.y) - (A.y - D.y) * (B.x - D.x) > 0 ? 0.04 : -0.02) + (r() - 0.5) * 0.06;
+    const k =
+      0.94 +
+      ((A.x - D.x) * (B.y - D.y) - (A.y - D.y) * (B.x - D.x) > 0 ? 0.04 : -0.02) +
+      (r() - 0.5) * 0.06;
     g.fillStyle = css([col[0] * k, col[1] * k, col[2] * k]);
     g.strokeStyle = g.fillStyle;
     g.lineWidth = 0.6;
     g.beginPath();
-    g.moveTo(A.x, A.y); g.lineTo(B.x, B.y); g.lineTo(D.x, D.y); g.closePath();
+    g.moveTo(A.x, A.y);
+    g.lineTo(B.x, B.y);
+    g.lineTo(D.x, D.y);
+    g.closePath();
     g.fill();
     g.stroke();
   }
   return c;
 };
 
-const HYPSO = ['#cfe3c0', '#e2e6b4', '#ead39a', '#ddb27e', '#c58f68', '#a9765a', '#f1ece2'].map(hex);
+const HYPSO = ['#cfe3c0', '#e2e6b4', '#ead39a', '#ddb27e', '#c58f68', '#a9765a', '#f1ece2'].map(
+  hex,
+);
 
 const topo: Render = (face, E, px) => {
   const still = imgOf(renderStill(face, E, px));
@@ -753,14 +927,17 @@ const topo: Render = (face, E, px) => {
   for (let i = 0; i < H.length; i++) H[i] = dome[i]! * 0.75 + (1 - L[i]!) * 0.25;
   const K = 26;
   const tint = (v: number): RGB => {
-    const t = clamp01(v) * (HYPSO.length - 1), k = Math.floor(t);
+    const t = clamp01(v) * (HYPSO.length - 1),
+      k = Math.floor(t);
     return mixRGB(HYPSO[k]!, HYPSO[Math.min(HYPSO.length - 1, k + 1)]!, t - k);
   };
   const c = imageFrom(px, (i, x, y) => {
     if (ink[i]) return [47, 93, 138];
     const lv = Math.floor(H[i]! * K);
-    const right = x < px - 1 ? Math.floor(H[i + 1]! * K) : lv, down = y < px - 1 ? Math.floor(H[i + px]! * K) : lv;
-    if (lv !== right || lv !== down) return Math.max(lv, right, down) % 5 === 0 ? [110, 66, 36] : [168, 117, 79];
+    const right = x < px - 1 ? Math.floor(H[i + 1]! * K) : lv,
+      down = y < px - 1 ? Math.floor(H[i + px]! * K) : lv;
+    if (lv !== right || lv !== down)
+      return Math.max(lv, right, down) % 5 === 0 ? [110, 66, 36] : [168, 117, 79];
     return mixRGB(tint(H[i]! * 1.15), [244, 238, 226], 0.25);
   });
   const g = c.getContext('2d')!;
@@ -768,23 +945,47 @@ const topo: Render = (face, E, px) => {
   // the summit, marked like a peak on a survey map
   let top = 0;
   for (let i = 0; i < H.length; i++) if (H[i]! > H[top]!) top = i;
-  const tx = top % px, ty = Math.floor(top / px);
+  const tx = top % px,
+    ty = Math.floor(top / px);
   g.fillStyle = '#6e4224';
-  g.beginPath(); g.moveTo(tx, ty - 6 * u); g.lineTo(tx + 5 * u, ty + 3 * u); g.lineTo(tx - 5 * u, ty + 3 * u); g.fill();
+  g.beginPath();
+  g.moveTo(tx, ty - 6 * u);
+  g.lineTo(tx + 5 * u, ty + 3 * u);
+  g.lineTo(tx - 5 * u, ty + 3 * u);
+  g.fill();
   g.font = `600 ${11 * u}px ui-monospace, Menlo, monospace`;
   g.fillText(`${Math.round(1800 + H[top]! * 1400)}`, tx + 8 * u, ty + 3 * u);
   // compass
   g.strokeStyle = '#6e4224';
   g.lineWidth = 1.2 * u;
-  const cx = px - 34 * u, cy = px - 40 * u;
-  g.beginPath(); g.moveTo(cx, cy - 18 * u); g.lineTo(cx, cy + 14 * u); g.moveTo(cx - 10 * u, cy); g.lineTo(cx + 10 * u, cy); g.stroke();
-  g.beginPath(); g.moveTo(cx, cy - 18 * u); g.lineTo(cx + 5 * u, cy - 6 * u); g.lineTo(cx - 5 * u, cy - 6 * u); g.fill();
+  const cx = px - 34 * u,
+    cy = px - 40 * u;
+  g.beginPath();
+  g.moveTo(cx, cy - 18 * u);
+  g.lineTo(cx, cy + 14 * u);
+  g.moveTo(cx - 10 * u, cy);
+  g.lineTo(cx + 10 * u, cy);
+  g.stroke();
+  g.beginPath();
+  g.moveTo(cx, cy - 18 * u);
+  g.lineTo(cx + 5 * u, cy - 6 * u);
+  g.lineTo(cx - 5 * u, cy - 6 * u);
+  g.fill();
   g.textAlign = 'center';
   g.fillText('N', cx, cy - 24 * u);
   return c;
 };
 
-const IRON = ['#000014', '#1d0b4f', '#5c128a', '#a3197f', '#e0364d', '#f9752a', '#fbbf2c', '#fff3b8'].map(hex);
+const IRON = [
+  '#000014',
+  '#1d0b4f',
+  '#5c128a',
+  '#a3197f',
+  '#e0364d',
+  '#f9752a',
+  '#fbbf2c',
+  '#fff3b8',
+].map(hex);
 
 const thermal: Render = (face, E, px) => {
   const still = imgOf(renderStill(face, E, px));
@@ -794,7 +995,10 @@ const thermal: Render = (face, E, px) => {
   const r = rng(face.seed + 59);
   const T = new Float32Array(px * px);
   // warm in the middle of the face, hotter in the creases (eyes, mouth), cold air around it
-  for (let i = 0; i < T.length; i++) T[i] = mask[i] ? 0.35 + dome[i]! * 0.45 + (1 - L[i]!) * 0.2 + (ink[i] ? 0.08 : 0) : 0.08 + dome[i]! * 0.3;
+  for (let i = 0; i < T.length; i++)
+    T[i] = mask[i]
+      ? 0.35 + dome[i]! * 0.45 + (1 - L[i]!) * 0.2 + (ink[i] ? 0.08 : 0)
+      : 0.08 + dome[i]! * 0.3;
   const Tb = blur(T, px, px / 160, 2);
   const c = imageFrom(px, (i) => {
     const v = clamp01(Tb[i]! + (r() - 0.5) * 0.02) * (IRON.length - 1);
@@ -810,10 +1014,17 @@ const thermal: Render = (face, E, px) => {
   g.fillText('MAX 37.4  MIN 18.2', 14 * u, 42 * u);
   g.strokeStyle = '#fff';
   g.lineWidth = 1.4 * u;
-  const cx = px / 2, cy = px * 0.5;
+  const cx = px / 2,
+    cy = px * 0.5;
   g.beginPath();
-  g.moveTo(cx - 14 * u, cy); g.lineTo(cx - 5 * u, cy); g.moveTo(cx + 5 * u, cy); g.lineTo(cx + 14 * u, cy);
-  g.moveTo(cx, cy - 14 * u); g.lineTo(cx, cy - 5 * u); g.moveTo(cx, cy + 5 * u); g.lineTo(cx, cy + 14 * u);
+  g.moveTo(cx - 14 * u, cy);
+  g.lineTo(cx - 5 * u, cy);
+  g.moveTo(cx + 5 * u, cy);
+  g.lineTo(cx + 14 * u, cy);
+  g.moveTo(cx, cy - 14 * u);
+  g.lineTo(cx, cy - 5 * u);
+  g.moveTo(cx, cy + 5 * u);
+  g.lineTo(cx, cy + 14 * u);
   g.stroke();
   const bar = g.createLinearGradient(0, px * 0.8, 0, px * 0.2);
   IRON.forEach((col, k) => bar.addColorStop(k / (IRON.length - 1), css(col)));
@@ -841,11 +1052,19 @@ const holo: Render = (face, E, px) => {
   const g = c.getContext('2d')!;
   const r = rng(face.seed + 61);
   for (let n = 0; n < 40; n++) {
-    const x = r() * px, y = r() * px, s = (1 + r() * 3) * (px / 480);
+    const x = r() * px,
+      y = r() * px,
+      s = (1 + r() * 3) * (px / 480);
     g.fillStyle = 'rgba(255,255,255,0.85)';
     g.beginPath();
-    g.moveTo(x, y - s * 3); g.lineTo(x + s * 0.6, y - s * 0.6); g.lineTo(x + s * 3, y); g.lineTo(x + s * 0.6, y + s * 0.6);
-    g.lineTo(x, y + s * 3); g.lineTo(x - s * 0.6, y + s * 0.6); g.lineTo(x - s * 3, y); g.lineTo(x - s * 0.6, y - s * 0.6);
+    g.moveTo(x, y - s * 3);
+    g.lineTo(x + s * 0.6, y - s * 0.6);
+    g.lineTo(x + s * 3, y);
+    g.lineTo(x + s * 0.6, y + s * 0.6);
+    g.lineTo(x, y + s * 3);
+    g.lineTo(x - s * 0.6, y + s * 0.6);
+    g.lineTo(x - s * 3, y);
+    g.lineTo(x - s * 0.6, y - s * 0.6);
     g.fill();
   }
   return c;
@@ -854,27 +1073,76 @@ const holo: Render = (face, E, px) => {
 // ================= registry =================
 
 export const PAINTS: { id: string; name: string; note: string; render: Render }[] = [
-  { id: 'gouache', name: 'Gouache', note: 'flat matte colour with dry-brush streaks', render: gouache },
-  { id: 'oil', name: 'Oil impasto', note: 'strokes follow the form, with raised ridges', render: oil },
+  {
+    id: 'gouache',
+    name: 'Gouache',
+    note: 'flat matte colour with dry-brush streaks',
+    render: gouache,
+  },
+  {
+    id: 'oil',
+    name: 'Oil impasto',
+    note: 'strokes follow the form, with raised ridges',
+    render: oil,
+  },
   { id: 'sumi', name: 'Sumi-e', note: 'ink brush lines, grey washes, red seal', render: sumi },
   { id: 'charcoal', name: 'Charcoal', note: 'smudged tone, eraser highlights', render: charcoal },
-  { id: 'pointillism', name: 'Pointillism', note: 'pure-colour dots mixed by the eye', render: pointillism },
-  { id: 'linocut', name: 'Linocut', note: 'carved lines over the form, two blocks', render: linocut },
-  { id: 'warhol', name: 'Warhol screen print', note: 'four colourways, off-register black', render: warhol },
-  { id: 'stencil', name: 'Stencil graffiti', note: 'three sprayed layers, overspray, drips', render: stencil },
-  { id: 'stained', name: 'Stained glass', note: 'panes cut along colour, leaded', render: stainedGlass },
+  {
+    id: 'pointillism',
+    name: 'Pointillism',
+    note: 'pure-colour dots mixed by the eye',
+    render: pointillism,
+  },
+  {
+    id: 'linocut',
+    name: 'Linocut',
+    note: 'carved lines over the form, two blocks',
+    render: linocut,
+  },
+  {
+    id: 'warhol',
+    name: 'Warhol screen print',
+    note: 'four colourways, off-register black',
+    render: warhol,
+  },
+  {
+    id: 'stencil',
+    name: 'Stencil graffiti',
+    note: 'three sprayed layers, overspray, drips',
+    render: stencil,
+  },
+  {
+    id: 'stained',
+    name: 'Stained glass',
+    note: 'panes cut along colour, leaded',
+    render: stainedGlass,
+  },
   { id: 'mosaic', name: 'Mosaic', note: 'tesserae laid along the form', render: mosaic },
   { id: 'felt', name: 'Felt', note: 'cut felt, running stitch, button eyes', render: felt },
-  { id: 'lowpoly', name: 'Low-poly', note: 'Delaunay facets, denser along the lines', render: lowpoly },
-  { id: 'topo', name: 'Topographic', note: 'contours over the head, rivers for lines', render: topo },
+  {
+    id: 'lowpoly',
+    name: 'Low-poly',
+    note: 'Delaunay facets, denser along the lines',
+    render: lowpoly,
+  },
+  {
+    id: 'topo',
+    name: 'Topographic',
+    note: 'contours over the head, rivers for lines',
+    render: topo,
+  },
   { id: 'thermal', name: 'Thermal camera', note: 'iron palette with a HUD', render: thermal },
   { id: 'holo', name: 'Holographic foil', note: 'hue shifts with tone and tilt', render: holo },
 ];
 
-export function renderPaint(id: string, face: Face, E: Engine, px: number): HTMLCanvasElement | null {
+export function renderPaint(
+  id: string,
+  face: Face,
+  E: Engine,
+  px: number,
+): HTMLCanvasElement | null {
   const paint = PAINTS.find((p) => p.id === id);
   if (!paint) return null;
   E.noiseSeed(face.seed);
   return paint.render(face, E, px);
 }
-

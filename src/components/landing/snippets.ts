@@ -2,18 +2,36 @@ import { resolveLook, type FaceState, type LookChoice, type Shape } from 'glorpi
 import type { Lang } from '@/lib/highlight';
 
 /** What a face is set to; every snippet is written from it. */
-export type Choice = { name: string; look: LookChoice; shape: Shape; state: FaceState; background: boolean | string; alive: boolean; size: number };
+export type Choice = {
+  name: string;
+  look: LookChoice;
+  shape: Shape;
+  state: FaceState;
+  background: boolean | string;
+  alive: boolean;
+  size: number;
+};
 
 /** The playground's name is made up on arrival; see Landing. */
-export const START: Choice = { name: '', look: 'auto', shape: 'square', state: 'idle', background: true, alive: true, size: 48 };
+export const START: Choice = {
+  name: '',
+  look: 'auto',
+  shape: 'square',
+  state: 'idle',
+  background: true,
+  alive: true,
+  size: 48,
+};
 
 const q = (s: string) => JSON.stringify(s);
 
 /** A name as a JSX prop: a plain string when it can be one, else a string expression (JSX strings have no escapes). */
-const jsxName = (name: string) => (/^[^"\\{}<>&]*$/.test(name) ? `name="${name}"` : `name={${q(name)}}`);
+const jsxName = (name: string) =>
+  /^[^"\\{}<>&]*$/.test(name) ? `name="${name}"` : `name={${q(name)}}`;
 
 /** A name as an HTML attribute. */
-const htmlName = (name: string) => `name="${name.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')}"`;
+const htmlName = (name: string) =>
+  `name="${name.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')}"`;
 
 /** A word for a shell, quoted unless it's plainly safe. */
 const shellWord = (s: string) => (/^[\w@%+=:,./-]+$/.test(s) ? s : `'${s.replace(/'/g, `'\\''`)}'`);
@@ -41,7 +59,11 @@ function props(c: Choice, syntax: keyof typeof SYNTAX) {
 
 /** The image's address on your own route (see the server snippet): twice the size for sharp screens, in the look shown at the size itself. */
 function query(c: Choice, format?: string) {
-  const p = new URLSearchParams({ name: c.name, size: String(c.size * 2), look: resolveLook(c.look, c.size) });
+  const p = new URLSearchParams({
+    name: c.name,
+    size: String(c.size * 2),
+    look: resolveLook(c.look, c.size),
+  });
   if (c.background === false) p.set('background', 'false');
   else p.set('shape', c.shape);
   // a hex colour goes without its #, which a url would otherwise have to escape
@@ -57,9 +79,12 @@ function query(c: Choice, format?: string) {
  */
 function cli(c: Choice) {
   const flags = [
-    `--look ${resolveLook(c.look, c.size)}`, '--size 256', c.background === false ? '--background false' : `--shape ${c.shape}`,
+    `--look ${resolveLook(c.look, c.size)}`,
+    '--size 256',
+    c.background === false ? '--background false' : `--shape ${c.shape}`,
     typeof c.background === 'string' && `--background ${shellWord(c.background.replace(/^#/, ''))}`,
-    c.state !== 'idle' && `--state ${c.state}`, '-o face.png',
+    c.state !== 'idle' && `--state ${c.state}`,
+    '-o face.png',
   ].filter(Boolean);
   return `npx -p glorpies -p @napi-rs/canvas glorpies ${flags.join(' ')} ${c.name.startsWith('-') ? '-- ' : ''}${shellWord(c.name || 'face')}`;
 }

@@ -4,8 +4,15 @@ export default defineConfig([
   {
     // built together so every entry shares one copy of the engine (one animation loop, one face cache)
     entry: {
-      index: 'src/index.ts', element: 'src/element.ts', react: 'src/react.tsx', vue: 'src/vue.ts', preact: 'src/preact.ts', solid: 'src/solid.ts',
-      'svelte/action': 'src/svelte/action.ts', server: 'src/server.ts', testing: 'src/testing.ts',
+      index: 'src/index.ts',
+      element: 'src/element.ts',
+      react: 'src/react.tsx',
+      vue: 'src/vue.ts',
+      preact: 'src/preact.ts',
+      solid: 'src/solid.ts',
+      'svelte/action': 'src/svelte/action.ts',
+      server: 'src/server.ts',
+      testing: 'src/testing.ts',
     },
     format: ['esm'],
     target: 'es2022',
@@ -24,5 +31,12 @@ export default defineConfig([
     outDir: 'dist/cdn',
     noExternal: [/.*/],
   },
-  { entry: { cli: 'src/cli.ts' }, format: ['esm'], target: 'node22', external: ['@napi-rs/canvas'], noExternal: ['gifenc'], banner: { js: '#!/usr/bin/env node' } },
+  {
+    entry: { cli: 'src/cli.ts' },
+    format: ['esm'],
+    target: 'node22',
+    external: ['@napi-rs/canvas'],
+    noExternal: ['gifenc'],
+    banner: { js: '#!/usr/bin/env node' },
+  },
 ]);

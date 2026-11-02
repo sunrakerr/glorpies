@@ -1,7 +1,13 @@
 import { loadEngine, type Engine } from './engine';
 import { buildFace } from './face/build';
 import { EYE_POSES, eyePatch, pixelsOf, posed } from './alive';
-import { isStill, rasterizeFace, renderStill, type Painting, type StillRaster } from './face/render';
+import {
+  isStill,
+  rasterizeFace,
+  renderStill,
+  type Painting,
+  type StillRaster,
+} from './face/render';
 import type { Face } from './face/types';
 import { makeCanvas } from './canvas';
 import { cutBackdrop, cutOut } from './cutout';
@@ -77,7 +83,8 @@ function pump() {
     const took = performance.now() - start;
     if (job.paced) setTimeout(step, Math.min(250, took));
     // a job long enough to have cost a frame lets the page draw one before the next starts
-    else if (took > 12 && typeof requestAnimationFrame === 'function' && !document.hidden) requestAnimationFrame(() => setTimeout(step, 0));
+    else if (took > 12 && typeof requestAnimationFrame === 'function' && !document.hidden)
+      requestAnimationFrame(() => setTimeout(step, 0));
     else setTimeout(step, 0);
   };
   setTimeout(step, 0);
@@ -95,9 +102,15 @@ export function schedule<T>(priority: number, work: (E: Engine) => T, paced = fa
     loadEngine().then((E) => {
       if (cancelled) return;
       job = {
-        priority, order: order++, paced,
+        priority,
+        order: order++,
+        paced,
         run: () => {
-          try { resolve(work(E)); } catch (err) { reject(err); }
+          try {
+            resolve(work(E));
+          } catch (err) {
+            reject(err);
+          }
         },
       };
       jobs.push(job);
@@ -140,7 +153,8 @@ export type PaintOptions = {
 };
 
 /** Cancelling a job rejects it with an AbortError, which is not a failure. */
-export const isCancelled = (error: unknown) => error instanceof Error && error.name === 'AbortError';
+export const isCancelled = (error: unknown) =>
+  error instanceof Error && error.name === 'AbortError';
 
 /**
  * Paints a face as a series of small jobs, so the page never stalls for long.
@@ -148,9 +162,15 @@ export const isCancelled = (error: unknown) => error instanceof Error && error.n
  * still, then its eye poses, each joining the raster when it's ready. A face
  * that won't move (`lively: false`) gets only the still.
  */
-export function paintRaster(seed: number, px: number, priority: number, o: PaintOptions = {}): Scheduled<{ face: Face; raster: Painting }> & { settled: Promise<void> } {
+export function paintRaster(
+  seed: number,
+  px: number,
+  priority: number,
+  o: PaintOptions = {},
+): Scheduled<{ face: Face; raster: Painting }> & { settled: Promise<void> } {
   const { look = DEFAULT_LOOK, lively = true, state = 'idle', background = true } = o;
-  const faceOf = (E: Engine) => (background ? faceFor(seed, E, state) : unguided(faceFor(seed, E, state)));
+  const faceOf = (E: Engine) =>
+    background ? faceFor(seed, E, state) : unguided(faceFor(seed, E, state));
   if (look === DEFAULT_LOOK) {
     const job = schedule(priority, (E) => {
       const face = faceOf(E);
@@ -158,7 +178,13 @@ export function paintRaster(seed: number, px: number, priority: number, o: Paint
       if (!background) cutBackdrop(raster, face);
       return { face, raster };
     });
-    return { ...job, settled: job.promise.then(() => {}, () => {}) };
+    return {
+      ...job,
+      settled: job.promise.then(
+        () => {},
+        () => {},
+      ),
+    };
   }
   const follow: Scheduled<void>[] = [];
   const later = (prio: number, work: (E: Engine) => void) => {
@@ -172,22 +198,53 @@ export function paintRaster(seed: number, px: number, priority: number, o: Paint
     const face = faceOf(E);
     const start = performance.now();
     // a face that will never move is painted with its eyes already set for its mood, as a still image is
-    const whole = renderLook(look, lively || state === 'idle' ? face : posed(face, stillEyes(face, state)), E, px);
+    const whole = renderLook(
+      look,
+      lively || state === 'idle' ? face : posed(face, stillEyes(face, state)),
+      E,
+      px,
+    );
     const { motion, eyes, tiles } = lookOf(look);
-    const raster: StillRaster = { px, still: whole, layers: 'pending', back: null, figure: null, mask: null, motion, eyes, tiles, patches: [], glance: null, settling: lively };
+    const raster: StillRaster = {
+      px,
+      still: whole,
+      layers: 'pending',
+      back: null,
+      figure: null,
+      mask: null,
+      motion,
+      eyes,
+      tiles,
+      patches: [],
+      glance: null,
+      settling: lively,
+    };
     // off its background the face is cut out now, before it's ever shown, and moves over nothing
     const cut = background ? null : cutOut(look, face, E, whole);
-    if (cut) Object.assign(raster, { still: cut.figure, layers: 'split', back: makeCanvas(px), figure: cut.figure, mask: cut.mask });
+    if (cut)
+      Object.assign(raster, {
+        still: cut.figure,
+        layers: 'split',
+        back: makeCanvas(px),
+        figure: cut.figure,
+        mask: cut.mask,
+      });
     // a slow style gets the poses that matter most (a blink, a glance each way) so the page stays smooth
-    const wanted = !lively ? [] : performance.now() - start > SLOW_STYLE_MS ? EYE_POSES.slice(0, 3) : EYE_POSES;
+    const wanted = !lively
+      ? []
+      : performance.now() - start > SLOW_STYLE_MS
+        ? EYE_POSES.slice(0, 3)
+        : EYE_POSES;
 
     // first the background bare, so the face can move without it; every face is split before any eyes are painted
-    if (lively && !cut) later(priority - LAYER_LAG, (E) => {
-      const back = renderLook(look, face, E, px, true);
-      const split = splitLayers(whole, back);
-      if (split) Object.assign(raster, { layers: 'split', back, figure: split.figure, mask: split.mask });
-      else raster.layers = 'whole';
-    });
+    if (lively && !cut)
+      later(priority - LAYER_LAG, (E) => {
+        const back = renderLook(look, face, E, px, true);
+        const split = splitLayers(whole, back);
+        if (split)
+          Object.assign(raster, { layers: 'split', back, figure: split.figure, mask: split.mask });
+        else raster.layers = 'whole';
+      });
 
     let rest: Uint8ClampedArray | null = null;
     wanted.forEach((pose, i) => {
@@ -195,7 +252,13 @@ export function paintRaster(seed: number, px: number, priority: number, o: Paint
       later(priority - POSE_LAG - i * 0.01, (E) => {
         // patches are found against the whole painting, then trimmed to the cut
         rest ??= pixelsOf(whole);
-        const patch = eyePatch(rest, renderLook(look, posed(face, pose), E, px), face, pose, raster.mask);
+        const patch = eyePatch(
+          rest,
+          renderLook(look, posed(face, pose), E, px),
+          face,
+          pose,
+          raster.mask,
+        );
         if (patch) raster.patches.push(patch);
         if (i === wanted.length - 1) rest = null;
       });
@@ -203,10 +266,13 @@ export function paintRaster(seed: number, px: number, priority: number, o: Paint
     return { face, raster };
   });
   // settled once every layer and pose has landed, or been cancelled
-  const settled = base.promise.then(async ({ raster }) => {
-    await Promise.allSettled(follow.map((p) => p.promise));
-    if (isStill(raster)) raster.settling = false;
-  }, () => {});
+  const settled = base.promise.then(
+    async ({ raster }) => {
+      await Promise.allSettled(follow.map((p) => p.promise));
+      if (isStill(raster)) raster.settling = false;
+    },
+    () => {},
+  );
   return {
     promise: base.promise,
     settled,
@@ -236,6 +302,10 @@ export function paintThumb(seed: number, look: LookId, px: number): Scheduled<HT
 
 /** `glorpie-soggy-glorp-ink.png`: the name made safe for a file, or its seed when nothing of it is. */
 export function fileName(name: FaceName, ext: string, look: LookId = DEFAULT_LOOK): string {
-  const slug = String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || seedOf(name).toString(36);
+  const slug =
+    String(name)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '') || seedOf(name).toString(36);
   return `glorpie-${slug}${look === DEFAULT_LOOK ? '' : `-${look}`}.${ext}`;
 }

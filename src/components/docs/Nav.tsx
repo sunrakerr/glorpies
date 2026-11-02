@@ -56,12 +56,20 @@ export function MobileIndex() {
   const page = DOC_PAGES.find((p) => docHref(p.slug) === path);
   return (
     <div className="mb-8 rounded-lg border border-ink/12 md:hidden">
-      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex w-full items-center justify-between px-4 py-3 text-[12.5px]">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between px-4 py-3 text-[12.5px]"
+      >
         <span>
           <span className="text-ink-2">docs / </span>
           {page?.title}
         </span>
-        <ChevronDown className={`size-4 text-ink-2 transition ${open ? 'rotate-180' : ''}`} strokeWidth={1.8} />
+        <ChevronDown
+          className={`size-4 text-ink-2 transition ${open ? 'rotate-180' : ''}`}
+          strokeWidth={1.8}
+        />
       </button>
       {open && (
         <div className="border-t border-ink/10 px-4 py-4">
@@ -83,10 +91,20 @@ export function PrevNext() {
     <nav aria-label="Previous and next" className="mt-20 grid gap-4 sm:grid-cols-2">
       {pages.map(({ page, label, align }) =>
         page ? (
-          <Link key={label} href={docHref(page.slug)} className={`group rounded-lg border border-ink/12 px-5 py-4 transition hover:border-accent ${align}`}>
-            <span className="block text-[11.5px] text-ink-2/70">{label === 'next' ? 'next →' : '← previous'}</span>
-            <span className="mt-1 block font-display text-[16px] text-ink transition group-hover:text-accent">{page.title}</span>
-            <span className="mt-1 block text-[13px] leading-relaxed text-ink-2">{page.summary}</span>
+          <Link
+            key={label}
+            href={docHref(page.slug)}
+            className={`group rounded-lg border border-ink/12 px-5 py-4 transition hover:border-accent ${align}`}
+          >
+            <span className="block text-[11.5px] text-ink-2/70">
+              {label === 'next' ? 'next →' : '← previous'}
+            </span>
+            <span className="mt-1 block font-display text-[16px] text-ink transition group-hover:text-accent">
+              {page.title}
+            </span>
+            <span className="mt-1 block text-[13px] leading-relaxed text-ink-2">
+              {page.summary}
+            </span>
           </Link>
         ) : null,
       )}
@@ -103,12 +121,22 @@ export function Outline() {
   const [active, setActive] = useState('');
 
   useEffect(() => {
-    const headings = [...document.querySelectorAll<HTMLElement>('[data-doc] h2[id], [data-doc] h3[id]')];
-    setEntries(headings.map((h) => ({ id: h.id, text: h.textContent ?? '', depth: h.tagName === 'H3' ? 1 : 0 })));
+    const headings = [
+      ...document.querySelectorAll<HTMLElement>('[data-doc] h2[id], [data-doc] h3[id]'),
+    ];
+    setEntries(
+      headings.map((h) => ({
+        id: h.id,
+        text: h.textContent ?? '',
+        depth: h.tagName === 'H3' ? 1 : 0,
+      })),
+    );
     setActive(headings[0]?.id ?? '');
     const seen = new IntersectionObserver(
       (records) => {
-        const top = records.filter((r) => r.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        const top = records
+          .filter((r) => r.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
         if (top) setActive(top.target.id);
       },
       { rootMargin: '0px 0px -70% 0px' },

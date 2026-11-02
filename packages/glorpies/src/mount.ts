@@ -35,9 +35,11 @@ export type FaceHandle = {
 };
 
 /** Milliseconds to blur out of a painting, and to come back into focus on the next. */
-const VEIL_IN = 180, VEIL_OUT = 420;
+const VEIL_IN = 180,
+  VEIL_OUT = 420;
 
-const prefersStill = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const prefersStill = () =>
+  typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /**
  * Brings a face to life on a canvas you own. The canvas is sized by CSS; the
@@ -77,14 +79,29 @@ export function mount(canvas: HTMLCanvasElement, options: MountOptions): FaceHan
   const cover = () => {
     if (veil || o.morph === false || prefersStill() || typeof canvas.animate !== 'function') return;
     const blur = `blur(${Math.min(12, Math.max(1.5, cssSize() * 0.025)).toFixed(1)}px) saturate(0.7)`;
-    veil = { anim: canvas.animate([{ filter: 'none', opacity: 1 }, { filter: blur, opacity: 0.8 }], { duration: VEIL_IN, easing: 'ease-in', fill: 'forwards' }), blur };
+    veil = {
+      anim: canvas.animate(
+        [
+          { filter: 'none', opacity: 1 },
+          { filter: blur, opacity: 0.8 },
+        ],
+        { duration: VEIL_IN, easing: 'ease-in', fill: 'forwards' },
+      ),
+      blur,
+    };
   };
   const uncover = () => {
     if (!veil) return;
     const { anim, blur } = veil;
     veil = null;
     anim.cancel();
-    canvas.animate([{ filter: blur, opacity: 0.8 }, { filter: 'none', opacity: 1 }], { duration: VEIL_OUT, easing: 'ease-out' });
+    canvas.animate(
+      [
+        { filter: blur, opacity: 0.8 },
+        { filter: 'none', opacity: 1 },
+      ],
+      { duration: VEIL_OUT, easing: 'ease-out' },
+    );
   };
 
   const report = (error: unknown) => {
@@ -117,33 +134,42 @@ export function mount(canvas: HTMLCanvasElement, options: MountOptions): FaceHan
     key = next;
     job?.cancel();
     lively = wantsLife();
-    const j = paintRaster(seed, px, o.priority ?? PRIORITY.gallery, { look, lively, state, background, onError: report });
-    job = j;
-    j.promise.then(async ({ face, raster }) => {
-      // the swap happens under the blur, once it has fully come down
-      if (veil) await veil.anim.finished.catch(() => {});
-      if (disposed || job !== j) return;
-      const first = !actor;
-      o.beforePaint?.(first);
-      if (canvas.width !== raster.px) canvas.width = canvas.height = raster.px;
-      if (actor && actor.face.seed !== face.seed) {
-        stage.remove(actor);
-        actor = null;
-      }
-      actor ??= stage.add(canvas, face);
-      actor.face = face;
-      actor.raster = raster;
-      // the state changes with the painting that shows it, never ahead of it
-      actor.state = state;
-      actor.marks = marksFor(look, face, raster.px);
-      painted = px;
-      apply();
-      stage.drawNow(actor);
-      uncover();
-      o.onPaint?.(first);
-    }, (error: unknown) => {
-      if (job === j) report(error);
+    const j = paintRaster(seed, px, o.priority ?? PRIORITY.gallery, {
+      look,
+      lively,
+      state,
+      background,
+      onError: report,
     });
+    job = j;
+    j.promise.then(
+      async ({ face, raster }) => {
+        // the swap happens under the blur, once it has fully come down
+        if (veil) await veil.anim.finished.catch(() => {});
+        if (disposed || job !== j) return;
+        const first = !actor;
+        o.beforePaint?.(first);
+        if (canvas.width !== raster.px) canvas.width = canvas.height = raster.px;
+        if (actor && actor.face.seed !== face.seed) {
+          stage.remove(actor);
+          actor = null;
+        }
+        actor ??= stage.add(canvas, face);
+        actor.face = face;
+        actor.raster = raster;
+        // the state changes with the painting that shows it, never ahead of it
+        actor.state = state;
+        actor.marks = marksFor(look, face, raster.px);
+        painted = px;
+        apply();
+        stage.drawNow(actor);
+        uncover();
+        o.onPaint?.(first);
+      },
+      (error: unknown) => {
+        if (job === j) report(error);
+      },
+    );
     // a face held still while its layers and eye poses were painted comes alive once they're in
     void j.settled.then(() => {
       if (!disposed && job === j) apply();
@@ -156,7 +182,10 @@ export function mount(canvas: HTMLCanvasElement, options: MountOptions): FaceHan
   let zoom: MediaQueryList | null = null;
   const watchZoom = () => {
     zoom?.removeEventListener('change', onZoom);
-    zoom = typeof matchMedia === 'function' ? matchMedia(`(resolution: ${globalThis.devicePixelRatio || 1}dppx)`) : null;
+    zoom =
+      typeof matchMedia === 'function'
+        ? matchMedia(`(resolution: ${globalThis.devicePixelRatio || 1}dppx)`)
+        : null;
     zoom?.addEventListener('change', onZoom);
   };
   const onZoom = () => {
@@ -164,20 +193,24 @@ export function mount(canvas: HTMLCanvasElement, options: MountOptions): FaceHan
     paint();
   };
   watchZoom();
-  const seen = typeof IntersectionObserver === 'function'
-    ? new IntersectionObserver(([e]) => {
-        visible = e?.isIntersecting ?? true;
-        if (visible && !near) {
-          near = true;
-          paint();
-        } else if (visible && deferred !== null) {
-          const force = deferred;
-          deferred = null;
-          paint(force);
-        }
-        apply();
-      }, { rootMargin: '200px' })
-    : null;
+  const seen =
+    typeof IntersectionObserver === 'function'
+      ? new IntersectionObserver(
+          ([e]) => {
+            visible = e?.isIntersecting ?? true;
+            if (visible && !near) {
+              near = true;
+              paint();
+            } else if (visible && deferred !== null) {
+              const force = deferred;
+              deferred = null;
+              paint(force);
+            }
+            apply();
+          },
+          { rootMargin: '200px' },
+        )
+      : null;
   seen?.observe(canvas);
   // a colour goes behind the canvas, so changing it costs nothing; a background set some other way is left alone
   let tinted = false;
@@ -201,7 +234,11 @@ export function mount(canvas: HTMLCanvasElement, options: MountOptions): FaceHan
         else canvas.removeEventListener('pointerdown', tap);
       }
       // a face that was painted to hold still is painted again, fully, when it comes alive
-      const repaint = seedOf(was.name) !== seedOf(o.name) || was.look !== o.look || was.state !== o.state || backdropOf(was.background).paper !== backdropOf(o.background).paper;
+      const repaint =
+        seedOf(was.name) !== seedOf(o.name) ||
+        was.look !== o.look ||
+        was.state !== o.state ||
+        backdropOf(was.background).paper !== backdropOf(o.background).paper;
       tint();
       if (repaint || (wantsLife() && !lively)) paint(true);
       else apply();

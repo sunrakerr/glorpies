@@ -15,7 +15,8 @@ let content = readFileSync(root, 'utf8')
     return `${open}${repo}/blob/main/${path}${close}`;
   });
 content = await format(`<!-- Generated from README.md by pnpm readme:sync. -->\n\n${content}`, {
-  ...await resolveConfig(root.pathname), parser: 'markdown',
+  ...(await resolveConfig(root.pathname)),
+  parser: 'markdown',
 });
 if (process.argv.includes('--check')) {
   if (readFileSync(target, 'utf8') !== content) {

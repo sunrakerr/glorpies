@@ -31,7 +31,8 @@ export function inkRibbons(op: InkOp, E: Engine, phase = 0, reveal = 1): Ribbon[
     const oy = ps ? E.random(-op.ghost, op.ghost) : 0;
     const amp = op.jit * (1 + ps);
     const alpha = ps ? op.alpha * 0.4 : op.alpha;
-    let run: Pt[] = [], widths: number[] = [];
+    let run: Pt[] = [],
+      widths: number[] = [];
     const flush = () => {
       if (run.length > 1) out.push({ pts: ribbon(run, widths), alpha });
       run = [];
@@ -61,13 +62,20 @@ export type HatchLine = { pts: Pt[]; w: number };
 
 export function hatchLines(op: HatchOp, E: Engine): HatchLine[] {
   E.seed(op.seed);
-  const bb = bbox(op.region), hx = (bb.x0 + bb.x1) / 2, hy = (bb.y0 + bb.y1) / 2;
+  const bb = bbox(op.region),
+    hx = (bb.x0 + bb.x1) / 2,
+    hy = (bb.y0 + bb.y1) / 2;
   const diag = Math.hypot(bb.x1 - bb.x0, bb.y1 - bb.y0) / 2 + 6;
-  const dx = Math.cos(op.angle), dy = Math.sin(op.angle), nx = -dy, ny = dx;
+  const dx = Math.cos(op.angle),
+    dy = Math.sin(op.angle),
+    nx = -dy,
+    ny = dx;
   const lines: HatchLine[] = [];
   for (let s = -diag; s < diag; s += op.gap * E.random(0.75, 1.3)) {
-    const ox = hx + nx * s, oy = hy + ny * s;
-    const t0 = E.random(-diag, -diag * 0.2), t1 = E.random(diag * 0.2, diag);
+    const ox = hx + nx * s,
+      oy = hy + ny * s;
+    const t0 = E.random(-diag, -diag * 0.2),
+      t1 = E.random(diag * 0.2, diag);
     const w = op.w * E.random(0.6, 1.3);
     const pts: Pt[] = [];
     for (let k = 0; k <= 6; k++) {

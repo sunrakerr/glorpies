@@ -13,7 +13,8 @@ export const FACES = 2 ** 53;
 export function seedOf(name: FaceName): number {
   if (typeof name === 'number' && Number.isInteger(name) && name >= 0) return name % FACES;
   const s = String(name);
-  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  let h1 = 0xdeadbeef,
+    h2 = 0x41c6ce57;
   for (let i = 0; i < s.length; i++) {
     const ch = s.charCodeAt(i);
     h1 = Math.imul(h1 ^ ch, 2654435761);

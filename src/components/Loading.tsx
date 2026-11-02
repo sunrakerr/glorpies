@@ -14,11 +14,24 @@ export function FaceSkeleton({ caption }: { caption?: string }) {
   return (
     <div className="skeleton absolute inset-0 overflow-hidden" aria-hidden>
       <div className="skeleton-wash absolute -inset-1/4" />
-      <svg className="skeleton-sketch absolute inset-0 m-auto h-[62%] w-[62%] text-ink-2" viewBox="0 0 100 100" fill="none">
+      <svg
+        className="skeleton-sketch absolute inset-0 m-auto h-[62%] w-[62%] text-ink-2"
+        viewBox="0 0 100 100"
+        fill="none"
+      >
         <circle className="skeleton-blush" cx="33" cy="58" r="5.5" />
         <circle className="skeleton-blush" cx="67" cy="58" r="5.5" />
         {SKETCH.map((d, i) => (
-          <path key={i} d={d} pathLength={1} stroke="currentColor" strokeWidth={1.3} strokeLinecap="round" strokeLinejoin="round" style={{ animationDelay: `${i * 0.22}s` }} />
+          <path
+            key={i}
+            d={d}
+            pathLength={1}
+            stroke="currentColor"
+            strokeWidth={1.3}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ animationDelay: `${i * 0.22}s` }}
+          />
         ))}
       </svg>
       {caption && <Caption text={caption} className="bottom-[7%]" />}

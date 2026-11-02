@@ -1,6 +1,17 @@
 'use client';
 
-import { Braces, ChevronLeft, ChevronRight, Code, Copy, Eraser, FileCode, ImageDown, RefreshCw, X } from 'lucide-react';
+import {
+  Braces,
+  ChevronLeft,
+  ChevronRight,
+  Code,
+  Copy,
+  Eraser,
+  FileCode,
+  ImageDown,
+  RefreshCw,
+  X,
+} from 'lucide-react';
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { seedOf } from 'glorpies';
 import { lookOf, type LookId } from 'glorpies/internal/looks';
@@ -31,10 +42,23 @@ type Props = {
   children?: ReactNode;
 };
 
-export function Viewer({ names, index, look, lookFor, onLook, pngSize, onPngSize, onIndex, onClose, onRepaint, onAction, children }: Props) {
+export function Viewer({
+  names,
+  index,
+  look,
+  lookFor,
+  onLook,
+  pngSize,
+  onPngSize,
+  onIndex,
+  onClose,
+  onRepaint,
+  onAction,
+  children,
+}: Props) {
   const ref = useRef<HTMLDialogElement>(null);
   const open = index !== null;
-  const name = index === null ? null : names[index] ?? null;
+  const name = index === null ? null : (names[index] ?? null);
   const seed = name === null ? null : seedOf(name);
   const faceLook = name === null ? look : lookFor(name);
   /** The integration panel, and a face off its background, stay that way from face to face once asked for. */
@@ -85,10 +109,17 @@ export function Viewer({ names, index, look, lookFor, onLook, pngSize, onPngSize
             <X className="size-5" strokeWidth={1.8} />
           </button>
 
-          <div className="flex w-full items-center justify-center gap-3 sm:gap-8" onClick={(e) => e.target === e.currentTarget && onClose()}>
-            <NavButton label="Previous face" onClick={() => go(-1)}><ChevronLeft className="size-5" strokeWidth={1.8} /></NavButton>
+          <div
+            className="flex w-full items-center justify-center gap-3 sm:gap-8"
+            onClick={(e) => e.target === e.currentTarget && onClose()}
+          >
+            <NavButton label="Previous face" onClick={() => go(-1)}>
+              <ChevronLeft className="size-5" strokeWidth={1.8} />
+            </NavButton>
             <Sheet seed={seed} tilt={-0.5} className="w-[min(90vw,calc(100dvh-21rem),760px)]">
-              <div className={`relative aspect-square w-full overflow-hidden ${background ? 'bg-paper-2/50' : 'checker'}`}>
+              <div
+                className={`relative aspect-square w-full overflow-hidden ${background ? 'bg-paper-2/50' : 'checker'}`}
+              >
                 <FaceCanvas
                   key={seed}
                   seed={seed}
@@ -102,26 +133,49 @@ export function Viewer({ names, index, look, lookFor, onLook, pngSize, onPngSize
                 />
               </div>
             </Sheet>
-            <NavButton label="Next face" onClick={() => go(1)}><ChevronRight className="size-5" strokeWidth={1.8} /></NavButton>
+            <NavButton label="Next face" onClick={() => go(1)}>
+              <ChevronRight className="size-5" strokeWidth={1.8} />
+            </NavButton>
           </div>
 
           <div className="flex items-center gap-3 text-[12px] text-ink-2">
-            <button type="button" onClick={() => go(-1)} aria-label="Previous face" className="grid size-9 place-items-center rounded-full border border-ink/10 bg-paper/70 sm:hidden">
+            <button
+              type="button"
+              onClick={() => go(-1)}
+              aria-label="Previous face"
+              className="grid size-9 place-items-center rounded-full border border-ink/10 bg-paper/70 sm:hidden"
+            >
               <ChevronLeft className="size-4" strokeWidth={1.8} />
             </button>
             <p className="text-center">
               <span className="text-ink">{name}</span>
-              <span aria-hidden className="ml-2 font-alien text-[12px] text-accent/80">{inAlien(name)}</span>
+              <span aria-hidden className="ml-2 font-alien text-[12px] text-accent/80">
+                {inAlien(name)}
+              </span>
               <span className="mx-2 opacity-50">·</span>
-              <span className="hidden sm:inline">tap to give it a nudge<span className="mx-2 opacity-50">·</span></span>
-              <span className="tabular-nums">{index + 1} / {names.length}</span>
+              <span className="hidden sm:inline">
+                tap to give it a nudge<span className="mx-2 opacity-50">·</span>
+              </span>
+              <span className="tabular-nums">
+                {index + 1} / {names.length}
+              </span>
             </p>
-            <button type="button" onClick={() => go(1)} aria-label="Next face" className="grid size-9 place-items-center rounded-full border border-ink/10 bg-paper/70 sm:hidden">
+            <button
+              type="button"
+              onClick={() => go(1)}
+              aria-label="Next face"
+              className="grid size-9 place-items-center rounded-full border border-ink/10 bg-paper/70 sm:hidden"
+            >
               <ChevronRight className="size-4" strokeWidth={1.8} />
             </button>
           </div>
 
-          <LookStrip seed={seed} value={faceLook} gallery={look} onChange={(l) => onLook(name, l)} />
+          <LookStrip
+            seed={seed}
+            value={faceLook}
+            gallery={look}
+            onChange={(l) => onLook(name, l)}
+          />
 
           <div className="flex max-w-full flex-wrap items-center justify-center gap-2">
             <TextButton tone="ink" onClick={() => onAction('copy', still(name))}>
@@ -135,7 +189,11 @@ export function Viewer({ names, index, look, lookFor, onLook, pngSize, onPngSize
               >
                 <ImageDown className="size-4" strokeWidth={1.8} /> PNG
               </button>
-              <div role="radiogroup" aria-label="PNG size" className="ml-1 flex rounded-full bg-ink/[0.05] p-0.5">
+              <div
+                role="radiogroup"
+                aria-label="PNG size"
+                className="ml-1 flex rounded-full bg-ink/[0.05] p-0.5"
+              >
                 {EXPORT_SIZES.map((px) => (
                   <button
                     key={px}
@@ -156,19 +214,29 @@ export function Viewer({ names, index, look, lookFor, onLook, pngSize, onPngSize
             <TextButton onClick={() => onAction('copy-svg', still(name))}>
               <Code className="size-4" strokeWidth={1.8} /> Copy SVG
             </TextButton>
-            <TextButton aria-pressed={!background} onClick={() => setBackground((v) => !v)} className={background ? '' : 'border-accent/50 bg-accent/10'}>
+            <TextButton
+              aria-pressed={!background}
+              onClick={() => setBackground((v) => !v)}
+              className={background ? '' : 'border-accent/50 bg-accent/10'}
+            >
               <Eraser className="size-4" strokeWidth={1.8} /> No background
             </TextButton>
             <TextButton onClick={() => onRepaint(index)}>
               <RefreshCw className="size-4" strokeWidth={1.8} /> Repaint
             </TextButton>
-            <TextButton aria-pressed={spec} onClick={() => setSpec((v) => !v)} className={spec ? 'border-accent/50 bg-accent/10' : ''}>
+            <TextButton
+              aria-pressed={spec}
+              onClick={() => setSpec((v) => !v)}
+              className={spec ? 'border-accent/50 bg-accent/10' : ''}
+            >
               <Braces className="size-4" strokeWidth={1.8} /> Use in code
             </TextButton>
           </div>
 
           <div className="hidden items-center gap-4 text-[11px] text-ink-2/80 sm:flex">
-            <Key k="←" /><Key k="→" /> browse <Key k="C" /> copy <Key k="R" /> repaint <Key k="B" /> background <Key k="U" /> code <Key k="Esc" /> close
+            <Key k="←" />
+            <Key k="→" /> browse <Key k="C" /> copy <Key k="R" /> repaint <Key k="B" /> background{' '}
+            <Key k="U" /> code <Key k="Esc" /> close
           </div>
         </div>
       )}
@@ -186,7 +254,15 @@ export function Viewer({ names, index, look, lookFor, onLook, pngSize, onPngSize
   );
 }
 
-function NavButton({ label, onClick, children }: { label: string; onClick: () => void; children: ReactNode }) {
+function NavButton({
+  label,
+  onClick,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  children: ReactNode;
+}) {
   return (
     <button
       type="button"
@@ -200,5 +276,9 @@ function NavButton({ label, onClick, children }: { label: string; onClick: () =>
 }
 
 function Key({ k }: { k: string }) {
-  return <kbd className="rounded border border-ink/15 bg-paper px-1.5 py-0.5 font-mono text-[10px] text-ink/70">{k}</kbd>;
+  return (
+    <kbd className="rounded border border-ink/15 bg-paper px-1.5 py-0.5 font-mono text-[10px] text-ink/70">
+      {k}
+    </kbd>
+  );
 }

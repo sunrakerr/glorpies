@@ -2,8 +2,18 @@
   "name": "glorpies-example-vanilla",
   "private": true,
   "type": "module",
-  "scripts": { "dev": "vite --host 127.0.0.1", "build": "vite build", "preview": "vite preview --host 127.0.0.1" },
-  "dependencies": { "glorpies": "^0.1.1" },
-  "devDependencies": { "vite": "^8.3.5" },
-  "engines": { "node": ">=22.12.0" }
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "glorpies": "^0.1.1"
+  },
+  "devDependencies": {
+    "vite": "^8.3.5"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
 }

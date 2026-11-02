@@ -18,7 +18,18 @@ canvas{position:absolute;inset:0;inline-size:100%;block-size:100%;display:block;
 @media (prefers-reduced-motion:reduce){:host(:not([data-ready]))::after{animation:none}canvas{transition:none}}
 `;
 
-const ATTRS = ['name', 'look', 'size', 'shape', 'state', 'background', 'alive', 'pokeable', 'label', 'priority'] as const;
+const ATTRS = [
+  'name',
+  'look',
+  'size',
+  'shape',
+  'state',
+  'background',
+  'alive',
+  'pokeable',
+  'label',
+  'priority',
+] as const;
 
 /** An unknown look is painted as "auto". */
 const lookFrom = (v: string | null): LookChoice => (v && (v === 'auto' || isLook(v)) ? v : 'auto');
@@ -26,10 +37,13 @@ const lookFrom = (v: string | null): LookChoice => (v && (v === 'auto' || isLook
 // The marker only applies to the name it accompanied; later HTML attribute edits are strings.
 function numericName(element: GlorpieElement): number | undefined {
   const value = element.getAttribute('data-seed');
-  return value !== null && value === element.getAttribute('name') && String(Number(value)) === value ? Number(value) : undefined;
+  return value !== null && value === element.getAttribute('name') && String(Number(value)) === value
+    ? Number(value)
+    : undefined;
 }
 
-const Base: typeof HTMLElement = typeof HTMLElement === 'undefined' ? (class {} as typeof HTMLElement) : HTMLElement;
+const Base: typeof HTMLElement =
+  typeof HTMLElement === 'undefined' ? (class {} as typeof HTMLElement) : HTMLElement;
 
 /** `<glorpie-face>`: the React component's options as attributes, for plain HTML and any framework. */
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging -- Reflected properties are installed on the prototype below.
@@ -54,7 +68,10 @@ export class GlorpieElement extends Base {
       onPaint: () => this.toggleAttribute('data-ready', true),
       // a listener can call preventDefault() to handle the failure itself; otherwise it's logged
       onError: (error) => {
-        if (this.dispatchEvent(new CustomEvent('glorpie-error', { detail: error, cancelable: true }))) console.error('glorpies: could not paint', this.faceName, error);
+        if (
+          this.dispatchEvent(new CustomEvent('glorpie-error', { detail: error, cancelable: true }))
+        )
+          console.error('glorpies: could not paint', this.faceName, error);
       },
     });
   }
@@ -70,11 +87,14 @@ export class GlorpieElement extends Base {
     this.sync();
     // the canvas fades out only for a different painting: a renamed face, or a look that resolves to another
     const repaints =
-      attr === 'data-seed' ? true
-      : attr === 'name' ? seedOf(was ?? '') !== seedOf(now ?? '')
-      : attr === 'look' ? lookFrom(was) !== lookFrom(now)
-      // a colour is the host's own background, so only going on or off the paper repaints
-      : attr === 'background' && backdropOf(was).paper !== backdropOf(now).paper;
+      attr === 'data-seed'
+        ? true
+        : attr === 'name'
+          ? seedOf(was ?? '') !== seedOf(now ?? '')
+          : attr === 'look'
+            ? lookFrom(was) !== lookFrom(now)
+            : // a colour is the host's own background, so only going on or off the paper repaints
+              attr === 'background' && backdropOf(was).paper !== backdropOf(now).paper;
     if (repaints) this.removeAttribute('data-ready');
     this.handle.update(this.options());
   }
@@ -83,7 +103,10 @@ export class GlorpieElement extends Base {
   private sync() {
     const size = this.getAttribute('size') ?? '48';
     this.style.setProperty('--size', /^\d+(\.\d+)?$/.test(size) ? `${size}px` : size);
-    this.style.setProperty('--wash', backdropOf(this.getAttribute('background')).colour ?? faceColors(this.faceName).bg);
+    this.style.setProperty(
+      '--wash',
+      backdropOf(this.getAttribute('background')).colour ?? faceColors(this.faceName).bg,
+    );
     this.setAttribute('aria-label', this.getAttribute('label') ?? 'Avatar');
     const shape = this.getAttribute('shape');
     if (shape && !isShape(shape)) console.warn(`<glorpie-face> unknown shape "${shape}"`);
@@ -117,7 +140,9 @@ const SWITCHES = new Set<string>(['background', 'alive']);
 for (const attr of ATTRS) {
   Object.defineProperty(GlorpieElement.prototype, attr, {
     get(this: GlorpieElement) {
-      return attr === 'name' ? numericName(this) ?? this.getAttribute(attr) : this.getAttribute(attr);
+      return attr === 'name'
+        ? (numericName(this) ?? this.getAttribute(attr))
+        : this.getAttribute(attr);
     },
     set(this: GlorpieElement, value: unknown) {
       if (attr === 'name') {
@@ -125,14 +150,23 @@ for (const attr of ATTRS) {
         else this.removeAttribute('data-seed');
       }
       if (value === false && SWITCHES.has(attr)) this.setAttribute(attr, 'false');
-      else if (value === null || value === undefined || value === false || (value === '' && SWITCHES.has(attr))) this.removeAttribute(attr);
+      else if (
+        value === null ||
+        value === undefined ||
+        value === false ||
+        (value === '' && SWITCHES.has(attr))
+      )
+        this.removeAttribute(attr);
       else this.setAttribute(attr, value === true ? '' : String(value));
     },
   });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging -- Describes the reflected properties installed above.
-export interface GlorpieElement extends Record<Exclude<(typeof ATTRS)[number], 'name'>, string | null> {
+export interface GlorpieElement extends Record<
+  Exclude<(typeof ATTRS)[number], 'name'>,
+  string | null
+> {
   name: FaceName | null;
 }
 

@@ -1,8 +1,15 @@
 'use client';
 
 import {
-  createContext, useContext, useEffect, useMemo, useRef, useState,
-  type CSSProperties, type ImgHTMLAttributes, type ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ImgHTMLAttributes,
+  type ReactNode,
 } from 'react';
 import { cssLength, RADIUS, type GlorpieOptions } from './host';
 import { mount, type FaceHandle } from './mount';
@@ -19,7 +26,21 @@ export type GlorpieProps = GlorpieOptions & {
  * A living face. It renders on the server as a softly coloured placeholder in
  * the face's own background colour, then paints on the client.
  */
-export function Glorpie({ name, look = 'auto', size = 48, shape = 'circle', state = 'idle', background = true, alive, pokeable = false, label = 'Avatar', priority, onError, className, style }: GlorpieProps) {
+export function Glorpie({
+  name,
+  look = 'auto',
+  size = 48,
+  shape = 'circle',
+  state = 'idle',
+  background = true,
+  alive,
+  pokeable = false,
+  label = 'Avatar',
+  priority,
+  onError,
+  className,
+  style,
+}: GlorpieProps) {
   const ref = useRef<HTMLCanvasElement>(null);
   const handle = useRef<FaceHandle | null>(null);
   const [ready, setReady] = useState(false);
@@ -33,9 +54,18 @@ export function Glorpie({ name, look = 'auto', size = 48, shape = 'circle', stat
 
   useEffect(() => {
     const h = mount(ref.current!, {
-      name, look, state, background: paper, alive, pokeable, priority,
+      name,
+      look,
+      state,
+      background: paper,
+      alive,
+      pokeable,
+      priority,
       onPaint: () => setReady(true),
-      onError: (error) => (reportError.current ? reportError.current(error) : console.error('glorpies: could not paint', name, error)),
+      onError: (error) =>
+        reportError.current
+          ? reportError.current(error)
+          : console.error('glorpies: could not paint', name, error),
     });
     handle.current = h;
     return () => {
@@ -55,14 +85,30 @@ export function Glorpie({ name, look = 'auto', size = 48, shape = 'circle', stat
       aria-label={label}
       className={className}
       style={{
-        display: 'inline-block', position: 'relative', overflow: 'hidden', verticalAlign: 'middle', flexShrink: 0,
+        display: 'inline-block',
+        position: 'relative',
+        overflow: 'hidden',
+        verticalAlign: 'middle',
+        flexShrink: 0,
         // a face off its background waits on nothing: no placeholder wash, and no crop
-        width: cssLength(size), height: cssLength(size), borderRadius: paper || colour ? RADIUS[shape] : 0, background: colour ?? (paper ? wash : 'none'), ...style,
+        width: cssLength(size),
+        height: cssLength(size),
+        borderRadius: paper || colour ? RADIUS[shape] : 0,
+        background: colour ?? (paper ? wash : 'none'),
+        ...style,
       }}
     >
       <canvas
         ref={ref}
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block', opacity: ready ? 1 : 0, transition: 'opacity .45s ease' }}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          display: 'block',
+          opacity: ready ? 1 : 0,
+          transition: 'opacity .45s ease',
+        }}
       />
     </span>
   );
@@ -71,7 +117,9 @@ export function Glorpie({ name, look = 'auto', size = 48, shape = 'circle', stat
 // ================= a photo, falling back to a face =================
 
 type Status = 'loading' | 'loaded' | 'error';
-const AvatarContext = createContext<{ status: Status; setStatus: (s: Status) => void } | null>(null);
+const AvatarContext = createContext<{ status: Status; setStatus: (s: Status) => void } | null>(
+  null,
+);
 
 function useAvatar(part: string) {
   const ctx = useContext(AvatarContext);
@@ -88,7 +136,13 @@ function useAvatar(part: string) {
  *     <AvatarFallback name={user.email} />
  *   </Avatar>
  */
-export type AvatarProps = { children: ReactNode; size?: number | string; shape?: Shape; className?: string; style?: CSSProperties };
+export type AvatarProps = {
+  children: ReactNode;
+  size?: number | string;
+  shape?: Shape;
+  className?: string;
+  style?: CSSProperties;
+};
 
 export type AvatarFallbackProps = Omit<GlorpieProps, 'size' | 'shape'>;
 
@@ -99,7 +153,17 @@ export function Avatar({ children, size = 48, shape = 'circle', className, style
     <AvatarContext.Provider value={value}>
       <span
         className={className}
-        style={{ display: 'inline-grid', position: 'relative', overflow: 'hidden', verticalAlign: 'middle', flexShrink: 0, width: cssLength(size), height: cssLength(size), borderRadius: RADIUS[shape], ...style }}
+        style={{
+          display: 'inline-grid',
+          position: 'relative',
+          overflow: 'hidden',
+          verticalAlign: 'middle',
+          flexShrink: 0,
+          width: cssLength(size),
+          height: cssLength(size),
+          borderRadius: RADIUS[shape],
+          ...style,
+        }}
       >
         {children}
       </span>
@@ -107,7 +171,15 @@ export function Avatar({ children, size = 48, shape = 'circle', className, style
   );
 }
 
-export function AvatarImage({ src, srcSet, alt = '', style, onLoad, onError, ...rest }: ImgHTMLAttributes<HTMLImageElement>) {
+export function AvatarImage({
+  src,
+  srcSet,
+  alt = '',
+  style,
+  onLoad,
+  onError,
+  ...rest
+}: ImgHTMLAttributes<HTMLImageElement>) {
   const { status, setStatus } = useAvatar('AvatarImage');
   const img = useRef<HTMLImageElement>(null);
   const hasPhoto = Boolean(src || srcSet);
@@ -132,7 +204,15 @@ export function AvatarImage({ src, srcSet, alt = '', style, onLoad, onError, ...
         setStatus('error');
         onError?.(e);
       }}
-      style={{ gridArea: '1 / 1', width: '100%', height: '100%', objectFit: 'cover', opacity: status === 'loaded' ? 1 : 0, transition: 'opacity .3s ease', ...style }}
+      style={{
+        gridArea: '1 / 1',
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        opacity: status === 'loaded' ? 1 : 0,
+        transition: 'opacity .3s ease',
+        ...style,
+      }}
     />
   );
 }
@@ -141,5 +221,7 @@ export function AvatarImage({ src, srcSet, alt = '', style, onLoad, onError, ...
 export function AvatarFallback(props: AvatarFallbackProps) {
   const { status } = useAvatar('AvatarFallback');
   if (status === 'loaded') return null;
-  return <Glorpie {...props} size="100%" shape="square" style={{ gridArea: '1 / 1', ...props.style }} />;
+  return (
+    <Glorpie {...props} size="100%" shape="square" style={{ gridArea: '1 / 1', ...props.style }} />
+  );
 }

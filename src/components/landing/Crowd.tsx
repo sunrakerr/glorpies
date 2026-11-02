@@ -17,7 +17,13 @@ const crowd = () => {
 };
 
 /** A crowd standing in staggered rows, every face turned to the pointer; picking one takes it to the playground. */
-export function Crowd({ onPick, className = '' }: { onPick: (name: string) => void; className?: string }) {
+export function Crowd({
+  onPick,
+  className = '',
+}: {
+  onPick: (name: string) => void;
+  className?: string;
+}) {
   // a new crowd every visit, drawn on the client so the server's markup has nothing to disagree with
   const [names, setNames] = useState<string[]>([]);
   useEffect(() => setNames(crowd()), []);
@@ -28,9 +34,18 @@ export function Crowd({ onPick, className = '' }: { onPick: (name: string) => vo
         <ul className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col gap-y-1.5">
           {Array.from({ length: ROWS }, (_, r) => (
             // the row under the pointer comes forward, so a name shown below a face isn't hidden by the row beneath
-            <li key={r} className={`relative flex list-none gap-x-2.5 focus-within:z-10 hover:z-10 ${r % 2 ? 'translate-x-[1.8rem]' : ''}`}>
+            <li
+              key={r}
+              className={`relative flex list-none gap-x-2.5 focus-within:z-10 hover:z-10 ${r % 2 ? 'translate-x-[1.8rem]' : ''}`}
+            >
               {names.slice(r * COLS, (r + 1) * COLS).map((name) => (
-                <button key={name} type="button" onClick={() => onPick(name)} aria-label={`Try ${name}`} className="group relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => onPick(name)}
+                  aria-label={`Try ${name}`}
+                  className="group relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                >
                   <span className="block transition-transform duration-200 ease-soft group-hover:-translate-y-1 group-hover:scale-110">
                     <Glorpie name={name} size={SIZE} label={name} />
                   </span>

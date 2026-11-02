@@ -1,6 +1,10 @@
 import { pageMetadata } from '@/lib/metadata';
 
-export const metadata = pageMetadata("/docs/solid", "solid", "Use glorpies/solid for animated alien avatars in Solid. Reactive names, typed props, moods, styling and accessible labels.");
+export const metadata = pageMetadata(
+  '/docs/solid',
+  'solid',
+  'Use glorpies/solid for animated alien avatars in Solid. Reactive names, typed props, moods, styling and accessible labels.',
+);
 
 # solid
 
@@ -25,7 +29,7 @@ Takes every [option](/docs/options), plus `class` and `onError`. Every prop is r
 ```tsx
 const [status, setStatus] = createSignal('working');
 
-<Glorpie name="agent-47" state={status()} />
+<Glorpie name="agent-47" state={status()} />;
 ```
 
 ## solidstart

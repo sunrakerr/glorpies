@@ -11,4 +11,7 @@ export type GlorpieProps = GlorpieOptions & {
 export class Glorpie extends SvelteComponent<GlorpieProps> {}
 
 /** A living face on a canvas of your own: `<canvas use:glorpie={{ name: user.email }} />`, sized with CSS. */
-export function glorpie(canvas: HTMLCanvasElement, options: MountOptions): { update(next: MountOptions): void; destroy(): void };
+export function glorpie(
+  canvas: HTMLCanvasElement,
+  options: MountOptions,
+): { update(next: MountOptions): void; destroy(): void };
