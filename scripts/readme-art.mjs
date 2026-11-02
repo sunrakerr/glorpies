@@ -2,7 +2,7 @@
 // Build the library and run the site first (pnpm --filter glorpies build; pnpm dev --port 3417), then: node scripts/readme-art.mjs [base-url]
 // Add --hero-only to redraw just the README's single Glorpie, without the site or Chrome.
 // Writes .github/assets/: glorpie.png, banner-{dark,light}.webp, looks-{dark,light}.webp and one GIF per state,
-// mirrors README images to public/readme/ for npm, and writes the site's link preview, src/app/opengraph-image.png.
+// mirrors README images to public/readme/ for npm. Link previews are drawn by scripts/social-art.mjs.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { nodeFaceHandler, renderImage } from '../packages/glorpies/dist/server.js';
@@ -144,9 +144,6 @@ await withChrome(async (page) => {
     await shoot(page, `banner-${theme}.webp`, theme, banner());
     await shoot(page, `looks-${theme}.webp`, theme, looks());
   }
-  // the site's link preview: the dark banner, square, at the 1280 × 640 previews are drawn at
-  // (last: a new file in src/app makes a running dev server reload the page)
-  await shoot(page, 'opengraph-image.png', 'dark', banner(), { square: true, scale: 0.5, to: new URL('../src/app/', import.meta.url) });
 }, { width: 1400, height: 1400 });
 
 // the states, alive: looping GIFs straight from the handler

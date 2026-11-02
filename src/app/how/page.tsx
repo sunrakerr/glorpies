@@ -1,9 +1,8 @@
-import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/metadata';
 import { HowItsDrawn } from '@/components/HowItsDrawn';
 
-export const metadata: Metadata = {
-  title: 'how a glorpie gets painted',
-};
+export const metadata = pageMetadata('/how', 'how a glorpie gets painted',
+  'Watch a name become a hand-painted alien. See how deterministic seeds, watercolour glazes and dip-pen strokes give every Glorpie its own face.');
 
 export default function Page() {
   return <HowItsDrawn />;

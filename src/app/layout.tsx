@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist_Mono, Geist_Pixel, Noto_Sans_Symbols_2, Noto_Sans_Tifinagh } from 'next/font/google';
 import { SITE_URL } from '@/lib/site';
+import { SITE_DESCRIPTION as description } from '@/lib/metadata';
 import { DEFAULT_THEME, THEME_SCRIPT } from '@/lib/theme';
 import './globals.css';
 
@@ -10,9 +11,6 @@ const mono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' });
 /** The alien alphabet (Tifinagh: dots, rings and strokes), and braille dots for it coming into focus. Decoration, so neither is preloaded. */
 const tifinagh = Noto_Sans_Tifinagh({ subsets: ['tifinagh'], weight: '400', variable: '--font-tifinagh', preload: false });
 const braille = Noto_Sans_Symbols_2({ subsets: ['braille'], weight: '400', variable: '--font-braille-dots', preload: false });
-
-const description =
-  '9 quadrillion hand-painted alien avatars for your users, ai agents and bots, over a million for every person on earth. any string gets its own, and always the same one. alive, with moods for agents. react, vue, svelte, solid, preact, a web component, server images and a cli. open source, with zero dependencies.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

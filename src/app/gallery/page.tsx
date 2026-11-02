@@ -1,10 +1,8 @@
-import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/metadata';
 import { Studio } from '@/components/Studio';
 
-export const metadata: Metadata = {
-  title: 'gallery',
-  description: 'A wall of hand-painted aliens that come alive, each one named. Restyle any of them, copy it, or download it as PNG or SVG.',
-};
+export const metadata = pageMetadata('/gallery', 'gallery',
+  'Find your Glorpie. Explore hand-painted alien avatars, try 29 looks, and download your favourite as PNG or SVG. Any name gets its own face.');
 
 export default function Page() {
   return <Studio />;

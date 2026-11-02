@@ -1,0 +1,1 @@
+Glorpies documentation: a little alien in your app. Framework components, server images and a CLI.
