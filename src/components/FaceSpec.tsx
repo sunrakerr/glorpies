@@ -60,9 +60,9 @@ export function FaceSpec({
       <CodePanel
         code={SNIPPETS[kind](c)}
         lang={SNIPPET_FILES[kind].lang}
-        title={<Tabs options={KINDS} value={kind} onChange={setKind} dark />}
+        title={<Tabs options={KINDS} value={kind} onChange={setKind} dark scroll />}
         compact
-        className="mt-5 [&_code]:min-w-0 [&_pre]:whitespace-pre-wrap [&_pre]:break-words [&_pre]:text-[11.5px]"
+        className="mt-5 [&_pre]:text-[11.5px]"
       />
       <p className="mt-3 text-[11px] leading-relaxed text-ink-2/80">
         size, shape, state and alive work as in{' '}
@@ -83,7 +83,7 @@ function Row({ k, v, copy, note }: { k: string; v: string; copy: string; note: s
     <div className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-start gap-x-3 py-2.5">
       <dt className="text-ink-2">{k}</dt>
       <dd className="min-w-0">
-        <code className="text-accent">{v}</code>
+        <code className="break-all text-accent">{v}</code>
         <p className="mt-0.5 text-[11px] leading-snug text-ink-2/80">{note}</p>
       </dd>
       <CopyButton text={copy} className="-my-1" />

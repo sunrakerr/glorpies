@@ -73,6 +73,40 @@ export function Viewer({
     if (!open && d.open) d.close();
   }, [open]);
 
+  // A modal dialog makes the gallery inert, but doesn't stop the document from scrolling.
+  // Fix the body as well as locking the root so touch scrolling is blocked on mobile too.
+  useEffect(() => {
+    if (!open) return;
+    const root = document.documentElement;
+    const body = document.body;
+    const x = window.scrollX;
+    const y = window.scrollY;
+    const gap = window.innerWidth - root.clientWidth;
+    const rootOverflow = root.style.overflow;
+    const rootOverscroll = root.style.overscrollBehavior;
+    const saved = {
+      position: body.style.position,
+      top: body.style.top,
+      left: body.style.left,
+      right: body.style.right,
+      paddingRight: body.style.paddingRight,
+    };
+    const padding = parseFloat(getComputedStyle(body).paddingRight) || 0;
+    root.style.overflow = 'hidden';
+    root.style.overscrollBehavior = 'none';
+    body.style.position = 'fixed';
+    body.style.top = `${-y}px`;
+    body.style.left = `${-x}px`;
+    body.style.right = '0';
+    if (gap > 0) body.style.paddingRight = `${padding + gap}px`;
+    return () => {
+      Object.assign(body.style, saved);
+      root.style.overflow = rootOverflow;
+      root.style.overscrollBehavior = rootOverscroll;
+      window.scrollTo({ left: x, top: y, behavior: 'instant' });
+    };
+  }, [open]);
+
   const go = (step: number) => {
     if (index === null || !names.length) return;
     onIndex((index + step + names.length) % names.length);
@@ -246,7 +280,7 @@ export function Viewer({
           look={faceLook}
           background={background}
           onClose={() => setSpec(false)}
-          className="picker-in absolute inset-x-3 bottom-3 z-10 max-h-[70dvh] overflow-y-auto lg:inset-x-auto lg:bottom-auto lg:right-8 lg:top-1/2 lg:max-h-[calc(100dvh-4rem)] lg:w-[360px] lg:-translate-y-1/2"
+          className="picker-in absolute inset-x-3 bottom-3 z-10 max-h-[70dvh] overflow-y-auto overscroll-contain lg:inset-x-auto lg:bottom-auto lg:right-8 lg:top-1/2 lg:max-h-[calc(100dvh-4rem)] lg:w-[360px] lg:-translate-y-1/2"
         />
       )}
       {children}
