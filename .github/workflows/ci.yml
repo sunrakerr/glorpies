@@ -29,7 +29,15 @@ jobs:
         run: pnpm test
       - name: the framework components in a real browser
         if: matrix.node == 26
+        uses: browser-actions/setup-chrome@v2
+        id: chrome
+        with:
+          chrome-version: stable
+      - name: test the framework components
+        if: matrix.node == 26
         run: pnpm --filter glorpies test:browser
+        env:
+          CHROME: ${{ steps.chrome.outputs.chrome-path }}
       - name: lint the package as npm will see it
         run: pnpm --filter glorpies lint:package
       - name: install the packed package the way a user would, and use it

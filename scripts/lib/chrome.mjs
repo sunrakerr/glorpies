@@ -1,7 +1,6 @@
 // Headless Chrome over the DevTools protocol, for the scripts here. CHROME overrides the browser's path.
 import { spawn } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
-import { createServer } from 'node:net';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -20,24 +19,23 @@ function within(promise, ms, what) {
   return Promise.race([promise, late]).finally(() => clearTimeout(timer));
 }
 
-const freePort = () => new Promise((resolve, reject) => {
-  const server = createServer().on('error', reject);
-  server.listen(0, () => {
-    const { port } = server.address();
-    server.close(() => resolve(port));
-  });
-});
-
-async function firstPage(port) {
-  for (;;) {
+async function firstPage(profile, failure) {
+  const deadline = Date.now() + 30_000;
+  while (Date.now() < deadline) {
+    const error = failure();
+    if (error) throw new Error(error);
     try {
-      const page = (await (await fetch(`http://127.0.0.1:${port}/json`)).json()).find((t) => t.type === 'page');
+      // Let Chrome allocate its port; reserving and releasing a port first races
+      // with other processes on shared CI runners.
+      const port = readFileSync(join(profile, 'DevToolsActivePort'), 'utf8').split('\n')[0];
+      const page = (await (await fetch(`http://127.0.0.1:${port}/json`, { signal: AbortSignal.timeout(1000) })).json()).find((t) => t.type === 'page');
       if (page) return page;
     } catch {
       // not listening yet
     }
     await sleep(100);
   }
+  throw new Error(`Chrome did not start within 30s${failure(true) ?? ''}`);
 }
 
 /**
@@ -46,12 +44,25 @@ async function firstPage(port) {
  */
 export async function withChrome(task, { width = 1280, height = 900, timeout = 30_000 } = {}) {
   const profile = mkdtempSync(join(tmpdir(), 'glorpies-chrome-'));
-  const port = await freePort();
-  const chrome = spawn(CHROME, ['--headless=new', `--window-size=${width},${height}`, `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, 'about:blank'], { stdio: 'ignore' });
+  const chrome = spawn(CHROME, [
+    '--headless=new', '--no-first-run', '--no-default-browser-check',
+    '--disable-dev-shm-usage',
+    // GitHub's disposable VM runs only our local test pages. Ubuntu's AppArmor
+    // user-namespace policy can otherwise prevent Chrome for Testing starting.
+    ...(process.env.CI ? ['--no-sandbox'] : []),
+    `--window-size=${width},${height}`, '--remote-debugging-port=0', `--user-data-dir=${profile}`, 'about:blank',
+  ], { stdio: ['ignore', 'ignore', 'pipe'] });
+  let stderr = '', startupError;
+  chrome.stderr.on('data', (chunk) => { stderr = (stderr + chunk).slice(-8000); });
+  chrome.once('error', (error) => { startupError = error.message; });
+  const failure = (includeLogs = false) => {
+    const reason = startupError ?? (chrome.exitCode !== null ? `Chrome exited with code ${chrome.exitCode}` : undefined);
+    return reason || includeLogs ? `${reason ?? ''}\n${stderr}` : undefined;
+  };
   const exited = new Promise((resolve) => chrome.once('exit', resolve));
   let socket;
   try {
-    const page = await within(firstPage(port), 15_000, 'starting Chrome');
+    const page = await firstPage(profile, failure);
     socket = new WebSocket(page.webSocketDebuggerUrl);
     await within(new Promise((resolve, reject) => {
       socket.addEventListener('open', resolve);
