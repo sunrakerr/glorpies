@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.1.1
+Release dates use UTC.
+
+## [0.1.1](https://github.com/sunrakerr/glorpies/releases/tag/v0.1.1) — 2026-11-01
 
 - Document native canvas bundler configuration for Next.js and SvelteKit image routes.
 
@@ -10,7 +12,7 @@
 
 - Preserve numeric seeds across Vue, Svelte, Solid, Preact and the web component, including server rendering and switching between a number and a numeric string. `42` is a seed; `"42"` is a name.
 
-## 0.1.0
+## [0.1.0](https://github.com/sunrakerr/glorpies/releases/tag/v0.1.0) — 2026-11-01
 
 The first release.
 

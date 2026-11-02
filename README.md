@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://glorpies.sunrakerr.dev"><img src=".github/assets/glorpie.png" width="192" height="192" alt="sunrakerrisfriednoodlz: a purple Glorpie with a yellow crown, pointy ears and too many teeth, painted on a mint wash in a circle"></a>
+  <a href="https://glorpies.sunrakerr.dev"><img src="public/readme/glorpie.png" width="192" height="192" alt="sunrakerrisfriednoodlz: a purple Glorpie with a yellow crown, pointy ears and too many teeth, painted on a mint wash in a circle"></a>
 </p>
 
 <h1 align="center">glorpies</h1>
@@ -7,6 +7,7 @@
 <p align="center"><b>Ugly little alien avatars from any string.</b></p>
 
 <p align="center">
+  <a href="https://github.com/sunrakerr/glorpies/actions/workflows/ci.yml"><img alt="CI status" src="https://github.com/sunrakerr/glorpies/actions/workflows/ci.yml/badge.svg?branch=main"></a>
   <a href="https://www.npmjs.com/package/glorpies"><img alt="npm version" src="https://img.shields.io/npm/v/glorpies?style=flat-square&color=b4ff5a&labelColor=0d0c13"></a>
   <img alt="zero dependencies" src="https://img.shields.io/badge/dependencies-0-b4ff5a?style=flat-square&labelColor=0d0c13">
   <img alt="TypeScript types included" src="https://img.shields.io/badge/TypeScript-included-b4ff5a?style=flat-square&labelColor=0d0c13">
@@ -20,13 +21,15 @@
   <a href="https://glorpies.sunrakerr.dev/docs">./docs</a>
 </p>
 
+[Quick start](#quick-start) · [Frameworks](#frameworks) · [Looks](#looks) · [Options](#options) · [Examples](examples/README.md) · [Changelog](packages/glorpies/CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
+
 Hand-painted in watercolour and dip pen. Antennae, extra eyes, horns, halos, too many teeth. And they're alive: they breathe, blink and glance at you.
 
 **9,007,199,254,740,992** faces, over a million for every person on earth. A username, email or bot id always gets the same one, on every device and server. No API calls, no image downloads, nothing to store.
 
 Use them for **user avatars** and photo fallbacks, **AI agents and bots** (with moods that show what they're doing), chat and comments, multiplayer cursors, guest and anonymous users, and placeholder people in demos and seed data.
 
-## ⵣ quick start
+## Quick start
 
 ```bash
 npm i glorpies
@@ -46,9 +49,9 @@ By default, small avatars use the ink look; at 72px and above they use watercolo
 
 A numeric `name` is a seed; a string is hashed into one. `name={42}` and `name="42"` produce different faces. For the web component, set `face.name = 42` in JavaScript to use a numeric seed.
 
-## ⵅ frameworks
+## Frameworks
 
-Every framework gets a `<Glorpie>` that takes the same options:
+Framework components and the web component share the same options:
 
 | framework | import | guide |
 | --- | --- | --- |
@@ -69,30 +72,30 @@ Components render a coloured placeholder on the server, then paint on a canvas i
 <glorpie-face name="ada@lovelace.dev" size="48"></glorpie-face>
 ```
 
-## ⵙ looks
+## Looks
 
 29 of them: 21 paintings for faces shown large, and 8 avatar looks that still read at 16px. Every look works without its background too (`background={false}`): only the face, on nothing. Or on a colour of your own: `background="#ffe9a8"`.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/looks-dark.webp">
-  <img alt="the same glorpie in 24 looks: watercolour, gouache, oil, sumi, charcoal, pointillism, linocut, warhol, stained glass, mosaic, neon, holo, atkinson, plotter, thermal, topo, and the avatar looks blob, ink, sticker, cutpaper, pixel icon, line icon, glow and wash" src=".github/assets/looks-light.webp" width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="public/readme/looks-dark.webp">
+  <img alt="24 of the 29 looks, shown on the same glorpie: watercolour, gouache, oil, sumi, charcoal, pointillism, linocut, warhol, stained glass, mosaic, neon, holo, atkinson, plotter, thermal, topo, and the avatar looks blob, ink, sticker, cutpaper, pixel icon, line icon, glow and wash" src="public/readme/looks-light.webp" width="100%">
 </picture>
 
 [Explore all 29 looks](https://glorpies.sunrakerr.dev/docs/looks), or [pick a face in the gallery](https://glorpies.sunrakerr.dev/gallery).
 
-## ⵀ moods
+## Moods
 
 Made for agents too: a face you can pick out of a crowded sidebar, with a status you read from the face itself. Each state changes the expression, how the head moves, and adds a mark that reads at 32px.
 
 | `idle` | `thinking` | `working` | `waiting` | `blocked` | `done` |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| <img src=".github/assets/state-idle.gif" width="96" alt="idle: breathing and blinking"> | <img src=".github/assets/state-thinking.gif" width="96" alt="thinking: eyes up, thought bubbles"> | <img src=".github/assets/state-working.gif" width="96" alt="working: eyes down, typing bubble"> | <img src=".github/assets/state-waiting.gif" width="96" alt="waiting: brows up, a question mark"> | <img src=".github/assets/state-blocked.gif" width="96" alt="blocked: a frown and a red exclamation mark"> | <img src=".github/assets/state-done.gif" width="96" alt="done: a big smile and sparkles"> |
+| <img src="public/readme/state-idle.gif" width="96" alt="idle: breathing and blinking"> | <img src="public/readme/state-thinking.gif" width="96" alt="thinking: eyes up, thought bubbles"> | <img src="public/readme/state-working.gif" width="96" alt="working: eyes down, typing bubble"> | <img src="public/readme/state-waiting.gif" width="96" alt="waiting: brows up, a question mark"> | <img src="public/readme/state-blocked.gif" width="96" alt="blocked: a frown and a red exclamation mark"> | <img src="public/readme/state-done.gif" width="96" alt="done: a big smile and sparkles"> |
 
 ```tsx
 <Glorpie name="agent-47" state="thinking" />
 ```
 
-## ⵎ options
+## Options
 
 The same props on every `<Glorpie>`, or attributes on `<glorpie-face>`:
 
@@ -110,7 +113,7 @@ The same props on every `<Glorpie>`, or attributes on `<glorpie-face>`:
 
 [All options and error handling](https://glorpies.sunrakerr.dev/docs/options).
 
-## ⵔ examples
+## Examples
 
 **A user avatar that's never blank.** Their photo if they have one; their face while it loads, if it fails, or if there isn't one.
 
@@ -148,7 +151,7 @@ const { bg, accent } = faceColors(user.email);
 header.style.background = bg;
 ```
 
-## ⵡ server images
+## Server images
 
 For emails, Open Graph images, chat integrations and anywhere else that needs an image URL, serve faces from your own app. Image rendering and the CLI need the optional `@napi-rs/canvas` peer dependency. Node deployments support Node 22 and newer.
 
@@ -182,7 +185,7 @@ PNG, WebP, JPEG, SVG and seamless GIF loops, cached for a year by default. `crea
 
 [Server setup for every framework, query parameters and limits](https://glorpies.sunrakerr.dev/docs/server).
 
-## ⵜ cli
+## Cli
 
 Write a face straight to a file:
 
@@ -198,31 +201,31 @@ for name in ada grace linus; do npx glorpies "$name" --look sticker --size 256; 
 
 [CLI flags and formats](https://glorpies.sunrakerr.dev/docs/cli).
 
-## ⵚ how it's drawn
+## How it's drawn
 
 A name hashes to a 53-bit seed, and the seed drives a random stream (sfc32) and a noise field. From them comes the alien, as a list of drawing operations: watercolour glazes, hatching, pen lines and solid fills, plus the parts that move (pupils, lids). That list is painted once per "line boil" frame, so the pen wobbles like hand-drawn animation, and the eyes are drawn live on top. Only the blinks and glances are left to chance; the face depends on the name alone, so it comes out the same at any size, as a PNG, as SVG paths or as a looping GIF.
 
 [Watch it paint one](https://glorpies.sunrakerr.dev/how), step by step, or read [the faq](https://glorpies.sunrakerr.dev/docs/faq) on why the same name gives the same face everywhere.
 
-## ⵛ this repo
+## This repo
 
 `packages/glorpies` is the library, with zero runtime dependencies. `src/` is the site, a Next.js app. To work on the repo, use Node 26 and pnpm.
 
 ```bash
 pnpm install
 pnpm dev --port 3417     # http://localhost:3417
-pnpm typecheck && pnpm test
+pnpm check
 ```
 
 - In `packages/glorpies/src/`, `face/build.ts` turns a seed into an alien and `engine.ts` supplies the seeded randomness and noise.
 - In that same directory, `face/render.ts` paints and animates a face; `stage.ts` runs one animation loop for every face on a page. `styles.ts` and `small.ts` repaint faces in the other looks.
-- `scripts/` holds headless Chrome checks, and `readme-art.mjs`, which draws the pictures in this README and the site's link preview.
+- `scripts/` holds browser checks and artwork tools. `readme-art.mjs` draws the shared README artwork; `social-art.mjs` draws the site's link previews.
 
 glorpies is open source, and issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) before a pull request. There's one rule: an existing face must never change. Report security issues privately, as [SECURITY.md](SECURITY.md) describes.
 
-The [integration lab](examples/integration-lab/README.md) installs the published npm package and checks every integration. See its [release verification](examples/integration-lab/VERIFICATION.md) for the tested versions and coverage.
+Start with the standalone [React and vanilla JavaScript examples](examples/README.md). CI checks the library on Node 22, 24 and 26, exercises framework components in Chrome, and installs the packed tarball in an isolated consumer to check imports, native image rendering, a secured SVG route and the CLI.
 
-## ⵇ licence
+## Licence
 
 Made by **[sunrakerr](https://github.com/sunrakerr)**.
 

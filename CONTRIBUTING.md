@@ -1,49 +1,92 @@
 # Contributing
 
-Issues and pull requests are welcome. For anything bigger than a fix, open an issue first so we can agree on it before you build it.
+Bug fixes, documentation improvements and small examples are welcome. For a new public API, look or breaking change, open an issue first so we can agree on the scope.
 
 ## Setup
 
-Node 26 (the current LTS; `.nvmrc` pins it) and pnpm. The library itself supports Node 22 and newer.
+Use Node 26 (`nvm use` reads `.nvmrc`). The published library supports Node 22 and newer; development tooling uses the versions pinned in this repository.
 
-```bash
-pnpm install
-pnpm dev --port 3417     # the site, with the library compiled from source
+```sh
+npm install --global pnpm@12.15.0
+pnpm install --frozen-lockfile
+pnpm dev --port 3417
 ```
 
-`packages/glorpies` is the library; `src/` is the site. Changes to the library show up in the site as you save.
+Open http://localhost:3417. The website consumes the library's workspace source, so library edits appear as you save.
 
-## Before a pull request
+Browser checks also need Google Chrome. The helper finds a standard installation on macOS or Windows and `google-chrome` on Linux. Set `CHROME` to the executable path for another installation:
 
-```bash
-pnpm typecheck && pnpm --filter glorpies typecheck
-pnpm test                # builds the library and runs its tests
-pnpm --filter glorpies test:browser   # the framework components in headless Chrome
+```sh
+CHROME=/path/to/chrome pnpm --filter glorpies test:browser
 ```
 
-CI runs the same on Node 22, 24 and 26, lints the package as npm will see it, and installs the packed package into a fresh app.
+CI installs Chrome for Testing explicitly. Browser checks use a fresh temporary profile and close it afterward.
 
-The code reads plainly and comments sparingly: a line where the why isn't obvious, not a narration of the what.
+## Repository map
 
-## The one rule: faces don't change
+| Path | Purpose |
+| --- | --- |
+| `packages/glorpies/src/` | The library, framework adapters, server renderer and CLI. |
+| `packages/glorpies/test/` | Unit, pixel, packaging and browser regressions; an isolated tarball consumer smoke check. |
+| `src/app/` | The Next.js website: landing page, gallery, painting explainer and MDX documentation. |
+| `src/app/docs/` | User-facing guides and API documentation. |
+| `src/components/`, `src/lib/` | Website UI and shared helpers. |
+| `examples/react/`, `examples/vanilla/` | Standalone consumers of the published package, with separate npm lockfiles. |
+| `public/readme/` | The single source of README artwork for GitHub, npm and the website. |
+| `scripts/` | README synchronization, artwork generators, screenshots and site checks. |
+| `.github/` | CI, release automation, dependency updates and contribution templates. |
 
-The same name has to give the same face, forever: people store names, not pictures. A change that moves a single pixel of an existing face in an existing look is a breaking change, even if it looks better. New looks, states and options are fine, and so is anything that keeps every render byte for byte. If a change is meant to alter faces, say so in the pull request.
+The site lives at the repository root; the library is the pnpm workspace package. Examples deliberately install from npm rather than linking workspace source. Build outputs, local reports and marketing exports are ignored.
 
-The tests hold this in place. They pin the seed and geometry of known names, and a hash of every look's pixels per platform in `packages/glorpies/test/fixtures/pixels.json`. A failure there lists every look that changed. If the change is intended, record macOS or your own platform again with `GLORPIES_RECORD=1 pnpm test`. The `linux-x64` prints are the ones CI paints, so copy those from the failing CI run.
+## Check a change
 
-## Testing the published package
+Run the documented checks from the root:
 
-The [integration lab](examples/integration-lab/README.md) is a separate consumer app. It installs Glorpies from npm and exercises every component, the element, CDN, canvas APIs, server images and CLI. It also includes production Next.js, Nuxt, SvelteKit and Astro fixtures.
+```sh
+pnpm check
+```
 
-## Releasing
+This runs source linting, formatting and README synchronization checks, site and library typechecks, and the library unit/packaging tests. Site typechecking runs `next typegen` first, so a fresh clone does not need a previous dev session or build.
 
-1. Bump `version` in `packages/glorpies/package.json` and update `packages/glorpies/CHANGELOG.md`.
-2. Run the checks above and test a packed candidate in the integration lab.
-3. Commit the tested changes, then run `pnpm publish --access public` from `packages/glorpies`. Use pnpm: it swaps source exports for the built ones.
-4. Install the new version from npm in the lab and repeat its tests, including the CDN and production framework fixtures. Commit the updated lockfile and verification report, and push.
+Additional checks depend on the change:
 
-For automated releases, first configure this repository's `release.yml` as a trusted publisher in the package's npm settings. Then a matching version tag (for example `git tag v0.2.0 && git push origin v0.2.0`) runs the release workflow and publishes with provenance. Until that trust is configured, use the manual steps above and do not push a release tag.
+```sh
+pnpm build                              # website and MDX changes
+pnpm --filter glorpies test:browser      # framework components and browser behaviour
+pnpm --filter glorpies lint:package      # create and validate the npm tarball
+pnpm --filter glorpies test:packed       # install that tarball in an isolated consumer
+npm --prefix examples/react ci
+npm --prefix examples/react run build
+npm --prefix examples/vanilla ci
+npm --prefix examples/vanilla run build
+```
 
-## Security
+CI runs the library and tarball checks on Node 22, 24 and 26, the browser regressions on Node 26, the source checks, both starter builds and a production website build. The tarball check covers public imports, numeric seed identity, native PNG rendering, a secured SVG route, CLI output and the CDN entry.
 
-Don't open an issue for a vulnerability; report it privately, as [SECURITY.md](SECURITY.md) describes.
+Use `pnpm format` to format changes. After editing the root README, run `pnpm readme:sync`; the npm README is generated with absolute links. Do not edit the generated copy directly.
+
+## Faces must remain stable
+
+People store names, not pictures. An existing name must keep the same face in an existing look. Pixel fixtures in `packages/glorpies/test/fixtures/pixels.json` detect unintended changes on each renderer/platform.
+
+If a change is intended to alter existing faces, describe it as breaking in the PR. To record an intended fixture change on your platform, run `GLORPIES_RECORD=1 pnpm test`. Review every changed fingerprint; do not refresh fixtures just to silence a failure. CI uses the Linux fixtures.
+
+## Documentation and artwork
+
+Keep examples small and independently runnable. Update the relevant MDX guide when public behaviour changes, and add a library changelog entry when appropriate.
+
+`scripts/readme-art.mjs` redraws shared README artwork from the built library and a running site; `scripts/social-art.mjs` generates the section link-preview cards. Preserve the documented seed and painting style of the README hero.
+
+## Releases
+
+Dates in `packages/glorpies/CHANGELOG.md` use UTC. Historical GitHub releases correspond to versions already published on npm; creating release notes does not require republishing a package.
+
+For a new npm release, maintainers:
+
+1. Bump the library version and add dated changelog notes.
+2. Run `pnpm check`, browser checks, `lint:package` and `test:packed`.
+3. Commit the tested source and update starter dependencies if needed.
+4. Publish manually with `pnpm publish --access public` from `packages/glorpies`, or use a new version tag only after configuring `release.yml` as an npm trusted publisher.
+5. Add GitHub release notes linking to the changelog and identifying the tested source commit.
+
+Never recreate a tag or publish an already published version. See [SECURITY.md](SECURITY.md) for private vulnerability reporting.

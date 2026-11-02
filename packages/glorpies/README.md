@@ -1,3 +1,5 @@
+<!-- Generated from README.md by pnpm readme:sync. -->
+
 <p align="center">
   <a href="https://glorpies.sunrakerr.dev"><img src="https://glorpies.sunrakerr.dev/readme/glorpie.png" width="192" height="192" alt="sunrakerrisfriednoodlz: a purple Glorpie with a yellow crown, pointy ears and too many teeth, painted on a mint wash in a circle"></a>
 </p>
@@ -7,6 +9,7 @@
 <p align="center"><b>Ugly little alien avatars from any string.</b></p>
 
 <p align="center">
+  <a href="https://github.com/sunrakerr/glorpies/actions/workflows/ci.yml"><img alt="CI status" src="https://github.com/sunrakerr/glorpies/actions/workflows/ci.yml/badge.svg?branch=main"></a>
   <a href="https://www.npmjs.com/package/glorpies"><img alt="npm version" src="https://img.shields.io/npm/v/glorpies?style=flat-square&color=b4ff5a&labelColor=0d0c13"></a>
   <img alt="zero dependencies" src="https://img.shields.io/badge/dependencies-0-b4ff5a?style=flat-square&labelColor=0d0c13">
   <img alt="TypeScript types included" src="https://img.shields.io/badge/TypeScript-included-b4ff5a?style=flat-square&labelColor=0d0c13">
@@ -16,10 +19,11 @@
 <p align="center">
   <a href="https://glorpies.sunrakerr.dev"><b>./site</b></a> &nbsp;·&nbsp;
   <a href="https://glorpies.sunrakerr.dev/gallery">./gallery</a> &nbsp;·&nbsp;
-  <a href="https://glorpies.sunrakerr.dev/docs">./docs</a> &nbsp;·&nbsp;
   <a href="https://glorpies.sunrakerr.dev/how">./how</a> &nbsp;·&nbsp;
-  <a href="https://github.com/sunrakerr/glorpies">./github</a>
+  <a href="https://glorpies.sunrakerr.dev/docs">./docs</a>
 </p>
+
+[Quick start](#quick-start) · [Frameworks](#frameworks) · [Looks](#looks) · [Options](#options) · [Examples](https://github.com/sunrakerr/glorpies/blob/main/examples/README.md) · [Changelog](https://github.com/sunrakerr/glorpies/blob/main/packages/glorpies/CHANGELOG.md) · [Contributing](https://github.com/sunrakerr/glorpies/blob/main/CONTRIBUTING.md)
 
 Hand-painted in watercolour and dip pen. Antennae, extra eyes, horns, halos, too many teeth. And they're alive: they breathe, blink and glance at you.
 
@@ -36,7 +40,7 @@ npm i glorpies
 ```tsx
 import { Glorpie } from 'glorpies/react';
 
-<Glorpie name="sunrakerrisfriednoodlz" size={48} />
+<Glorpie name="sunrakerrisfriednoodlz" size={48} />;
 ```
 
 By default, small avatars use the ink look; at 72px and above they use watercolour. To paint the Glorpie at the top of this page:
@@ -47,7 +51,22 @@ By default, small avatars use the ink look; at 72px and above they use watercolo
 
 A numeric `name` is a seed; a string is hashed into one. `name={42}` and `name="42"` produce different faces. For the web component, set `face.name = 42` in JavaScript to use a numeric seed.
 
-## Anywhere: one tag
+## Frameworks
+
+Framework components and the web component share the same options:
+
+| framework                       | import                                             | guide                                                     |
+| ------------------------------- | -------------------------------------------------- | --------------------------------------------------------- |
+| React, Next.js                  | `import { Glorpie } from 'glorpies/react'`         | [React](https://glorpies.sunrakerr.dev/docs/react)        |
+| Vue 3, Nuxt                     | `import { Glorpie } from 'glorpies/vue'`           | [Vue](https://glorpies.sunrakerr.dev/docs/vue)            |
+| Svelte 4 and 5, SvelteKit       | `import { Glorpie } from 'glorpies/svelte'`        | [Svelte](https://glorpies.sunrakerr.dev/docs/svelte)      |
+| Solid, SolidStart               | `import { Glorpie } from 'glorpies/solid'`         | [Solid](https://glorpies.sunrakerr.dev/docs/solid)        |
+| Preact                          | `import { Glorpie } from 'glorpies/preact'`        | [Preact](https://glorpies.sunrakerr.dev/docs/preact)      |
+| Angular, Astro, Lit, plain HTML | `import 'glorpies/element'`, then `<glorpie-face>` | [Web component](https://glorpies.sunrakerr.dev/docs/html) |
+
+Components render a coloured placeholder on the server, then paint on a canvas in the browser. Faces paint when they approach the screen and animate only while visible. Reduced-motion preferences are respected by default.
+
+**No build step?** One script tag:
 
 ```html
 <script type="module" src="https://unpkg.com/glorpies"></script>
@@ -55,107 +74,95 @@ A numeric `name` is a seed; a string is hashed into one. `name={42}` and `name="
 <glorpie-face name="ada@lovelace.dev" size="48"></glorpie-face>
 ```
 
-Works in plain HTML and in any framework (Vue, Svelte, Angular, Astro…). With a bundler, `import 'glorpies/element'` registers the tag.
+## Looks
 
-## Photo fallbacks
-
-A photo while it's available; a Glorpie while it loads, if it fails, or if there isn't one.
-
-```tsx
-import { Avatar, AvatarImage, AvatarFallback } from 'glorpies/react';
-
-<Avatar size={40}>
-  <AvatarImage src={user.photo} alt={user.name} />
-  <AvatarFallback name={user.email} />
-</Avatar>
-```
-
-The components render on the server as a soft placeholder in the face's own background colour, then paint on the client. React 18+ is supported; each framework integration uses your app's existing framework as an optional peer dependency.
-
-## Vue, Svelte, Solid and Preact
-
-The same `<Glorpie>`, with the same props, for each:
-
-```vue
-<script setup>
-import { Glorpie } from 'glorpies/vue';
-</script>
-
-<template>
-  <Glorpie :name="user.email" :size="40" state="thinking" />
-</template>
-```
-
-```svelte
-<script>
-  import { Glorpie } from 'glorpies/svelte';
-</script>
-
-<Glorpie name={user.email} size={40} state="thinking" />
-```
-
-```tsx
-import { Glorpie } from 'glorpies/solid'; // or 'glorpies/preact'
-
-<Glorpie name={user.email} size={40} state="thinking" />
-```
-
-Each renders a placeholder on the server (Nuxt, SvelteKit, SolidStart) and paints in the browser. Svelte also gets a `use:glorpie` action for a canvas of your own. Angular, Astro and anything else that renders HTML use `<glorpie-face>`.
-
-## Props and attributes
-
-| prop | type | default | what it does |
-| --- | --- | --- | --- |
-| `name` | `string \| number` | required | Any string. The same name is always the same face. |
-| `look` | look id \| `"auto"` | `"auto"` | `auto` paints watercolour, or the ink badge below 72px. |
-| `size` | `number \| string` | `48` | Pixels, or any CSS length. |
-| `shape` | `circle` `squircle` `rounded` `square` | `circle` | The crop. None with `background={false}`. |
-| `background` | `boolean` or a colour | `true` | `false` keeps only the face: no backdrop, no pencil lines, no crop, transparent all around. A colour (`"#ffe9a8"`) puts the face on it instead of its paper, inside the crop. |
-| `state` | `idle` `thinking` `working` `waiting` `blocked` `done` | `idle` | What the face shows besides who it is. |
-| `alive` | `boolean` | on, unless reduced motion | Breathing, blinking and glancing. |
-| `pokeable` | `boolean` | `false` | A tap makes the face wobble. |
-| `label` | `string` | `"Avatar"` | Accessible name (`role="img"`). |
-| `priority` | `number` | | Higher values paint sooner when many faces are waiting. |
-
-These are attributes on `<glorpie-face>` too: use `background="false"` or `alive="false"` to turn those options off. See [options and error handling](https://glorpies.sunrakerr.dev/docs/options) for framework-specific callbacks.
-
-**Looks.** Paintings, for faces shown large: `watercolour`, `atkinson`, `bayer`, `plotter`, `cutout`, `neon`, `gouache`, `oil`, `sumi`, `charcoal`, `pointillism`, `linocut`, `warhol`, `stencil`, `stained`, `mosaic`, `felt`, `lowpoly`, `topo`, `thermal`, `holo`. Avatars, which still read at 16px: `blob`, `ink`, `sticker`, `cutpaper`, `pixel-icon`, `line-icon`, `glow`, `wash`.
-
-**Without a background, or on a colour.** `background={false}` keeps the face, its crown and tentacles, and the sparkles of a celestial one, on nothing. Every look supports it; the crop is removed too. `background="#ffe9a8"` puts the face on that colour instead of its paper, still cropped to its shape.
+29 of them: 21 paintings for faces shown large, and 8 avatar looks that still read at 16px. Every look works without its background too (`background={false}`): only the face, on nothing. Or on a colour of your own: `background="#ffe9a8"`.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://glorpies.sunrakerr.dev/readme/looks-dark.webp">
-  <img alt="the same glorpie in 24 of its looks" src="https://glorpies.sunrakerr.dev/readme/looks-light.webp" width="100%">
+  <img alt="24 of the 29 looks, shown on the same glorpie: watercolour, gouache, oil, sumi, charcoal, pointillism, linocut, warhol, stained glass, mosaic, neon, holo, atkinson, plotter, thermal, topo, and the avatar looks blob, ink, sticker, cutpaper, pixel icon, line icon, glow and wash" src="https://glorpies.sunrakerr.dev/readme/looks-light.webp" width="100%">
 </picture>
 
-**States.** Made for agents: a face you can tell apart in a crowded sidebar, and a status you read from the face itself. Each state changes the expression (mouth and brows, painted in the look's own hand), how the head moves, and adds a hand-drawn mark that still reads at 32px:
+[Explore all 29 looks](https://glorpies.sunrakerr.dev/docs/looks), or [pick a face in the gallery](https://glorpies.sunrakerr.dev/gallery).
 
-| state | mark | face |
-| --- | --- | --- |
-| `idle` | none | breathing, blinking and glancing |
-| `thinking` | thought bubbles | eyes up and away, one brow raised, head tilted |
-| `working` | typing bubble | eyes down reading, brows set, a steady nod |
-| `waiting` | `?` | brows up, a hopeful smile, looking at you |
-| `blocked` | red `!` | knitted brows, a frown, slumped, shaking now and then |
-| `done` | sparkles | a big smile, a pleased squint, a little hop |
+## Moods
 
-<p><img src="https://glorpies.sunrakerr.dev/readme/state-idle.gif" width="80" alt="idle"> <img src="https://glorpies.sunrakerr.dev/readme/state-thinking.gif" width="80" alt="thinking"> <img src="https://glorpies.sunrakerr.dev/readme/state-working.gif" width="80" alt="working"> <img src="https://glorpies.sunrakerr.dev/readme/state-waiting.gif" width="80" alt="waiting"> <img src="https://glorpies.sunrakerr.dev/readme/state-blocked.gif" width="80" alt="blocked"> <img src="https://glorpies.sunrakerr.dev/readme/state-done.gif" width="80" alt="done"></p>
+Made for agents too: a face you can pick out of a crowded sidebar, with a status you read from the face itself. Each state changes the expression, how the head moves, and adds a mark that reads at 32px.
 
-## Your own canvas
+|                                                     `idle`                                                     |                                                        `thinking`                                                        |                                                       `working`                                                        |                                                        `waiting`                                                        |                                                            `blocked`                                                             |                                                      `done`                                                      |
+| :------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------: |
+| <img src="https://glorpies.sunrakerr.dev/readme/state-idle.gif" width="96" alt="idle: breathing and blinking"> | <img src="https://glorpies.sunrakerr.dev/readme/state-thinking.gif" width="96" alt="thinking: eyes up, thought bubbles"> | <img src="https://glorpies.sunrakerr.dev/readme/state-working.gif" width="96" alt="working: eyes down, typing bubble"> | <img src="https://glorpies.sunrakerr.dev/readme/state-waiting.gif" width="96" alt="waiting: brows up, a question mark"> | <img src="https://glorpies.sunrakerr.dev/readme/state-blocked.gif" width="96" alt="blocked: a frown and a red exclamation mark"> | <img src="https://glorpies.sunrakerr.dev/readme/state-done.gif" width="96" alt="done: a big smile and sparkles"> |
 
-```ts
-import { mount } from 'glorpies';
-
-const face = mount(canvas, { name: 'agent-47', look: 'gouache', state: 'working' });
-face.update({ state: 'done' });
-face.destroy();
+```tsx
+<Glorpie name="agent-47" state="thinking" />
 ```
 
-Faces paint once they come near the screen, at their displayed size × devicePixelRatio, and animate only while visible. Every face on a page shares one animation loop.
+## Options
 
-## Images, on a server
+The same props on every `<Glorpie>`, or attributes on `<glorpie-face>`:
 
-Faces as image files, from a route in your own app. Image rendering and the CLI need the optional `@napi-rs/canvas` peer dependency. Node deployments support Node 22 and newer:
+| prop         | default                   | what it does                                                                                                                                  |
+| ------------ | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`       | required                  | A string or numeric seed. The same name always gets the same face.                                                                            |
+| `size`       | `48`                      | Pixels, or a CSS length such as `"3rem"`.                                                                                                     |
+| `look`       | `"auto"`                  | Any of the 29 looks. `auto` uses ink below 72px and watercolour at 72px and above.                                                            |
+| `shape`      | `"circle"`                | `circle`, `squircle`, `rounded` or `square`.                                                                                                  |
+| `background` | `true`                    | `false` removes the backdrop and crop, leaving a transparent background. A colour (`"#ffe9a8"`) puts the face on it instead, inside the crop. |
+| `state`      | `"idle"`                  | `idle`, `thinking`, `working`, `waiting`, `blocked` or `done`.                                                                                |
+| `alive`      | on, unless reduced motion | Breathing, blinking and glancing. Set `false` for a still face.                                                                               |
+| `pokeable`   | `false`                   | A tap makes the face wobble.                                                                                                                  |
+| `label`      | `"Avatar"`                | Accessible name for the face.                                                                                                                 |
+
+[All options and error handling](https://glorpies.sunrakerr.dev/docs/options).
+
+## Examples
+
+**A user avatar that's never blank.** Their photo if they have one; their face while it loads, if it fails, or if there isn't one.
+
+```tsx
+import { Avatar, AvatarFallback, AvatarImage } from 'glorpies/react';
+
+<Avatar size={40}>
+  <AvatarImage src={user.photoUrl} alt={user.name} />
+  <AvatarFallback name={user.email} />
+</Avatar>;
+```
+
+**Agents that show their status.** The face changes with the state, so a sidebar reads at a glance.
+
+```tsx
+import { Glorpie } from 'glorpies/react';
+
+{
+  agents.map((agent) => (
+    <Glorpie key={agent.id} name={agent.id} state={agent.status} size={32} label={agent.name} />
+  ));
+}
+```
+
+**Faces in emails and link previews**, where there's no JavaScript: an image from your own route.
+
+```html
+<img
+  src="https://your.app/api/face?name=ada@lovelace.dev&size=96&shape=circle"
+  width="48"
+  height="48"
+  alt=""
+/>
+```
+
+**A page themed to its face.** `faceColors` is the palette a face is painted in.
+
+```ts
+import { faceColors } from 'glorpies';
+
+const { bg, accent } = faceColors(user.email);
+header.style.background = bg;
+```
+
+## Server images
+
+For emails, Open Graph images, chat integrations and anywhere else that needs an image URL, serve faces from your own app. Image rendering and the CLI need the optional `@napi-rs/canvas` peer dependency. Node deployments support Node 22 and newer.
 
 ```bash
 npm i glorpies @napi-rs/canvas
@@ -164,6 +171,7 @@ npm i glorpies @napi-rs/canvas
 ```ts
 // app/api/face/route.ts (Next.js)
 import { faceRoute } from 'glorpies/server';
+
 export const { GET } = faceRoute();
 ```
 
@@ -174,73 +182,59 @@ For Next.js, keep the native canvas outside the server bundle:
 export default { serverExternalPackages: ['@napi-rs/canvas'] };
 ```
 
-
-For a fetch-based server:
-
-```ts
-import { createFaceHandler } from 'glorpies/server';
-
-Bun.serve({ fetch: createFaceHandler() });
-```
-
-For Express:
-
-```ts
-import express from 'express';
-import { nodeFaceHandler } from 'glorpies/server';
-
-const app = express();
-app.get('/api/face', nodeFaceHandler());
-app.listen(3000);
-```
-
-The fetch handler also fits SvelteKit, Nuxt, Astro, Hono and Deno; `nodeFaceHandler()` also fits `node:http`. [Setup for every framework](https://glorpies.sunrakerr.dev/docs/server).
+Then use your route:
 
 ```text
-/api/face?name=agent-47&look=ink&size=128&shape=circle&format=png
+/api/face?name=agent-47&look=ink&size=128&format=png
 /api/face?name=agent-47&state=thinking&format=gif
 ```
 
-Query: `name` (required), `look`, `size` (16–1024; GIFs up to 320), `shape` (outside is transparent), `state`, `background` (`false` for only the face, or a colour such as `ffe9a8`), `format` (`png`, `webp`, `jpeg`, `svg`, `gif`), and for GIFs `loop` (seconds) and `fps`. Responses are cached for a year: the same request always gives the same image.
+PNG, WebP, JPEG, SVG and seamless GIF loops, cached for a year by default. `createFaceHandler()` works with fetch-based servers; `nodeFaceHandler()` works with Express and `node:http`.
 
-GIFs loop seamlessly with a scripted pose, so the same name always loops the same way. Watercolour SVG is real vector paths; it's large, so prefer PNG or WebP at avatar sizes.
+[Server setup for every framework, query parameters and limits](https://glorpies.sunrakerr.dev/docs/server).
 
-Or directly:
+## Cli
 
-```ts
-import { renderImage, faceGIF } from 'glorpies/server';
-const { body, type } = await renderImage('agent-47', { look: 'sticker', size: 256, format: 'webp' });
-const gif = await faceGIF('agent-47', { state: 'done', size: 128 });
-```
-
-## CLI
-
-The CLI paints with `@napi-rs/canvas`, so ask npx for both:
+Write a face straight to a file:
 
 ```bash
-npx -p glorpies -p @napi-rs/canvas glorpies agent-47 --look ink --size 128 --shape circle -o agent.png
-npx -p glorpies -p @napi-rs/canvas glorpies agent-47 --state thinking -f gif
+npx -p glorpies -p @napi-rs/canvas glorpies sunrakerrisfriednoodlz --look watercolour --size 512 --shape circle -o glorpie.png
 ```
 
-Installed in a project (`npm i glorpies @napi-rs/canvas`), it's just `npx glorpies agent-47`.
+Or a whole team, after installing `glorpies` and `@napi-rs/canvas` in your project:
 
-## API
+```bash
+for name in ada grace linus; do npx glorpies "$name" --look sticker --size 256; done
+```
 
-| | |
-| --- | --- |
-| `mount(canvas, options)` | brings a face to life on your canvas; returns `update`, `poke`, `destroy` |
-| `faceCanvas(name, options)` | one finished picture, in any look, state and shape |
-| `faceSVG(name, options)` | SVG markup |
-| `faceColors(name)` | the palette a face is painted in, to theme what sits around it |
-| `seedOf(name)` | the number behind a name, below `FACES` (2^53: there are 9,007,199,254,740,992 faces) |
-| `randomName()` | a made-up name for a face nobody has named yet, like `soggy-glorp` |
-| `LOOKS`, `STATES`, `SHAPES` | everything there is to choose from |
-| `setCanvasFactory(f)` | draw on canvases from anywhere (the server entry does this for you) |
+[CLI flags and formats](https://glorpies.sunrakerr.dev/docs/cli).
 
-The full guide, with every framework, is at [glorpies.sunrakerr.dev/docs](https://glorpies.sunrakerr.dev/docs).
+## How it's drawn
+
+A name hashes to a 53-bit seed, and the seed drives a random stream (sfc32) and a noise field. From them comes the alien, as a list of drawing operations: watercolour glazes, hatching, pen lines and solid fills, plus the parts that move (pupils, lids). That list is painted once per "line boil" frame, so the pen wobbles like hand-drawn animation, and the eyes are drawn live on top. Only the blinks and glances are left to chance; the face depends on the name alone, so it comes out the same at any size, as a PNG, as SVG paths or as a looping GIF.
+
+[Watch it paint one](https://glorpies.sunrakerr.dev/how), step by step, or read [the faq](https://glorpies.sunrakerr.dev/docs/faq) on why the same name gives the same face everywhere.
+
+## This repo
+
+`packages/glorpies` is the library, with zero runtime dependencies. `src/` is the site, a Next.js app. To work on the repo, use Node 26 and pnpm.
+
+```bash
+pnpm install
+pnpm dev --port 3417     # http://localhost:3417
+pnpm check
+```
+
+- In `packages/glorpies/src/`, `face/build.ts` turns a seed into an alien and `engine.ts` supplies the seeded randomness and noise.
+- In that same directory, `face/render.ts` paints and animates a face; `stage.ts` runs one animation loop for every face on a page. `styles.ts` and `small.ts` repaint faces in the other looks.
+- `scripts/` holds browser checks and artwork tools. `readme-art.mjs` draws the shared README artwork; `social-art.mjs` draws the site's link previews.
+
+glorpies is open source, and issues and pull requests are welcome. See [CONTRIBUTING.md](https://github.com/sunrakerr/glorpies/blob/main/CONTRIBUTING.md) before a pull request. There's one rule: an existing face must never change. Report security issues privately, as [SECURITY.md](https://github.com/sunrakerr/glorpies/blob/main/SECURITY.md) describes.
+
+Start with the standalone [React and vanilla JavaScript examples](https://github.com/sunrakerr/glorpies/blob/main/examples/README.md). CI checks the library on Node 22, 24 and 26, exercises framework components in Chrome, and installs the packed tarball in an isolated consumer to check imports, native image rendering, a secured SVG route and the CLI.
 
 ## Licence
 
-Made by [sunrakerr](https://github.com/sunrakerr). Open source on [GitHub](https://github.com/sunrakerr/glorpies): issues and pull requests are welcome.
+Made by **[sunrakerr](https://github.com/sunrakerr)**.
 
-[MIT](https://github.com/sunrakerr/glorpies/blob/main/packages/glorpies/LICENSE). Bundled third-party licences are in [THIRD-PARTY-NOTICES.md](https://github.com/sunrakerr/glorpies/blob/main/packages/glorpies/THIRD-PARTY-NOTICES.md).
+[MIT](https://github.com/sunrakerr/glorpies/blob/main/LICENSE)

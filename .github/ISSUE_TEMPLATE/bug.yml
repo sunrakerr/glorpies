@@ -20,6 +20,13 @@ body:
     attributes:
       label: where
       description: glorpies version, and the entry (react, element, server, cli) and browser or runtime
-      placeholder: "glorpies 0.1.0, glorpies/react, Safari 19"
+      placeholder: "glorpies 0.1.1, glorpies/react, Chrome, Node 26"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: minimal reproduction
+      description: A small code example or repository link, plus the commands or steps to reproduce it. Remove private data and credentials.
     validations:
       required: true

@@ -15,6 +15,18 @@ updates:
       # TypeScript 7 ships no compiler API, which tsup needs to bundle the library's type declarations
       - dependency-name: typescript
         update-types: [version-update:semver-major]
+  - package-ecosystem: npm
+    directory: /examples/react
+    schedule:
+      interval: weekly
+    ignore:
+      - dependency-name: glorpies
+  - package-ecosystem: npm
+    directory: /examples/vanilla
+    schedule:
+      interval: weekly
+    ignore:
+      - dependency-name: glorpies
   - package-ecosystem: github-actions
     directory: /
     schedule:
