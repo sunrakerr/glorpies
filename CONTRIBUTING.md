@@ -66,6 +66,12 @@ CI runs the library and tarball checks on Node 22, 24 and 26, the browser regres
 
 Use `pnpm format` to format changes. After editing the root README, run `pnpm readme:sync`; the npm README is generated with absolute links. Do not edit the generated copy directly.
 
+## Main branch policy
+
+Two active GitHub rulesets protect `main`: [history protection](https://github.com/sunrakerr/glorpies/rules/26353651) blocks force pushes and branch deletion for everyone, and [required CI](https://github.com/sunrakerr/glorpies/rules/26353653) requires all seven jobs from `.github/workflows/ci.yml`, with GitHub Actions as the check provider.
+
+The repository owner and administrators can bypass the CI rule to make direct fast-forward pushes; no pull request or review is required. Those pushes still run CI and deploy the website. Confirm the checks are green after pushing. The history protection has no bypass, including for administrators.
+
 ## Faces must remain stable
 
 People store names, not pictures. An existing name must keep the same face in an existing look. Pixel fixtures in `packages/glorpies/test/fixtures/pixels.json` detect unintended changes on each renderer/platform.
