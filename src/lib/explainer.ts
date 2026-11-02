@@ -5,7 +5,7 @@ import { buildFace } from 'glorpies/internal/face/build';
 import { seedOf } from 'glorpies/internal/seed';
 import { applyClip, drawEyes, play, rasterizeFace, vignette, type FaceRaster, type Pose } from 'glorpies/internal/face/render';
 import { hatchLines, inkRibbons, type HatchLine } from 'glorpies/internal/face/strokes';
-import type { Face, HatchOp, InkOp, Op, WashOp } from 'glorpies/internal/face/types';
+import type { HatchOp, InkOp, Op, WashOp } from 'glorpies/internal/face/types';
 import { GRAPHITE, W } from 'glorpies/internal/face/types';
 import { deform, plan, type Plan, type VPt } from 'glorpies/internal/face/wash';
 
@@ -507,7 +507,6 @@ export function prepareExplainer(name: string, E: Engine, k: number, fonts: Font
 
   // ================= scenes =================
   function scene(ctx: Ctx, sc: Scene, local: number, t: number) {
-    const u = local / sc.dur;
     switch (sc.id) {
       case 'title': {
         card(ctx, 1);

@@ -32,6 +32,7 @@ function numericName(element: GlorpieElement): number | undefined {
 const Base: typeof HTMLElement = typeof HTMLElement === 'undefined' ? (class {} as typeof HTMLElement) : HTMLElement;
 
 /** `<glorpie-face>`: the React component's options as attributes, for plain HTML and any framework. */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging -- Reflected properties are installed on the prototype below.
 export class GlorpieElement extends Base {
   static observedAttributes = [...ATTRS, 'data-seed'];
   private canvas: HTMLCanvasElement | null = null;
@@ -130,6 +131,7 @@ for (const attr of ATTRS) {
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging -- Describes the reflected properties installed above.
 export interface GlorpieElement extends Record<Exclude<(typeof ATTRS)[number], 'name'>, string | null> {
   name: FaceName | null;
 }

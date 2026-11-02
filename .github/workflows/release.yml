@@ -25,7 +25,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: the tag matches the package version
         run: test "v$(node -p "require('./packages/glorpies/package.json').version")" = "$GITHUB_REF_NAME"
-      - run: pnpm typecheck && pnpm test && pnpm --filter glorpies lint:package
+      - run: pnpm check && pnpm --filter glorpies lint:package && pnpm --filter glorpies test:packed
       # pnpm packs (swapping in the built exports from publishConfig); npm publishes, with provenance
       - working-directory: packages/glorpies
         run: |

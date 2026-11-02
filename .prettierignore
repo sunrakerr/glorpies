@@ -1,0 +1,12 @@
+node_modules/
+.next/
+out/
+media/
+**/dist/
+**/.pack/
+next-env.d.ts
+AGENTS.md
+pnpm-lock.yaml
+**/package-lock.json
+packages/glorpies/test/fixtures/pixels.json
+packages/glorpies/THIRD-PARTY-NOTICES.md

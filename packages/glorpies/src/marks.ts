@@ -161,7 +161,8 @@ function puff(g: CanvasRenderingContext2D, x: number, y: number, rx: number, ry:
     const mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2;
     const out = 1.55 + hash01(seed, i) * 0.25;
     const cx = x + (mx - x) * out, cy = y + (my - y) * out;
-    i ? g.quadraticCurveTo(cx, cy, q.x, q.y) : (g.moveTo(p.x, p.y), g.quadraticCurveTo(cx, cy, q.x, q.y));
+    if (!i) g.moveTo(p.x, p.y);
+    g.quadraticCurveTo(cx, cy, q.x, q.y);
   });
   g.closePath();
   g.fill();

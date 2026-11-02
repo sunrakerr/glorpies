@@ -95,7 +95,8 @@ const oil: Render = (face, E, px) => {
       if (R < px / 60 && Math.abs(detail[i]! - L[i]!) < 0.02 && r() < 0.8) continue;
       const col = at(src, sx, sy);
       const pts: Pt[] = [{ x: sx, y: sy }];
-      let px0 = sx, py0 = sy, dir = r() < 0.5 ? 1 : -1;
+      let px0 = sx, py0 = sy;
+      const dir = r() < 0.5 ? 1 : -1;
       for (let s = 0; s < 6; s++) {
         const j = Math.min(px * px - 1, Math.max(0, Math.round(py0) * px + Math.round(px0)));
         const a = angle[j]! * 1;

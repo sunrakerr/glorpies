@@ -197,7 +197,12 @@ export function shapePath(g: CanvasRenderingContext2D, shape: Shape, size: numbe
   g.beginPath();
   if (shape === 'circle') g.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
   else if (shape === 'rounded') g.roundRect(0, 0, size, size, size * 0.16);
-  else if (shape === 'squircle') for (const [i, q] of squircle(size).entries()) i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]);
+  else if (shape === 'squircle') {
+    for (const [i, q] of squircle(size).entries()) {
+      if (i) g.lineTo(q[0], q[1]);
+      else g.moveTo(q[0], q[1]);
+    }
+  }
   else g.rect(0, 0, size, size);
   g.closePath();
 }

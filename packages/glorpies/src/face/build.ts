@@ -231,7 +231,7 @@ export function buildFace(seed: number, E: Engine): Face {
   let hairCol: Color = pal.hair;
   const brows: Pt[][] = [];
   let nosePts: Pt[] = [];
-  let mouth: Pick<Sketch['mouth'], 'kind' | 'line' | 'shape'> = { kind: 'smile', line: [], shape: null };
+  let mouth: Pick<Sketch['mouth'], 'kind' | 'line' | 'shape'>;
   const browOps: [number, number][] = [];
   const blush: Pt[][] = [];
 

@@ -12,7 +12,13 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "pnpm --filter glorpies build && pnpm --filter glorpies test"
+    "test": "pnpm --filter glorpies build && pnpm --filter glorpies test",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "readme:sync": "node scripts/sync-readme.mjs",
+    "readme:check": "node scripts/sync-readme.mjs --check",
+    "check": "pnpm lint && pnpm format:check && pnpm readme:check && pnpm typecheck && pnpm --filter glorpies typecheck && pnpm test"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",
@@ -26,12 +32,19 @@
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/mdx": "^2.0.14",
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "eslint": "^10.14.0",
+    "eslint-plugin-svelte": "^3.23.1",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10",
+    "prettier-plugin-svelte": "^4.1.1",
     "tailwindcss": "^4.3.3",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.1"
   }
 }
