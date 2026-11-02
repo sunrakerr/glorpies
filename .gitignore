@@ -14,3 +14,11 @@ packages/*/dist
 .env*
 *.tgz
 .pack
+
+# standalone examples and local tool output
+examples/*/node_modules/
+examples/*/dist/
+*.log
+coverage/
+test-results/
+playwright-report/

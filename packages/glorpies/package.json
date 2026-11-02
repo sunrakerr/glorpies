@@ -117,7 +117,8 @@
     "test": "node --test test/*.test.mjs",
     "prepublishOnly": "pnpm build && pnpm test",
     "lint:package": "rm -rf .pack && pnpm pack --pack-destination .pack && publint .pack/glorpies-*.tgz && attw .pack/glorpies-*.tgz --profile esm-only",
-    "test:browser": "node test/browser.mjs"
+    "test:browser": "node test/browser.mjs",
+    "test:packed": "node test/packed.mjs"
   },
   "peerDependencies": {
     "@napi-rs/canvas": ">=0.1.60",

@@ -41,17 +41,7 @@ jobs:
       - name: lint the package as npm will see it
         run: pnpm --filter glorpies lint:package
       - name: install the packed package the way a user would, and use it
-        run: |
-          app="$RUNNER_TEMP/app" && mkdir -p "$app" && cd "$app"
-          npm init -y > /dev/null
-          npm install "$GITHUB_WORKSPACE"/packages/glorpies/.pack/glorpies-*.tgz @napi-rs/canvas react
-          node --input-type=module -e "
-            import { renderImage } from 'glorpies/server';
-            import { Glorpie } from 'glorpies/react';
-            const { body } = await renderImage('agent-47', { size: 64 });
-            if (body[0] !== 0x89 || typeof Glorpie !== 'function') process.exit(1);
-          "
-          npx glorpies agent-47 --size 64 -o face.png && test -s face.png
+        run: pnpm --filter glorpies test:packed
 
   site:
     runs-on: ubuntu-latest
@@ -66,31 +56,20 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm build
 
-  integration-lab:
-    name: published package integrations
+  examples:
+    name: ${{ matrix.example }} starter
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        example: [react, vanilla]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: 26
           cache: npm
-          cache-dependency-path: |
-            examples/integration-lab/package-lock.json
-            examples/integration-lab/test/fixtures/astro/package-lock.json
+          cache-dependency-path: examples/${{ matrix.example }}/package-lock.json
       - run: npm ci
-        working-directory: examples/integration-lab
-      - run: npm ci --prefix test/fixtures/astro
-        working-directory: examples/integration-lab
-      - run: npm test && npm run test:frameworks
-        working-directory: examples/integration-lab
-      - name: Bun and Deno image routes
-        working-directory: examples/integration-lab
-        run: |
-          npx -y bun@1.4.4 test/runtimes.mjs
-          npx -y deno@2.9.6 run --allow-net --allow-env --allow-sys --allow-ffi test/runtimes.mjs
-      - uses: actions/upload-artifact@v6
-        if: always()
-        with:
-          name: integration-results
-          path: examples/integration-lab/reports/
+        working-directory: examples/${{ matrix.example }}
+      - run: npm run build
+        working-directory: examples/${{ matrix.example }}
