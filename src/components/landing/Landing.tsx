@@ -17,7 +17,7 @@ import {
   type LookChoice,
   type LookId,
 } from 'glorpies';
-import { Glorpie } from 'glorpies/react';
+import { WorkerGlorpie as Glorpie } from '../WorkerGlorpie';
 import { runAction, type ActionKind } from '../actions';
 import { CodePanel } from '../Code';
 import { Install } from '../Install';
@@ -60,7 +60,11 @@ export function Landing() {
   const name = String(useDeferredValue(c.name)) || ' ';
   const set = (patch: Partial<Choice>) => setC((v) => ({ ...v, ...patch }));
   // a new visitor meets a new face; made up on the client so server and client markup agree
-  useEffect(() => set({ name: randomName() }), []);
+  useEffect(
+    () =>
+      set({ name: randomName(), alive: !matchMedia('(prefers-reduced-motion: reduce)').matches }),
+    [],
+  );
 
   return (
     <Page>
@@ -115,6 +119,7 @@ function Hero({ onPick }: { onPick: (name: string) => void }) {
             <Link
               key={p.slug}
               href={docHref(p.slug)}
+              prefetch={false}
               className="rounded-[3px] px-1.5 py-0.5 text-ink-2 transition hover:bg-ink/[0.06] hover:text-ink"
             >
               {p.title}

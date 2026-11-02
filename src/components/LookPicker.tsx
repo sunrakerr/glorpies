@@ -10,7 +10,7 @@ import {
   type Look,
   type LookId,
 } from 'glorpies/internal/looks';
-import { cachedThumb, paintThumb } from 'glorpies/internal/studio';
+import { canPaintOffscreen, painter } from '@/lib/face-worker';
 import { ThumbSkeleton } from './Loading';
 
 /** One size for every preview, so the gallery picker and the viewer strip share a cache. */
@@ -22,22 +22,57 @@ export function LookThumb({ seed, look }: { seed: number; look: LookId }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const show = (src: HTMLCanvasElement) => {
+    const show = (src: CanvasImageSource) => {
       const c = ref.current;
       if (!c) return;
       c.width = c.height = THUMB_PX;
       c.getContext('2d')?.drawImage(src, 0, 0, THUMB_PX, THUMB_PX);
       setReady(true);
     };
-    const hit = cachedThumb(seed, look, THUMB_PX);
-    if (hit) {
-      show(hit);
-      return;
-    }
     setReady(false);
-    const job = paintThumb(seed, look, THUMB_PX);
-    job.promise.then(show, () => {});
-    return job.cancel;
+    let cancel = () => {};
+    let disposed = false;
+    const fallback = () => {
+      void import('glorpies/internal/studio').then(({ paintThumb }) => {
+        if (disposed) return;
+        const job = paintThumb(seed, look, THUMB_PX);
+        job.promise.then(
+          (src) => {
+            if (!disposed) show(src);
+          },
+          () => {},
+        );
+        cancel = job.cancel;
+      });
+    };
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0]?.isIntersecting) return;
+        observer.disconnect();
+        if (canPaintOffscreen()) {
+          const client = painter((message) => {
+            if (message.bitmap) {
+              if (!disposed) show(message.bitmap);
+              message.bitmap.close();
+            }
+            client.dispose();
+            if (message.error) fallback();
+          });
+          client.send({ kind: 'thumb', id: client.id, seed, look, px: THUMB_PX });
+          cancel = client.dispose;
+        } else {
+          // Older browsers keep the existing renderer, but only for visible tiles.
+          fallback();
+        }
+      },
+      { rootMargin: '32px' },
+    );
+    observer.observe(ref.current!);
+    return () => {
+      disposed = true;
+      observer.disconnect();
+      cancel();
+    };
   }, [seed, look]);
 
   return (

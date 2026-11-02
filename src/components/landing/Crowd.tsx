@@ -1,22 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { randomName } from 'glorpies';
-import { Glorpie } from 'glorpies/react';
+import { WorkerGlorpie } from '../WorkerGlorpie';
+import names from './crowd-names.json';
 
 /** The crowd's rows and how many stand in each: a band across a phone or tablet, a cluster beside the headline on a wide screen. */
 const ROWS = 7;
 const COLS = 14;
 const SIZE = 48;
 
-/** Different names; made-up names can repeat, and a crowd of twins would give the game away. */
-const crowd = () => {
-  const names = new Set<string>();
-  while (names.size < ROWS * COLS) names.add(randomName());
-  return [...names];
-};
-
-/** A crowd standing in staggered rows, every face turned to the pointer; picking one takes it to the playground. */
+/** A cached crowd in staggered rows, with a few living faces; picking one takes it to the playground. */
 export function Crowd({
   onPick,
   className = '',
@@ -24,9 +17,20 @@ export function Crowd({
   onPick: (name: string) => void;
   className?: string;
 }) {
-  // a new crowd every visit, drawn on the client so the server's markup has nothing to disagree with
-  const [names, setNames] = useState<string[]>([]);
-  useEffect(() => setNames(crowd()), []);
+  // Cached first frames are present in server markup; a few visible faces wake after hydration.
+  const [animated, setAnimated] = useState<number[]>([]);
+  useEffect(() => {
+    const motion = matchMedia('(prefers-reduced-motion: reduce)');
+    const phone = matchMedia('(pointer: coarse)');
+    const sync = () => setAnimated(motion.matches ? [] : phone.matches ? [48, 50] : [35, 48, 63]);
+    sync();
+    motion.addEventListener('change', sync);
+    phone.addEventListener('change', sync);
+    return () => {
+      motion.removeEventListener('change', sync);
+      phone.removeEventListener('change', sync);
+    };
+  }, []);
 
   return (
     <div className={className}>
@@ -38,7 +42,7 @@ export function Crowd({
               key={r}
               className={`relative flex list-none gap-x-2.5 focus-within:z-10 hover:z-10 ${r % 2 ? 'translate-x-[1.8rem]' : ''}`}
             >
-              {names.slice(r * COLS, (r + 1) * COLS).map((name) => (
+              {names.slice(r * COLS, (r + 1) * COLS).map((name, col) => (
                 <button
                   key={name}
                   type="button"
@@ -47,7 +51,29 @@ export function Crowd({
                   className="group relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
                   <span className="block transition-transform duration-200 ease-soft group-hover:-translate-y-1 group-hover:scale-110">
-                    <Glorpie name={name} size={SIZE} label={name} />
+                    {animated.includes(r * COLS + col) ? (
+                      <WorkerGlorpie
+                        name={name}
+                        size={SIZE}
+                        label={name}
+                        style={{
+                          backgroundImage: 'url(/landing/crowd.webp)',
+                          backgroundSize: '672px 336px',
+                          backgroundPosition: `${-col * SIZE}px ${-r * SIZE}px`,
+                        }}
+                      />
+                    ) : (
+                      <span
+                        role="img"
+                        aria-label={name}
+                        className="block size-12 rounded-full"
+                        style={{
+                          backgroundImage: 'url(/landing/crowd.webp)',
+                          backgroundSize: '672px 336px',
+                          backgroundPosition: `${-col * SIZE}px ${-r * SIZE}px`,
+                        }}
+                      />
+                    )}
                   </span>
                   <span className="pointer-events-none absolute left-1/2 top-full z-10 -translate-x-1/2 whitespace-nowrap rounded-[3px] bg-ink px-1.5 py-0.5 text-[10px] leading-none text-paper opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
                     {name}

@@ -83,7 +83,12 @@ function pump() {
     const took = performance.now() - start;
     if (job.paced) setTimeout(step, Math.min(250, took));
     // a job long enough to have cost a frame lets the page draw one before the next starts
-    else if (took > 12 && typeof requestAnimationFrame === 'function' && !document.hidden)
+    else if (
+      took > 12 &&
+      typeof requestAnimationFrame === 'function' &&
+      typeof document !== 'undefined' &&
+      !document.hidden
+    )
       requestAnimationFrame(() => setTimeout(step, 0));
     else setTimeout(step, 0);
   };
