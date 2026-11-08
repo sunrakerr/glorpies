@@ -205,6 +205,12 @@ export function mount(canvas: HTMLCanvasElement, options: MountOptions): FaceHan
               const force = deferred;
               deferred = null;
               paint(force);
+            } else if (!visible && !painted && job) {
+              // scrolled past before its first painting landed: the faces now on screen go first, and this one asks again when it's back
+              job.cancel();
+              job = null;
+              key = '';
+              near = false;
             }
             apply();
           },

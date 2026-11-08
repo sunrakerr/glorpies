@@ -2,6 +2,10 @@
 
 Release dates use UTC.
 
+## Unreleased
+
+- Keep scrolling smooth on long pages of faces: background painting waits while the page scrolls and resumes as it settles, and a face scrolled past before it was painted gives way to the faces now on screen. Faces you open or export are never held.
+
 ## [0.1.1](https://github.com/sunrakerr/glorpies/releases/tag/v0.1.1) — 2026-11-01
 
 - Document native canvas bundler configuration for Next.js and SvelteKit image routes.

@@ -68,16 +68,54 @@ const jobs: Job[] = [];
 let pumping = false;
 let order = 0;
 
+/**
+ * A painting is one long task, so background work waits while the page scrolls and picks up as it
+ * settles; a scroll that never stops still lets one through now and then, so nothing waits forever.
+ */
+const SCROLL_QUIET_MS = 150;
+const SCROLL_HOLD_MS = 600;
+let scrolledAt = -Infinity;
+let heldSince = 0;
+// not `typeof window`, which bundlers fold to true in code that may yet run in a worker
+if (typeof document !== 'undefined' && typeof globalThis.addEventListener === 'function')
+  // scroll doesn't bubble, but capturing on the window hears every scroller on the page
+  globalThis.addEventListener('scroll', () => (scrolledAt = performance.now()), {
+    passive: true,
+    capture: true,
+  });
+
+/** How long the next job should wait for the page to stop scrolling; 0 runs it now. */
+function holdFor(job: Job): number {
+  const now = performance.now();
+  const quiet = now - scrolledAt;
+  if (job.priority >= PRIORITY.export || quiet >= SCROLL_QUIET_MS) {
+    heldSince = 0;
+    return 0;
+  }
+  heldSince ||= now;
+  if (now - heldSince >= SCROLL_HOLD_MS) {
+    heldSince = 0;
+    return 0;
+  }
+  return SCROLL_QUIET_MS - quiet;
+}
+
 function pump() {
   if (pumping) return;
   pumping = true;
   const step = () => {
     jobs.sort((a, b) => b.priority - a.priority || a.order - b.order);
-    const job = jobs.shift();
-    if (!job) {
+    const next = jobs[0];
+    if (!next) {
       pumping = false;
       return;
     }
+    const wait = holdFor(next);
+    if (wait > 0) {
+      setTimeout(step, wait);
+      return;
+    }
+    const job = jobs.shift()!;
     const start = performance.now();
     job.run();
     const took = performance.now() - start;

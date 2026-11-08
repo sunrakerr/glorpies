@@ -46,7 +46,7 @@ export function FaceCard({ name, look, onOpen, onRepaint, onAction }: Props) {
           {inAlien(name)}
         </span>
       </p>
-      <div className="pointer-events-none absolute inset-x-0 bottom-10 flex translate-y-1 justify-center opacity-0 transition duration-300 ease-soft group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 [@media(hover:none)]:translate-y-0 [@media(hover:none)]:opacity-100">
+      <div className="pointer-events-none absolute inset-x-0 bottom-10 flex translate-y-1 justify-center opacity-0 transition duration-300 ease-soft group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 [@media(hover:none)]:hidden">
         <Pill className="pointer-events-auto">
           <IconButton label="Copy image" onClick={() => onAction('copy')}>
             <Copy className="size-[17px]" strokeWidth={1.8} />
